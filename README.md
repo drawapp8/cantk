@@ -39,8 +39,21 @@ Features
 
 9. Support the main stream mobile platform, iOS, android, windows phone, firefox, blackberry, tizen, etc.
 
+Documentation
+==============================================
+
+[Application Programming Interface](https://github.com/drawapp8/cantk/wiki/English-API)
+
 Screenshots
 ==============================================
 
 Online Demos
 ==============================================
+
+[Animal Link](https://jsgames.sinaapp.com/animal-link/)
+
+[Beauty Puzzle](https://jsgames.sinaapp.com/puzzle-1/)
+
+[Calculator](http://dapp8.sinaapp.com/calculator/)
+
+[Stop Watch](http://dapp8.sinaapp.com/stopwatch/)
