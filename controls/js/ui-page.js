@@ -1,0 +1,79 @@
+/*
+ * File:   ui-page.js
+ * Author: Li XianJing <xianjimli@hotmail.com>
+ * Brief:  TabPage
+ * 
+ * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * 
+ */
+
+function UIPage() {
+	return;
+}
+
+UIPage.prototype = new UIElement();
+UIPage.prototype.isUIPage = true;
+
+UIPage.prototype.initUIPage = function(type, bg) {
+	this.initUIElement(type);	
+
+	this.setDefSize(200, 200);
+	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.widthAttr = C_WIDTH_FILL_PARENT;
+	this.heightAttr = C_HEIGHT_FILL_PARENT;
+
+	if(!bg) {
+		this.style.setFillColor("Gold");
+	}
+
+	return this;
+}
+
+UIPage.prototype.show = function() {
+	this.setVisible(true);
+	this.showHTML();
+
+	return;
+}
+
+UIPage.prototype.hide = function() {
+	this.setVisible(false);
+	this.hideHTML();
+	cantkHideAllInput();
+
+	return;
+}
+
+UIPage.prototype.shapeCanBeChild = function(shape) {
+	if(shape.isUIDevice || shape.isUIScreen || shape.isUIStatusBar 
+		|| shape.isUIWindow || shape.isUIPage) {
+		return false;
+	}
+
+	return true;
+}
+
+UIPage.prototype.paintSelfOnly =function(canvas) {
+	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+
+	if(!image) {
+		canvas.beginPath();
+		canvas.fillRect(0, 0, this.w, this.h);
+	}
+
+	return;
+}
+
+function UIPageCreator(bg) {
+	var args = ["ui-page", "ui-page", null, 1];
+	
+	ShapeCreator.apply(this, args);
+	this.createShape = function(createReason) {
+		var g = new UIPage();
+
+		return g.initUIPage(this.type, bg);
+	}
+	
+	return;
+}
