@@ -42,9 +42,9 @@ Features
 Tools
 ==============================================
 
-[Game Builder](http://gamebuilder.duapp.com/)
+[Game Builder For CanTK](http://gamebuilder.duapp.com/)
 
-[App Builder](http://www.drawapp8.net/appedit.php)
+[App Builder For CanTK](http://www.drawapp8.net/appedit.php)
 
 Documentation
 ==============================================
