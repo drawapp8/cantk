@@ -44,7 +44,7 @@ Tools
 
 [Game Builder](http://gamebuilder.duapp.com/)
 
-[App Builder](www.drawapp8.net/appedit.php)
+[App Builder](http://www.drawapp8.net/appedit.php)
 
 Documentation
 ==============================================
