@@ -145,7 +145,7 @@ var C_EVT_SCALE = 7;
 var gCancelDefaultAction = false;
 
 function canvasMaxizeIt(canvas, inlineEdit) {
-	var view = getViewPort();
+	var view = cantkGetViewPort();
 	
 	canvas.style.position = "absolute";
 	canvas.style.top = 0;
@@ -173,22 +173,22 @@ function canvasMaxizeIt(canvas, inlineEdit) {
 	return;
 }
 
-function canvasCreate(type) {
+function canvasCreate(id) {
 	var canvas = null;
 	
-	if("string" === typeof type) {
-		canvas = document.getElementById(type);
+	if("string" === typeof id) {
+		canvas = document.getElementById(id);
+		if(!canvas) {
+			canvas = document.createElement("canvas"); 
+			canvas.id = id;
+
+			document.body.appendChild(canvas); 
+		}
 	}
 	else {
-		canvas = type;
+		canvas = id;
 	}
 
-	if(!canvas) {
-		canvas = document.createElement("canvas"); 
-		canvas.type = "idraw_canvas";
-		document.body.appendChild(canvas); 
-	}
-	
 	return canvas;
 }
 
@@ -459,10 +459,10 @@ function canvasAttachManager(canvas, manager, app) {
 	canvas.addEventListener('gesturelongpress', onGestureLongPress);
 	canvas.addEventListener('gesturescale', onGestureScale);
 ///////////////////////////////////////////////////////////////	
-	var gViewPort = getViewPort();
+	var gViewPort = cantkGetViewPort();
 	var gScreenHeight = screen.height;
 	function handleScreenSizeChanged() {
-		var vp = getViewPort();
+		var vp = cantkGetViewPort();
 	   if(gViewPort.width != vp.width || gViewPort.height != vp.height) {
 			app.onSizeChanged();
 			gViewPort = vp;

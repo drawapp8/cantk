@@ -367,74 +367,75 @@ function AnimationFactory() {
 	return this;
 }
 
-var gAnimationFactory = null;
-function AnimationFactoryGet() {
-	if(!gAnimationFactory) {
-		gAnimationFactory = new AnimationFactory();
+AnimationFactory.create = function(name) {
+	if(!AnimationFactory.instance) {
+		AnimationFactory.instance = new AnimationFactory();
 	}
 
-	return gAnimationFactory;
+	return AnimationFactory.instance.createAnimation(name);
 }
 
-function animationCreate(name) {
-	return AnimationFactoryGet().createAnimation(name);
-}
-
-var gAnimationOldWinCanvas = null;
-function AnimationOldWinCanvasGet() {
-	if(!gAnimationOldWinCanvas) {
-		gAnimationOldWinCanvas= document.createElement("canvas");
-		gAnimationOldWinCanvas.type = "animation_canvas";
+Animation.getCanvas = function() {
+	if(!Animation.canvas) {
+		Animation.canvas = document.createElement("canvas");
+		Animation.canvas.type = "animation_canvas";
 	}
 	
-	gAnimationOldWinCanvas.style["opacity"] = 1;
-	gAnimationOldWinCanvas.style.zIndex = 9;
+	Animation.canvas.style.zIndex = 9;
+	Animation.canvas.style["opacity"] = 1;
+	scaleElement(Animation.canvas, 1, 1);
 	
-	return gAnimationOldWinCanvas;
+	return Animation.canvas;
 }
 
-function AnimationCanvasGet() {
-	var canvas = AnimationOldWinCanvasGet();
-	scaleElement(canvas, 1, 1);
-
-	return canvas;
+Animation.getOldWinCanvas = function() {
+	if(!Animation.oldWnCanvas) {
+		Animation.oldWnCanvas= document.createElement("canvas");
+		Animation.oldWnCanvas.type = "animation_canvas";
+	}
+	
+	Animation.oldWnCanvas.style.zIndex = 9;
+	Animation.oldWnCanvas.style["opacity"] = 1;
+	scaleElement(Animation.oldWnCanvas, 1, 1);
+	
+	return Animation.oldWnCanvas;
 }
 
-var gAnimationNewWinCanvas = null;
-function AnimationNewWinCanvasGet() {
-	if(!gAnimationNewWinCanvas) {
-		gAnimationNewWinCanvas= document.createElement("canvas");
-		gAnimationNewWinCanvas.type = "animation_canvas";
+Animation.getNewWinCanvas = function() {
+	if(!Animation.newWinCanvas) {
+		Animation.newWinCanvas= document.createElement("canvas");
+		Animation.newWinCanvas.type = "animation_canvas";
 	}
 
-	gAnimationNewWinCanvas.style["opacity"] = 1;
-	gAnimationNewWinCanvas.style.zIndex = 9;
+	Animation.newWinCanvas.style.zIndex = 9;
+	Animation.newWinCanvas.style["opacity"] = 1;
+	scaleElement(Animation.newWinCanvas, 1, 1);
 	
-	return gAnimationNewWinCanvas;
+	return Animation.newWinCanvas;
 }
 
-var gBackendCanvas = null;
-function BackendCanvasGet(width, height) {
-	if(!gBackendCanvas) {
-		gBackendCanvas = document.createElement("canvas");
+Animation.getBackendCanvas = function(width, height) {
+	if(!Animation.backendCanvas) {
+		Animation.backendCanvas = document.createElement("canvas");
 
-		gBackendCanvas.type = "backend_canvas";
-		gBackendCanvas.width = width;
-		gBackendCanvas.height = height;
+		Animation.backendCanvas.type = "backend_canvas";
+		Animation.backendCanvas.width = width;
+		Animation.backendCanvas.height = height;
 	}
 
-	if(gBackendCanvas) {
-		if(gBackendCanvas.width != width) {
-			gBackendCanvas.width = width;
+	if(Animation.backendCanvas) {
+		if(Animation.backendCanvas.width != width) {
+			Animation.backendCanvas.width = width;
 		}
 
-		if(gBackendCanvas.height != height) {
-			gBackendCanvas.height = height;
+		if(Animation.backendCanvas.height != height) {
+			Animation.backendCanvas.height = height;
 		}
+		Animation.scaleCanvas(Animation.backendCanvas, width, height);
 	}
-	scaleElement(gBackendCanvas, 1, 1);
+	scaleElement(Animation.backendCanvas, 1, 1);
 
-	return gBackendCanvas;
+	return Animation.backendCanvas;
 }
 
 
@@ -485,14 +486,15 @@ function Animation(showWin) {
 	}
 
 	this.moveResizeCanvas = function(canvasElement, x, y, w, h) {
+		
 		canvasElement.style.position = "absolute";
 		canvasElement.width = w;
 		canvasElement.height = h;
 		canvasElement.style.left = x + "px";
 		canvasElement.style.top = y + "px";
-		canvasElement.style.width = w + "px";
-		canvasElement.style.height = h + "px";
 		canvasElement.style.visibility = 'visible';
+
+		Animation.scaleCanvas(canvasElement, w, h);
 
 		return;
 	}
@@ -502,7 +504,7 @@ function Animation(showWin) {
 		var h = this.h * this.scale;
 
 		this.visible = true;
-		this.canvasElement = AnimationCanvasGet();
+		this.canvasElement = Animation.getCanvas();
 
 		this.moveResizeCanvas(this.canvasElement, this.x, this.y, w, h);
 		document.body.appendChild(this.canvasElement);
@@ -621,10 +623,23 @@ function Animation(showWin) {
 }
 
 function setElementPosition(element, x, y) {
+	var scale = UIElement.getMainCanvasScale();
+
+	x = x/scale.x;
+	y = y/scale.y;
 	element.style.position = "absolute";
 	element.style.left = Math.round(x) + "px";
 	element.style.top = Math.round(y) + "px";
 	element.style["opacity"] = 1.0;
+
+	return;
+}
+
+Animation.scaleCanvas = function(canvas, width, height) {
+	var scale = UIElement.getMainCanvasScale();
+
+	canvas.style.width = Math.round(width/scale.x) + "px";
+	canvas.style.height = Math.round(height/scale.y) + "px";
 
 	return;
 }
@@ -670,10 +685,10 @@ function AnimationHTranslateAndroid() {
 	this.leftToRight = true;
 
 	this.show = function() {
-		document.body.appendChild(gBackendCanvas);
-		gBackendCanvas.style.zIndex = 9;
-		this.canvasElement = gBackendCanvas;
-		setElementPosition(gBackendCanvas, this.x, this.y);
+		document.body.appendChild(Animation.backendCanvas);
+		Animation.backendCanvas.style.zIndex = 9;
+		this.canvasElement = Animation.backendCanvas;
+		setElementPosition(Animation.backendCanvas, this.x, this.y);
 
 		return true;
 	}
@@ -721,7 +736,7 @@ function AnimationHTranslateAndroid() {
 			ox = this.w - this.range * percent - this.start;
 		}
 
-		moveElement(gBackendCanvas, -ox+this.x, this.y);
+		moveElement(Animation.backendCanvas, -ox+this.x, this.y);
 
 		return true;
 	}
@@ -935,8 +950,8 @@ function AnimationBrowser(showWin) {
 	this.showCanvas = function(oldWinZIndex, newWinZIndex) {
 		var w = this.w;
 		var h = this.h;
-		var oldWinCanvas = AnimationOldWinCanvasGet();
-		var newWinCanvas = AnimationNewWinCanvasGet();
+		var oldWinCanvas = Animation.getOldWinCanvas();
+		var newWinCanvas = Animation.getNewWinCanvas();
 
 		this.moveResizeCanvas(oldWinCanvas, this.x, this.y, w, h);
 		this.moveResizeCanvas(newWinCanvas, this.x, this.y, w, h);
@@ -948,12 +963,12 @@ function AnimationBrowser(showWin) {
 		var newWin = newWinCanvas.getContext("2d");
 
 		if(this.showWin) {
-			oldWin.drawImage(gBackendCanvas, 0, 0, w, h, 0, 0, w, h);
-			newWin.drawImage(gBackendCanvas, this.w, 0, w, h, 0, 0, w, h);
+			oldWin.drawImage(Animation.backendCanvas, 0, 0, w, h, 0, 0, w, h);
+			newWin.drawImage(Animation.backendCanvas, this.w, 0, w, h, 0, 0, w, h);
 		}
 		else {
-			newWin.drawImage(gBackendCanvas, 0, 0, w, h, 0, 0, w, h);
-			oldWin.drawImage(gBackendCanvas, this.w, 0, w, h, 0, 0, w, h);
+			newWin.drawImage(Animation.backendCanvas, 0, 0, w, h, 0, 0, w, h);
+			oldWin.drawImage(Animation.backendCanvas, this.w, 0, w, h, 0, 0, w, h);
 		}
 
 		this.oldWinCanvas = oldWinCanvas;
@@ -1242,7 +1257,7 @@ function Animation1Expand() {
 	}
 
 	this.show = function() {
-		this.canvasElement = AnimationCanvasGet(); 
+		this.canvasElement = Animation.getCanvas(); 
 		this.moveResizeCanvas(this.canvasElement, this.x, this.y, this.w, this.h);
 		this.canvas = this.canvasElement.getContext("2d");
 		document.body.appendChild(this.canvasElement);
@@ -1355,7 +1370,7 @@ function Animation1Alpha() {
 	}
 	
 	this.show = function() {
-		this.canvasElement = AnimationCanvasGet(); 
+		this.canvasElement = Animation.getCanvas(); 
 		this.moveResizeCanvas(this.canvasElement, this.x, this.y, this.w, this.h);
 		this.canvas = this.canvasElement.getContext("2d");
 		document.body.appendChild(this.canvasElement);
@@ -1425,7 +1440,7 @@ function Animation1Scale() {
 	}
 	
 	this.show = function() {
-		this.canvasElement = AnimationCanvasGet(); 
+		this.canvasElement = Animation.getCanvas(); 
 		this.moveResizeCanvas(this.canvasElement, this.x, this.y, this.w, this.h);
 		this.canvas = this.canvasElement.getContext("2d");
 		document.body.appendChild(this.canvasElement);
@@ -1459,7 +1474,7 @@ function Animation1Scale() {
 	}
 }
 
-function animateUIElement(uiElement, animHint) {
+function animateUIElement(uiElement, animHint, onAnimDone) {
 	var visible = false;
 	var scale = uiElement.getRealScale();
 	var p = uiElement.getPositionInView();
@@ -1470,7 +1485,7 @@ function animateUIElement(uiElement, animHint) {
 	var w = Math.round(uiElement.w * scale);
 	var h = Math.round(uiElement.h * scale);
 
-	var canvasElement = BackendCanvasGet(w, h);
+	var canvasElement = Animation.getBackendCanvas(w, h);
 	var canvas = canvasElement.getContext("2d");
 
 	canvas.save();
@@ -1482,9 +1497,12 @@ function animateUIElement(uiElement, animHint) {
 	uiElement.visible = visible;
 	canvas.restore();
 
-	var anim = animationCreate(animHint);
+	var anim = AnimationFactory.create(animHint);
 
 	anim.prepare(x, y, w, h, canvasElement, function() {
+		if(onAnimDone) {
+			onAnimDone();
+		}
 		uiElement.setVisible(!visible);
 		uiElement.postRedraw();
 	});

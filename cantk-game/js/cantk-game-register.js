@@ -3,6 +3,7 @@ var C_UI_GAMEUI_DEV = "";
 
 function cantkGameRegisterControls() {
 	var shapeFactory = ShapeFactoryGet();
+	shapeFactory.addShapeCreator(new UIBitmapFontTextCreator(), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UISkeletonAnimationCreator(), C_UI_GAMEUI_DEV);
 	shapeFactory.addShapeCreator(new UISpriteCreator(), C_UI_GAMEUI_DEV);
 	shapeFactory.addShapeCreator(new UITransformAnimationCreator(), C_UI_GAMEUI_DEV);
@@ -19,6 +20,8 @@ function cantkGameRegisterControls() {
 	shapeFactory.addShapeCreator(new UIDistanceJointCreator(), C_UI_GAMEUI_DEV);
 	shapeFactory.addShapeCreator(new UIPulleyJointCreator(), C_UI_GAMEUI_DEV);
 	shapeFactory.addShapeCreator(new UIEdgeCreator(), C_UI_GAMEUI_DEV);
+	shapeFactory.addShapeCreator(new UIMouseJointCreator(), C_UI_GAMEUI_DEV);
+	shapeFactory.addShapeCreator(new UIBulletCreator(), C_UI_GAMEUI_DEV);
 //	shapeFactory.addShapeCreator(new UILineJointCreator(), C_UI_GAMEUI_DEV);
 
 	return;

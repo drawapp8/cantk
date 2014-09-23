@@ -66,8 +66,7 @@ function AppBase(canvasID, type) {
 		var w = 0;
 		var h = 0;
 		var canvas = this.canvas;
-		var view = getViewPort();
-	
+		var view = cantkGetViewPort();
 		
 		switch(this.type) {
 			case C_APP_TYPE_WEBAPP: 

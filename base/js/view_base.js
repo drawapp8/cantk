@@ -287,7 +287,7 @@ function ViewBase(parent, x, y, w, h) {
 		notifyViewAfterLoad(this, js);
 
 		var view = this;
-		setRefreshAfterImageLoaded(function() {
+		cantkSetOnImageLoad(function() {
 			view.postRedraw();
 		});
 		return;
@@ -724,7 +724,7 @@ function ViewBase(parent, x, y, w, h) {
 
 	this.drawLogo = function(canvas) {
 		if(this.shouldShowLogo()) {
-			var vp = getViewPort();
+			var vp = cantkGetViewPort();
 			var w = Math.min(this.rect.w, vp.width);
 			var h = Math.min(this.rect.h, vp.height);
 

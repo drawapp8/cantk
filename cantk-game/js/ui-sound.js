@@ -17,12 +17,12 @@ UISound.prototype.isUISound = true;
 UISound.prototype.initUISound = function(type, w, h, bg) {
 	this.initUICheckBox(type, w, h, null, null, null, null, null, null);	
 
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
 	this.soundURL = "";
 	this.loop = true;
 	this.autoPlay = true;
 	this.runtimeVisible = true;
+	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
 
 	return this;
 }
@@ -51,31 +51,32 @@ UISound.prototype.setLoop = function(loop) {
 	return;
 }
 
-UISound.prototype.stop = function() {
-	if(this.audio) {
+UISound.prototype.isPlaying = function() {
+	return this.playing;
+}
+
+UISound.prototype.pause = function() {
+	if(this.audio && this.playing) {
 		this.audio.pause();
+		this.playing = false;
 	}
 
 	return;
 }
 
-UISound.prototype.play = function() {
-	if(this.audio) {
-		this.playing = true;
+UISound.prototype.stop = function() {
+	if(this.audio && this.playing) {
+		this.audio.stop();
+		this.playing = false;
+	}
+
+	return;
+}
+
+UISound.prototype.play = function(force) {
+	if(this.audio && (!this.playing || force)) {
 		this.audio.play();
-	}
-
-	return;
-}
-
-UISound.prototype.setValue = function(value) {
-	this.value = value;
-	if(this.audio) {
-		var muted = !value;
-		if(value && !this.playing) {
-			this.audio.play();
-		}
-		this.audio.muted = muted;
+		this.playing = true;
 	}
 
 	return;
@@ -87,6 +88,18 @@ UISound.prototype.mute = function(value) {
 	return;
 }
 
+UISound.prototype.setValue = function(value) {
+	this.value = value;
+
+	if(value) {
+		this.play();
+	}
+	else {
+		this.pause();
+	}
+
+	return;
+}
 
 UISound.prototype.onModeChanged = function() {
 	this.stop();
@@ -95,50 +108,34 @@ UISound.prototype.onModeChanged = function() {
 }
 
 UISound.prototype.onInit = function() {
+	var me = this;
 	this.visible = this.runtimeVisible;
 
-	if(!this.visible) {
-		this.setValue(true);
-	}
-
-	if(this.autoPlay) {
-		this.setValue(true);
-	}
-
 	if(this.soundURL) {
-		var audio = new Audio();
-		audio.addEventListener('ended',function(e){
-			console.log("audio end");
-
-			return;
-		});
+		var config = {
+			urls: [this.soundURL],
+			autoplay: this.autoPlay,
+			loop: this.loop,
+			volume: 0.8,
+		};
 		
-		audio.addEventListener('error', function(e){
-			console.log("error:" + audio.src);
-
-			return;
-		});
-
-		audio.addEventListener('playing',function(e){
-			console.log("playing:" + audio.src);
-			return;
-		});
-
-		audio.addEventListener('progress',function(e){
-			console.log("progress:" + audio.src);
-			return;
-		});
-	
-		audio.src = this.soundURL;
-		audio.load();
-		audio.loop = this.loop ? "loop" : "";
-
-		this.audio = audio;
-		if(this.autoPlay) {
-			this.play();
+		config.onend = function() {
+			me.playing = false;
+			console.log("audio end.");
 		}
 
-		audio.muted = !this.getValue();
+		var audio = new Howl(config);
+
+		if(!this.getValue()) {
+			audio.mute();
+		}
+
+		if(this.autoPlay) {
+			this.playing = true;
+		}
+
+		this.audio = audio;
+		this.value = this.autoPlay;
 
 		return;
 	}
@@ -146,6 +143,27 @@ UISound.prototype.onInit = function() {
 
 UISound.prototype.shapeCanBeChild = function(shape) {
 	return false;
+}
+
+UISound.prototype.onClick = function(point, beforeChild) {
+	if(beforeChild || this.mode === C_MODE_EDITING) {
+		return;
+	}
+	
+	this.setValue(!this.value);
+	this.callClickHandler(point);
+
+	return;
+}
+
+UISound.prototype.onFromJsonDone = function() {
+	if(this.soundURL) {
+		ResLoader.loadAudio(this.soundURL, function(audio) {
+			console.log("audio loaded: " + audio.src);
+		});
+	}
+
+	return;
 }
 
 function UISoundCreator() {

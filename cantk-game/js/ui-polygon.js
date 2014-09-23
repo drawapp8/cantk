@@ -26,7 +26,7 @@ UIPolygon.prototype.initUIPolygon = function(type, w, h) {
 	this.friction = 0;
 	this.restitution = 0;
 	this.setCanRectSelectable(false, false);
-	this.addEventNames(["onBeginContact", "onEndContact"]);
+	this.addEventNames(["onBeginContact", "onEndContact", "onMoved"]);
 
 	return this;
 }

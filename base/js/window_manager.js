@@ -173,6 +173,10 @@ WindowManager.prototype.getCanvas2D = function() {
 	return this.canvas.getContext("2d");
 }
 
+WindowManager.prototype.getCanvas = function() {
+	return this.canvas;
+}
+
 WindowManager.prototype.findTargetWin = function(point) {
 	 var target = null;
 	 var nr = this.grabWindows.length;
@@ -261,9 +265,29 @@ WindowManager.prototype.onGesture = function(gesture) {
 	return;
 }
 
+WindowManager.setInputScale = function(xInputScale, yInputScale) {	
+	WindowManager.xInputScale = xInputScale;
+	WindowManager.yInputScale = yInputScale;
+
+	return;
+}
+
+WindowManager.prototype.translatePoint = function(point) {	
+	if(WindowManager.xInputScale) {
+		point.x = Math.round(point.x * WindowManager.xInputScale);
+	}
+
+	if(WindowManager.yInputScale) {
+		point.y = Math.round(point.y * WindowManager.yInputScale);
+	}
+
+	return point;
+}
+
 WindowManager.prototype.onPointerDown = function(point) {	
 	cantkHideAllInput();
 
+	this.translatePoint(point);
 	this.target = this.findTargetWin(point);
 
 	this.pointerDown = true;
@@ -283,6 +307,7 @@ WindowManager.prototype.onPointerDown = function(point) {
 }
 
 WindowManager.prototype.onPointerMove = function(point) {
+	this.translatePoint(point);
 	this.target = this.findTargetWin(point);
 	  
 	this.lastPointerPoint.x = point.x;
@@ -295,10 +320,10 @@ WindowManager.prototype.onPointerMove = function(point) {
 }
 
 WindowManager.prototype.onPointerUp = function(point) {
+	this.translatePoint(point);
+	point = this.lastPointerPoint;
 	this.target = this.findTargetWin(point);
 	 
-	this.lastPointerPoint.x = point.x;
-	this.lastPointerPoint.y = point.y;
 	if(this.target) {
 		 this.target.onPointerUp(point);
 	 }

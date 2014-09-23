@@ -115,19 +115,19 @@ UIFourJoint.prototype.updateLayoutParams = function() {
 }
 
 UIFourJoint.prototype.hitTest = function(point) {
-	if(distanceBetween(point, this.points[0]) < 20) {
+	if(Math.distanceBetween(point, this.points[0]) < 20) {
 		return 1;
 	}
 
-	if(distanceBetween(point, this.points[1]) < 20) {
+	if(Math.distanceBetween(point, this.points[1]) < 20) {
 		return 2;
 	}
 
-	if(distanceBetween(point, this.points[2]) < 20) {
+	if(Math.distanceBetween(point, this.points[2]) < 20) {
 		return 3;
 	}
 	
-	if(distanceBetween(point, this.points[3]) < 20) {
+	if(Math.distanceBetween(point, this.points[3]) < 20) {
 		return 4;
 	}
 

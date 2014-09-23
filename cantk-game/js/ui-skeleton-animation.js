@@ -21,7 +21,7 @@ UISkeletonAnimation.prototype.initUISkeletonAnimation = function(type, w, h) {
 	this.setSizeLimit(50, 50);
 	this.setTextType(C_SHAPE_TEXT_NONE);
 	this.setCanRectSelectable(false, true);
-	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
+	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
 
 	return this;
 }
@@ -33,9 +33,9 @@ UISkeletonAnimation.prototype.afterChildAppended = function(shape) {
 	return;
 }
 
-UISkeletonAnimation.prototype.setAnimationName = function(animationName) {
+UISkeletonAnimation.prototype.gotoAndPlay = function(animationName) {
 	this.animationName = animationName;
-	
+
 	if(this.armature) {
 		var armature = this.armature;
 
@@ -48,6 +48,21 @@ UISkeletonAnimation.prototype.setAnimationName = function(animationName) {
 	}
 
 	return;
+}
+
+UISkeletonAnimation.prototype.setAnimationName = function(animationName) {
+	this.animationName = animationName;
+
+	return;
+}
+
+UISkeletonAnimation.prototype.getAnimationNames = function() {
+	if(this.armature) {
+		return this.armature.animation.animationNameList;
+	}
+	else {
+		return [];
+	}
 }
 
 UISkeletonAnimation.prototype.getAnimationName = function() {
@@ -123,6 +138,10 @@ UISkeletonAnimation.prototype.loadSkelentonAnimation = function() {
 			animationName = me.animationName;
 		}
 
+		for(var i = 0; i < armature.animation.animationNameList.length; i++) {
+			console.log(armature.animation.animationNameList[i]);
+		}
+
 		armature.animation.gotoAndPlay(animationName);
 		me.postRedraw();
 	});
@@ -143,7 +162,7 @@ UISkeletonAnimation.prototype.getTextureURL = function() {
 }
 
 UISkeletonAnimation.prototype.shapeCanBeChild = function(shape) {
-	return shape.isUIPhysicsShape;
+	return shape.isUIPhysicsShape || shape.isUIMouseJoint;
 }
 
 UISkeletonAnimation.prototype.beforePaintChildren = UISprite.prototype.beforePaintChildren;

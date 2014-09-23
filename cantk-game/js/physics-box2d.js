@@ -300,8 +300,8 @@ Physics.createWorldJoints = function(world, scene, element) {
 				rJointDef = new b2RevoluteJointDef();
 				rJointDef.Initialize(arr[0], arr[1], anchorPoint);
 
-				rJointDef.lowerAngle = element.lowerAngle ? element.lowerAngle : 0;
-				rJointDef.upperAngle = element.upperAngle ? element.upperAngle : 0;
+				rJointDef.lowerAngle = (element.lowerAngle ? element.lowerAngle : 0)*Math.PI/180;
+				rJointDef.upperAngle = (element.upperAngle ? element.upperAngle : 0)*Math.PI/180;
 				rJointDef.motorSpeed = element.motorSpeed ? element.motorSpeed : 0;
 				rJointDef.maxMotorTorque = element.maxMotorTorque ? element.maxMotorTorque : 0;
 				rJointDef.enableLimit = element.enableLimit ? element.enableLimit : false;
@@ -399,15 +399,25 @@ Physics.updateBodyElementsPosition = function(world) {
 	for (var b = world.m_bodyList; b; b = b.m_next) {
 		var element = b.element;
 
+		if(b.type === b2Body.b2_staticBody) {
+//			continue;
+		}
+
 		if(element) {
 			var p = b.GetWorldCenter();
 			var a = b.GetAngle();
 
-			if(p.x && p.y) {
+			if(p.x !== undefined && p.y !== undefined) {
 				var x = Physics.toPixel(p.x) - (element.w >> 1);
 				var y = Physics.toPixel(p.y) - (element.h >> 1);
 				element.setRotation(a);
-				element.setPositionByBody(x, y);
+
+				var ox = element.x;
+				var oy = element.y;
+
+				if(ox != x || oy != y) {
+					element.setPositionByBody(x, y);
+				}
 			}
 		}
 	}
@@ -556,7 +566,7 @@ Physics.createWorld = function(scene) {
 			return;
 		}
 
-		if(scene.isVisible()) {
+		if(scene.isVisible() && scene.isTopWindow() && scene.isPlaying()) {
 			world.Step(timeStep, velocityIterations, positionIterations);
 
 			scene.postRedraw();

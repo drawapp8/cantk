@@ -191,7 +191,19 @@ UIListItem.prototype.paintSelfOnly = function(canvas) {
 
 	if(this.pointerDown) {
 		var dy = Math.abs(this.getMoveAbsDeltaY());
-		canvas.fillStyle = dy < 5 ? this.style.textColor : this.style.fillColor;
+		if(dy < 5) {
+			var deltaTime = Date.now() - this.pointerDownTime;
+			if(deltaTime < 50 && this.getParent().isUIListView) {
+				canvas.fillStyle = this.style.fillColor;
+				this.postRedraw();
+			}
+			else {
+				canvas.fillStyle = this.style.textColor; 
+			}
+		}
+		else {
+			canvas.fillStyle = this.style.fillColor;
+		}
 	}
 	else if(this.isPointerOverShape()) {
 		canvas.fillStyle = this.style.overFillColor ? this.style.overFillColor : this.style.fillColor;

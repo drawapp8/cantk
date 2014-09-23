@@ -26,8 +26,10 @@ UIFrameAnimation.prototype.initUIFrameAnimation = function(type, w, h) {
 	this.endFrame = 0;
 	this.playing = false;
 	this.autoPlay = true;
-	this.repeat = 0xFFFFFFFF;
-	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
+	this.repeatTimes = 0xFFFFFFFF;
+	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
+
+	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
 
 	return this;
 }
@@ -51,11 +53,12 @@ UIFrameAnimation.prototype.stop = function() {
 	return;
 }
 
-UIFrameAnimation.prototype.gotoAndPlay = function(startFrame, endFrame, repeat) {
+UIFrameAnimation.prototype.gotoAndPlay = function(startFrame, endFrame, repeatTimes, onDone) {
 	if(this.frames && this.frames.length) {
 		this.playing = true;
-		this.repeat = repeat ? repeat : 0xFFFFFFFF;
+		this.repeatTimes = repeatTimes ? repeatTimes : 0xFFFFFFFF;
 
+		this.onDone = onDone;
 		var n = this.frames.length;
 		this.startFrame = (startFrame ? startFrame : 0)%n;
 		this.endFrame = (endFrame ? endFrame : n - 1)%n;
@@ -84,16 +87,19 @@ UIFrameAnimation.prototype.nextFrame = function() {
 	var start = this.startFrame;
 	var end = this.endFrame;
 
-	var current = (this.current + 1)%(end - start + 1) + start;
+	var current = (this.current - start + 1)%(end - start + 1) + start;
 
 	this.current = current;
 
 	if(current === end) {
-		this.repeat--;
-		if(this.repeat <= 0) {
-			//TODO:
+		this.repeatTimes--;
+		if(this.repeatTimes <= 0) {
+			this.playing = false;
+			if(this.onDone) {
+				var onDone = this.onDone;
+				onDone(this);
+			}
 		}
-		//console.log(this.repeat);
 	}
 
 	return;
@@ -112,15 +118,24 @@ UIFrameAnimation.prototype.getCurrentImage = function() {
 }
 
 UIFrameAnimation.prototype.getValue = function() {
-	return this.value;
+	var str = "";
+	for(var key in this.images) {
+		var iter = this.images[key];
+		if(key.indexOf("option_image_") >= 0 && iter) {
+			str += iter.src + "\n";
+		}
+	}
+
+	return str;
 }
 
 UIFrameAnimation.prototype.setValue = function(value) {
-	this.value = value;
+	var display = this.images.display;
 	this.images = {};
 	this.frames = [];
+	this.images.display = display;
 
-	if(this.value) {
+	if(value) {
 		var i = 0;
 		var k = 0;
 		var arr = value.split("\n");
@@ -149,8 +164,15 @@ UIFrameAnimation.prototype.setValue = function(value) {
 }
 
 UIFrameAnimation.prototype.onFromJsonDone = function() {
-	this.setValue(this.value);
 	this.playing = false;
+	
+	this.frames = [];
+	for(var key in this.images) {
+		var iter = this.images[key];
+		if(key.indexOf("option_image_") >= 0 && iter) {
+			this.frames.push(iter);
+		}
+	}
 
 	return;
 }
@@ -191,7 +213,7 @@ UIFrameAnimation.prototype.setFrameRate = function(frameRate) {
 }
 
 UIFrameAnimation.prototype.shapeCanBeChild = function(shape) {
-	return shape.isUIPhysicsShape;
+	return shape.isUIPhysicsShape || shape.isUIMouseJoint || shape.isUIImage;
 }
 
 UIFrameAnimation.prototype.drawImage =function(canvas) {
@@ -201,7 +223,7 @@ UIFrameAnimation.prototype.drawImage =function(canvas) {
 		var me = this;
 		var srcRect = image.getImageRect();
 		if(image.image) {
-			this.drawImageAt(canvas, image.image, CANTK_IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h, srcRect);
+			this.drawImageAt(canvas, image.image, this.images.display, 0, 0, this.w, this.h, srcRect);
 		}	
 	}
 

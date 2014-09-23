@@ -7,117 +7,7 @@
  * 
  */
 
-function CanTkImage(src, onLoad) {
-	var me = this;
-	this.src = src;
-
-	this.initFromJson = function(src, json) {
-		var sharpOffset = src.indexOf("#");
-		var jsonURL = src.substr(0, sharpOffset);
-		var name = src.substr(sharpOffset+1);
-		var path = dirname(jsonURL);
-		var filename = json.file ? json.file : json.meta.image;
-		var imageSrc = path + "/" + filename;
-		var rect = json.frames[name];
-
-		if(rect.frame) {
-			rect = rect.frame;
-		}
-
-		this.rect = rect;
-		this.image = CanTkImage.createImage(imageSrc, onLoad);
-
-		return;
-	}
-
-	this.setImageSrc = function(src) {
-		if(!src) {
-			this.src = src;
-			this.image = CanTkImage.nullImage;
-			return;
-		}
-
-		this.src = CanTkImage.toAbsURL(src);
-		var sharpOffset = src.indexOf("#");
-		var rectOffset = src.indexOf("?r=");
-		var jsonURL = src.substr(0, sharpOffset);
-
-		if(sharpOffset > 0) {
-
-			if(CanTkImage.jsons[jsonURL]) {
-				var json = CanTkImage.jsons[jsonURL];
-				me.initFromJson(src, json);
-			}
-			else {
-				httpGetJSON(jsonURL, function(json) {
-					me.initFromJson(src, json);
-					CanTkImage.jsons[jsonURL] = json;
-				});
-			}
-		}
-		else if(rectOffset > 0) {
-			var str = src.substr(rectOffset+3);
-			var src = src.substr(0, rectOffset);
-			var arr = str.split(",");
-
-			this.image = CanTkImage.createImage(src, function(img) {
-				me.rect = {};
-
-				if(arr.length == 4) {
-					me.rect.x = parseInt(arr[0]);
-					me.rect.y = parseInt(arr[1]);
-					me.rect.w = parseInt(arr[2]);
-					me.rect.h = parseInt(arr[3]);
-				}
-				else {
-					me.rect.x = 0;
-					me.rect.y = 0;
-					me.rect.w = img.width;
-					me.rect.h = img.height;
-				}
-				if(onLoad) {
-					onLoad();
-				}
-			});
-		}
-		else {
-			this.image = CanTkImage.createImage(src, function(img) {
-				me.rect = {};
-				me.rect.x = 0;
-				me.rect.y = 0;
-				me.rect.w = img.width;
-				me.rect.h = img.height;
-
-				if(onLoad) {
-					onLoad();
-				}
-			});
-		}
-
-		return;
-	}
-
-	this.getImageRect = function() {
-		if(this.rect && !this.rect.w && !this.rect.h) {
-			return null;
-		}
-
-		return this.rect;
-	}
-
-	this.getImageSrc = function() {
-		return this.src;
-	}
-	
-	this.getRealImageSrc = function() {
-		return this.image ? this.image.src : this.src;
-	}
-
-	this.getImage = function() {
-		var image = this.image;
-		return (image && image.width > 0) ? image : null;
-	}
-
+function CanTkImage(src) {
 	if(src) {
 		this.setImageSrc(src);
 	}
@@ -125,139 +15,98 @@ function CanTkImage(src, onLoad) {
 	return;
 }
 
-CanTkImage.resRoot = null;
-CanTkImage.setResRoot = function(resRoot) {
-	CanTkImage.resRoot = resRoot;
+CanTkImage.prototype.initFromJson = function(src, json, onLoad) {
+	var sharpOffset = src.indexOf("#");
+	var jsonURL = src.substr(0, sharpOffset);
+	var name = src.substr(sharpOffset+1);
+	var path = dirname(jsonURL);
+	var filename = json.file ? json.file : json.meta.image;
+	var imageSrc = path + "/" + filename;
+	var rect = json.frames[name];
+
+	if(rect.frame) {
+		rect = rect.frame;
+	}
+
+	this.rect = rect;
+	CanTkImage.onload();
+	this.image = ResLoader.loadImage(imageSrc, onLoad);
 
 	return;
 }
 
-CanTkImage.toAbsURL = function(url) {
-	var absURL = url;
+CanTkImage.prototype.setImageSrc = function(src, onLoad) {
+	if(!src) {
+		this.src = src;
+		this.image = CanTkImage.nullImage;
 
-	if(!url) {
-		return url;
+		return;
 	}
+	
+	src = ResLoader.toAbsURL(src);
+	var sharpOffset = src.indexOf("#");
 
-	if(CanTkImage.resRoot && url.indexOf("://") < 0) {
-		absURL = CanTkImage.resRoot + url;
+	var me = this;
+	this.src = src;
 
-		return absURL;
+	if(sharpOffset > 0) {
+		var jsonURL = src.substr(0, sharpOffset);
+		ResLoader.loadJson(jsonURL, function(json) {
+			me.initFromJson(src, json, onLoad);
+		});
 	}
+	else {
+		this.image = ResLoader.loadImage(src, function(img) {
+			me.rect = {};
+			me.rect.x = 0;
+			me.rect.y = 0;
+			me.rect.w = img.width;
+			me.rect.h = img.height;
 
-	if(url.indexOf("://") < 0) {
-		if(url[0] === '/') {
-			absURL = location.protocol + "//" + location.host + url;
-		}
-		else {
-			var href = location.href;
-			var offset = href.indexOf("?");
-			if(offset >= 0) {
-				href = href.substr(0, offset);
+			me.image = img;
+			if(onLoad) {
+				onLoad(img);
 			}
-			absURL = href.substr(0, href.lastIndexOf("/")) + "/" + url;
-		}
+			CanTkImage.onload();
+		});
 	}
 
-	return absURL;
+	return;
 }
+
+CanTkImage.prototype.getImageRect = function() {
+	if(this.rect && !this.rect.w && !this.rect.h) {
+		return null;
+	}
+
+	return this.rect;
+}
+
+CanTkImage.prototype.getImageSrc = function() {
+	return this.src;
+}
+
+CanTkImage.prototype.getRealImageSrc = function() {
+	return this.image ? this.image.src : this.src;
+}
+
+CanTkImage.prototype.getImage = function() {
+	var image = this.image;
+
+	return (image && image.width > 0) ? image : null;
+}
+
+CanTkImage.nullImage = new Image();
 
 CanTkImage.onload = function() {
 }
 
-function setRefreshAfterImageLoaded(redrawUI) {
-	if(redrawUI) {
-		CanTkImage.onload = redrawUI;
+function cantkSetOnImageLoad(onImageLoad) {
+	if(onImageLoad) {
+		CanTkImage.onload = onImageLoad;
 	}
 
 	return;
-}
-
-CanTkImage.images = [];
-CanTkImage.jsons = {};
-
-CanTkImage.nullImage = new Image();
-CanTkImage.loadingImages = 0;
-
-CanTkImage.getLoadProgress = function() {
-	var percent = 100;
-
-	var n = CanTkImage.images.length;
-	if(n) {
-		percent = 100 * (n - CanTkImage.loadingImages)/n;
-	}
-
-	return percent;
-}
-
-CanTkImage.loadImage = function (src, onLoad) {
-	var image = new Image();
-
-	CanTkImage.images.push(image);
-	CanTkImage.loadingImages++;
-
-	image.onload = function (e) {
-		CanTkImage.onload();
-
-		if(onLoad) {
-			onLoad(image);
-		}
-	
-		CanTkImage.loadingImages--;
-	};
-
-	image.onerror = function (e) {
-		CanTkImage.loadingImages--;
-		console.log("load " + src + " failed:" + e.message);
-	};
-
-	image.onabort = function (e) {
-		CanTkImage.loadingImages--;
-		console.log("load " + src + " failed(abort):" + e.message);
-	};
-
-	image.src = src;
-
-	return image;
-}
-
-CanTkImage.getImageInCache = function(src, onLoad) {
-	var images = CanTkImage.images;
-	if(images) {
-		for(var i = 0; i < images.length; i++) {
-			var iter = images[i];
-
-			if(iter.src && iter.src.indexOf(src) >= 0) {
-				if(onLoad) {
-					onLoad(iter);
-				}
-
-				return iter;
-			}
-		}
-	}
-
-	return null;
-}
-
-CanTkImage.createImage = function (src, onLoad) {
-	var image = null;
-
-	if(!src) {
-		return CanTkImage.nullImage;
-	}
-	
-	src = CanTkImage.toAbsURL(src);
-
-	image = CanTkImage.getImageInCache(src, onLoad);
-	if(image) {
-		if(onLoad) {
-			onLoad(image);
-		}
-		return image;
-	}
-
-	return CanTkImage.loadImage(src, onLoad);
 }
 
 //////////////////////////////////////////////////////////////////

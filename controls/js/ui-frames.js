@@ -26,6 +26,21 @@ UIFrames.prototype.initUIFrames = function(type) {
 	return this;
 }
 
+UIFrames.preparseBackendCanvas = function(leftWin, RightWin) {
+	var w = leftWin.w;
+	var h = leftWin.h;
+	var backendCanvas = Animation.getBackendCanvas(2 * w, h);
+	var context = backendCanvas.getContext("2d");
+	context.clearRect(0, 0, 2*w, h);
+	context.save();
+	leftWin.paint(context);
+	context.translate(w, 0);
+	RightWin.paint(context);
+	context.restore();
+
+	return backendCanvas;
+}
+
 UIFrames.prototype.getStatusString = function() {
 	var str = "";
 	var current = this.current + 1;

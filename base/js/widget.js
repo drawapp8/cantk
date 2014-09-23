@@ -109,6 +109,10 @@ function Widget(parent, x, y, w, h) {
 	this.getCanvas2D = function() {
 		return this.getManager().getCanvas2D();
 	}
+	
+	this.getCanvas = function() {
+		return this.getManager().getCanvas();
+	}
 
 	this.getLastPointerPoint = function() {
 		return this.getManager().getLastPointerPoint();

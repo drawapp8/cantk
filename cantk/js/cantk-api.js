@@ -30,6 +30,7 @@ window.cantkGetLocale = cantkGetLocale;
 window.cantkInitViewPort = cantkInitViewPort;
 window.cantkRestoreViewPort = cantkRestoreViewPort;
 window.cantkRegisterUIElements = cantkRegisterUIElements;	
+window.cantkGetViewPort = cantkGetViewPort;
 
 CanTK.UIImage = UIImage;
 CanTK.getEffectsPlayer = getEffectsPlayer;
@@ -61,6 +62,6 @@ CanTK.UIElement.RUNNING = C_MODE_RUNNING;
 CanTK.UIElement.DEFAULT_IMAGE = CANTK_IMAGE_DEFAULT;
 
 CanTK.setResRoot = function(resRoot) {
-	return CanTkImage.setResRoot(resRoot);
+	return ResLoader.setResRoot(resRoot);
 }
 

@@ -34,9 +34,7 @@ UIOneJoint.prototype.paintSelfOnly = function(canvas) {
 	var x = this.w >> 1;
 	var y = this.h >> 1;
 
-	if(this.mode === C_MODE_EDITING) {
-		canvas.fillStyle = "Orange";
-	}
+	canvas.fillStyle = this.style.fillColor;
 
 	canvas.beginPath();
 	canvas.arc(x, y, 10, 0, 2 * Math.PI);

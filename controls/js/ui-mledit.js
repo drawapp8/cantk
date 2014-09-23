@@ -63,10 +63,11 @@ UIMLEdit.prototype.getEditorRect = function() {
 	
 	var rect = {};
 
-	rect.x = x;
-	rect.y = y;
-	rect.w = Math.max(60, w);
-	rect.h = h;
+	scale = UIElement.getMainCanvasScale();
+	rect.x = x / scale.x;
+	rect.y = y / scale.y;
+	rect.w = Math.max(60, w) / scale.x;
+	rect.h = h / scale.y;
 
 	return rect;
 }
@@ -76,7 +77,7 @@ UIMLEdit.prototype.editText = function(point) {
 		var shape = this;
 		var editor = null;
 		var rect = this.getEditorRect();
-		var scale = this.getRealScale();
+		var scale = this.getRealScale() / UIElement.getMainCanvasScale().y;
 		var inputType = this.inputType ? this.inputType : "text";
 
 		var text = this.getText();

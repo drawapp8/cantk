@@ -88,7 +88,7 @@ UIPageManager.prototype.switchTo = function(index) {
 		return;
 	}
 
-	if(!this.isOnTopWindow()) {
+	if(!this.isTopWindow()) {
 		showNewFrame();	
 		return;
 	}
@@ -98,12 +98,12 @@ UIPageManager.prototype.switchTo = function(index) {
 	var p = this.getPositionInScreen();
 
 	if(index < current) {
-		animation = animationCreate("anim-backward"); 
-		backendCanvas = preparseBackendCanvas(newFrame, curFrame);
+		animation = AnimationFactory.create("anim-backward"); 
+		backendCanvas = UIFrames.preparseBackendCanvas(newFrame, curFrame);
 	}
 	else {
-		animation = animationCreate("anim-forward"); 
-		backendCanvas = preparseBackendCanvas(curFrame, newFrame);
+		animation = AnimationFactory.create("anim-forward"); 
+		backendCanvas = UIFrames.preparseBackendCanvas(curFrame, newFrame);
 	}
 
 //	window.open(backendCanvas.toDataURL(), "_blank");

@@ -44,7 +44,7 @@ UIScene.prototype.restoreGameState = function() {
 	return;
 }
 
-UIScene.prototype.reset = function() {
+UIScene.prototype.resetGame = function() {
 	if(this.world) {
 		var world = this.world;
 		Physics.clearAllBodyAndJoints(world);
@@ -52,18 +52,18 @@ UIScene.prototype.reset = function() {
 		this.world = null;
 
 		this.restoreGameState();
-		Physics.createWorld(this);
+		this.doInit();
+		this.initChildren();
 	}
 
 	return;
 }
 
-UIScene.prototype.onInit = function() {
+UIScene.prototype.doInit = function() {
 	this.xOffset = 0;
 	this.yOffset = 0;
 
 	if(this.enablePhysics) {
-		this.saveGameState();
 		Physics.createWorld(this);	
 	}
 
@@ -74,9 +74,20 @@ UIScene.prototype.onInit = function() {
 	return;
 }
 
+UIScene.prototype.onInit = function() {
+	if(this.enablePhysics) {
+		this.saveGameState();
+	}
+
+	this.doInit();
+	this.playing = true;
+
+	return;
+}
+
 UIScene.prototype.getVirtualWidth = function() {
 	if(this.virtualWidth < this.w) {
-		this.virtualWidth = this.w;
+		return this.w;
 	}
 
 	return this.virtualWidth;
@@ -84,10 +95,40 @@ UIScene.prototype.getVirtualWidth = function() {
 
 UIScene.prototype.getVirtualHeight = function() {
 	if(this.virtualHeight < this.h) {
-		this.virtualHeight = this.h;
+		return this.h;
 	}
 
 	return this.virtualHeight;
+}
+
+UIScene.prototype.setOffset = function(xOffset, yOffset) {
+	if(xOffset || xOffset === 0) {
+		var maxOffset = this.getVirtualWidth() - this.w;
+		
+		this.xOffset = Math.max(0, xOffset);
+		if(this.xOffset > maxOffset) {
+			this.xOffset = maxOffset;
+		}
+	}
+
+	if(yOffset || yOffset === 0) {
+		var maxOffset = this.getVirtualHeight() - this.h;
+
+		this.yOffset = Math.max(0, yOffset);
+		if(this.yOffset > maxOffset) {
+			this.yOffset = maxOffset;
+		}
+	}
+
+	return;
+}
+
+UIScene.prototype.getRelayoutWidth = function() {
+	return this.getVirtualWidth();
+}
+
+UIScene.prototype.getRelayoutHeight = function() {
+	return this.getVirtualHeight();
 }
 
 UIScene.prototype.defaultPaintChildren = function(canvas) {
@@ -99,13 +140,17 @@ UIScene.prototype.defaultPaintChildren = function(canvas) {
 	var n = this.children.length;
 	for(var i = 0; i < n; i++) {
 		var shape = this.children[i];
-		var inVisible = !shape.visible || shape.x > right || shape.y > bottom || (shape.x + shape.w) < left || (shape.y + shape.h) < top;
-	
+		var inVisible = !shape.visible ;
+		var outOfView = shape.x > right || shape.y > bottom || (shape.x + shape.w) < left || (shape.y + shape.h) < top;
+		if(shape.rotation) {
+			outOfView = outOfView && Math.abs(shape.w/shape.h - 1) <  0.2;
+		}
+
 		if(shape.body) {
 			shape.body.SetAwake(!inVisible);
 		}
 
-		if(inVisible) {
+		if(inVisible || outOfView) {
 			continue;
 		}
 
@@ -113,6 +158,71 @@ UIScene.prototype.defaultPaintChildren = function(canvas) {
 	}
 	
 	this.paintTargetShape(canvas);
+
+	return;
+}
+
+UIScene.prototype.drawBgImage = function(canvas) {
+	var image = this.getBgImage();
+		
+	if(image && image.getImage()) {
+		var display = this.images.display;
+
+		image = image.getImage();
+		if(display === CANTK_IMAGE_DISPLAY_TILE_V) {
+			this.drawBgImageVTile(canvas, image);
+		}
+		else if(display === CANTK_IMAGE_DISPLAY_TILE_H) {
+			this.drawBgImageHTile(canvas, image);
+		}
+		else {
+			this.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h, null);
+		}
+	}
+
+	return;
+}
+
+UIScene.prototype.drawBgImageVTile = function(canvas, image) {
+	var w = this.w;
+	var h = this.h;
+	var iw = image.width;
+	var ih = image.height;
+	var scale = w/iw;
+
+	var dy = 0;
+	var sy = this.yOffset%ih;
+	var sh = Math.min(ih-sy, h/scale);
+
+	for(var dy = 0; dy < h; ) {
+		var dh = sh * scale;
+		canvas.drawImage(image, 0, sy, iw, sh, 0, dy, w, dh);
+
+		dy += dh;
+		sh = Math.min(ih, (h - dy)/scale);
+		sy = 0;
+	}
+}
+
+UIScene.prototype.drawBgImageHTile = function(canvas, image) {
+	var w = this.w;
+	var h = this.h;
+	var iw = image.width;
+	var ih = image.height;
+	var scale = h/ih;
+
+	var dx = 0;
+	var sx = this.xOffset%iw;
+	var sw = Math.min(iw-sx, w/scale);
+
+	for(var dx = 0; dx < w; ) {
+		var dw = sw * scale;
+		canvas.drawImage(image, sx, 0, sw, ih, dx, 0, dw, h);
+
+		dx += dw;
+		sw = Math.min(iw, (w - dx)/scale);
+		sx = 0;
+	}
 
 	return;
 }
@@ -125,7 +235,7 @@ UIScene.prototype.afterPaintChildren = function(canvas) {
 	var y = 10;
 	var w = this.w;
 	var h = this.h;
-	var text = null;
+	var text = "";
 	var x = w >> 1;
 	var vw = this.getVirtualWidth();
 	var vh = this.getVirtualHeight();
@@ -294,9 +404,48 @@ UIScene.prototype.afterChildRemoved = function(shape) {
 }
 
 UIScene.prototype.translatePoint = function(point) {
-	var p = {x : (point.x - this.x + this.xOffset), y : (point.y - this.y + this.yOffset)};
+	if(this.popupWindow) {
+		return point;
+	}
+	else {
+		var p = {x : (point.x - this.x + this.xOffset), y : (point.y - this.y + this.yOffset)};
+		return p;
+	}
+}
 
-	return p;
+UIScene.prototype.isPlaying = function() {
+	return this.playing && this.mode != C_MODE_EDITING;
+}
+
+UIScene.prototype.replay = function() {
+	this.resetGame();
+	this.playing = true;
+
+	return;
+}
+
+UIScene.prototype.play = function() {
+	this.playing = true;
+
+	return;
+}
+
+UIScene.prototype.stop = function() {
+	this.playing = false;
+
+	return;
+}
+
+UIScene.prototype.toMeter = function(pixel) {
+	var pixelsPerMeter = this.pixelsPerMeter ? this.pixelsPerMeter : 10;
+
+	return pixel/pixelsPerMeter;
+}
+
+UIScene.prototype.toPixel = function(meter) {
+	var pixelsPerMeter = this.pixelsPerMeter ? this.pixelsPerMeter : 10;
+
+	return Math.round(meter * pixelsPerMeter);
 }
 
 function UISceneCreator() {

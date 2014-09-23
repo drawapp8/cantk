@@ -162,11 +162,12 @@ UIEdit.prototype.getEditorRect = function() {
 	var h = this.getHeight() * scale;
 
 	var rect = {};
-
-	rect.x = x;
-	rect.y = y;
-	rect.w = Math.max(60, w);
-	rect.h = h;
+	
+	scale = UIElement.getMainCanvasScale();
+	rect.x = x / scale.x;
+	rect.y = y / scale.y;
+	rect.w = Math.max(60, w) / scale.x;
+	rect.h = h / scale.y;
 
 	return rect;
 }
@@ -178,7 +179,7 @@ UIEdit.prototype.editText = function(point) {
 		var editor = null;
 		var text = this.getText();
 		var rect = this.getEditorRect();
-		var scale = this.getRealScale();
+		var scale = this.getRealScale() / UIElement.getMainCanvasScale().y;
 		var inputType = this.inputType ? this.inputType : "text";
 
 		editor = cantkShowInput(rect.x, rect.y, rect.w, rect.h);

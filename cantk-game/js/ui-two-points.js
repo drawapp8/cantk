@@ -104,11 +104,11 @@ UITwoPoints.prototype.updateLayoutParams = function() {
 }
 
 UITwoPoints.prototype.hitTest = function(point) {
-	if(distanceBetween(point, this.points[0]) < 20) {
+	if(Math.distanceBetween(point, this.points[0]) < 20) {
 		return 1;
 	}
 
-	if(distanceBetween(point, this.points[1]) < 20) {
+	if(Math.distanceBetween(point, this.points[1]) < 20) {
 		return 2;
 	}
 
@@ -116,7 +116,7 @@ UITwoPoints.prototype.hitTest = function(point) {
 	cp.x = (this.points[0].x + this.points[1].x)>>1;
 	cp.y = (this.points[0].y + this.points[1].y)>>1;
 
-	if(distanceBetween(point, cp) < 30) {
+	if(Math.distanceBetween(point, cp) < 30) {
 		return C_HIT_TEST_MM;
 	}
 

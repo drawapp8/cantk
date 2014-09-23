@@ -25,13 +25,13 @@ UIBox.prototype.initUIBox = function(type, w, h) {
 	this.density = 1;
 	this.friction = 0;
 	this.restitution = 0;
-	this.addEventNames(["onBeginContact", "onEndContact"]);
+	this.addEventNames(["onBeginContact", "onEndContact", "onMoved"]);
 
 	return this;
 }
 
 UIBox.prototype.shapeCanBeChild = function(shape) {
-	return false;
+	return this.children.length===0 && shape.isUIMouseJoint;
 }
 
 UIBox.prototype.paintSelfOnly = function(canvas) {

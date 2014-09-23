@@ -37,7 +37,7 @@ UISprite.prototype.initUISprite = function(type, w, h, bg) {
 	this.setImage("option_image_13", null);
 	this.setImage("option_image_14", null);
 	this.setCanRectSelectable(false, true);
-	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
+	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
 
 
 	return this;
@@ -85,7 +85,7 @@ UISprite.prototype.drawImage =function(canvas) {
 
 	if(image) {
 		var srcRect = this.getImageSrcRect();
-		this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h, srcRect);
+		this.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h, srcRect);
 	}
 
 	return;
@@ -105,7 +105,7 @@ UISprite.prototype.beforePaintChildren = function(canvas) {
 }
 
 UISprite.prototype.shapeCanBeChild = function(shape) {
-	return shape.isUIPhysicsShape;
+	return shape.isUIPhysicsShape || shape.isUIMouseJoint;
 }
 
 function UISpriteCreator() {

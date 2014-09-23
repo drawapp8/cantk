@@ -27,7 +27,7 @@ UIElement.prototype.getFootprints = function(name) {
 	return footPrints;
 }
 
-UIElement.prototype.moveAlongPath = function(name, duration, onDone) {
+UIElement.prototype.moveAlongPath = function(name, duration, enableRotation, onDone) {
 	var d = 0;
 	var dx = 0;
 	var dy = 0;
@@ -57,6 +57,7 @@ UIElement.prototype.moveAlongPath = function(name, duration, onDone) {
 	moveInfo.distances = distances;
 	moveInfo.footPrints = footPrints;
 	moveInfo.totalDistance = totalDistance;
+	moveInfo.enableRotation = enableRotation;
 
 	this.startMove(moveInfo);
 
@@ -75,6 +76,7 @@ UIElement.prototype.startMove = function(moveInfo) {
 	var distances = moveInfo.distances;
 	var footPrints = moveInfo.footPrints;
 	var totalDistance = moveInfo.totalDistance;
+	var enableRotation = moveInfo.enableRotation;
 
 	function moveToNext() {
 		if((index+1) >= moveInfo.footPrints.length) {
@@ -114,7 +116,9 @@ UIElement.prototype.startMove = function(moveInfo) {
 				y = startPoint.y + dy * percent - hh;
 
 				me.setPosition(x, y);
-				me.setRotation(angle);
+				if(enableRotation) {
+					me.setRotation(angle);
+				}
 				me.postRedraw();
 
 				UIElement.setAnimTimer(step);
@@ -136,6 +140,30 @@ UIElement.prototype.startMove = function(moveInfo) {
 	moveToNext();
 
 	return;
+}
+
+UIElement.prototype.callOnMoved = function() {
+	if(!this.handleOnMoved || this.mode === C_MODE_PREVIEW) {
+		var sourceCode = this.events["onMoved"];
+		if(sourceCode) {
+			sourceCode = "this.handleOnMoved = function() {\n" + sourceCode + "\n}\n";
+			try {
+				eval(sourceCode);
+			}catch(e) {
+				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
+			}
+		}
+	}
+
+	if(this.handleOnMoved) {
+		try {
+			this.handleOnMoved();
+		}catch(e) {
+			console.log("this.handleOnMoved:" + e.message);
+		}
+	}
+
+	return true;
 }
 
 UIElement.prototype.callOnBeginContact = function(body) {
@@ -205,8 +233,8 @@ UIElement.prototype.setPosition = function(x, y) {
 	if(this.body) {
 		var p = {};
 
-		p.x = Physics.toMeter(x); 
-		p.y = Physics.toMeter(y); 
+		p.x = Physics.toMeter(x + (this.w >> 1)); 
+		p.y = Physics.toMeter(y + (this.h >> 1)); 
 		this.body.SetPosition(p);
 	}
 
@@ -216,6 +244,8 @@ UIElement.prototype.setPosition = function(x, y) {
 UIElement.prototype.setPositionByBody = function(x, y) {
 	this.x = x;
 	this.y = y;
+
+	this.callOnMoved();
 
 	return;
 }

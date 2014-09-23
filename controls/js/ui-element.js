@@ -193,18 +193,21 @@ UIElement.prototype.onDeinit = function() {
 	return;
 }
 
-UIElement.prototype.init = function() {
-	var i = 0;
-	var iter = null;
+UIElement.prototype.initChildren = function() {
 	var children = this.children;
 	var n = this.children.length;
 
-	this.onInit();
-
-	for(i = 0; i < n; i++) {
-		iter = children[i];
+	for(var i = 0; i < n; i++) {
+		var iter = children[i];
 		iter.init();
 	}
+
+	return;
+}
+
+UIElement.prototype.init = function() {
+	this.onInit();
+	this.initChildren();
 
 	return;
 }
@@ -1077,7 +1080,7 @@ UIElement.prototype.animMove = function(x, y, hint) {
 		if(timePercent < 1 && !el.pointerDown) {
 			el.x = Math.floor(xStart + percent * xRange);
 			el.y = Math.floor(yStart + percent * yRange);
-			setTimeout(animStep, 10);
+			UIElement.setAnimTimer(animStep);
 		}
 		else {
 			el.move(x, y);
@@ -1088,10 +1091,7 @@ UIElement.prototype.animMove = function(x, y, hint) {
 		delete now;
 		el.postRedraw();
 	}
-
-	setTimeout(function() {
-		animStep();
-	}, 5);
+	UIElement.setAnimTimer(animStep);
 
 	return;
 }
@@ -1167,7 +1167,7 @@ UIElement.prototype.animate = function(config) {
 				el.scale = scaleStart + percent * scaleRange;
 			}
 
-			setTimeout(animStep, 10);
+			UIElement.setAnimTimer(animStep);
 		}
 		else {
 			if(xRange || yRange) {
@@ -1195,11 +1195,14 @@ UIElement.prototype.animate = function(config) {
 			delete interpolator;
 		}
 
-		delete now;
 		el.postRedraw();
 	}
 
 	var delay = config.delay;
+	if(el.pointerDown) {
+		delay = delay ? delay : 10;
+	}
+
 	if(delay) {
 		setTimeout(function() {
 			animStep();
@@ -1272,16 +1275,7 @@ UIElement.prototype.onPointerDownNormal = function(point) {
 		this.onPointerDownRunning(p, false);
 	}
 
-	var view = this.view;
-
-	if(this.isUIScrollView) {
-		setTimeout(function() {
-			view.postRedraw();
-		}, 100);
-	}
-	else {
-		view.postRedraw();
-	}
+	this.postRedraw();
 
 	return true;
 }
@@ -1678,7 +1672,7 @@ UIElement.prototype.addChildWithJson = function(jsShape, index) {
 		this.addShape(shape, false, null, index);
 	}
 
-	return;
+	return shape;
 }
 
 UIElement.prototype.setAlwaysOnTop = function(value) {
@@ -1735,7 +1729,11 @@ UIElement.prototype.addShape = function(shape, offsetIt, point, index) {
 			shape.notifyDeviceConfigChanged(oldConfig, config);
 
 			if(lcdDensity !== oldConfig.lcdDensity) {
+				var x = shape.x;
+				var y = shape.y;
 				shape.scaleForDensity(sizeScale, config.lcdDensity, true);
+				shape.x = x;
+				shape.y = y;
 			}
 		}
 	}
@@ -2150,9 +2148,9 @@ UIElement.prototype.drawImageAt = function(canvas, image, display, x, y, dw, dh,
 	var w = imageWidth;
 	var h = imageHeight;
 
-	if((display === CANTK_IMAGE_DISPLAY_CENTER) && (imageWidth > dw || imageHeight > dh)) {
-		display = CANTK_IMAGE_DISPLAY_AUTO;
-	}
+//	if((display === CANTK_IMAGE_DISPLAY_CENTER) && (imageWidth > dw || imageHeight > dh)) {
+//		display = CANTK_IMAGE_DISPLAY_AUTO;
+//	}
 
 	switch(display) {
 		case CANTK_IMAGE_DISPLAY_CENTER: {
@@ -2268,7 +2266,8 @@ UIElement.prototype.afterDrawIcon = function(canvas) {
 
 UIElement.prototype.getLockImage = function() {
 	if(!this.aLockImage) {
-		this.aLockImage = new CanTkImage("/drawapp8/images/lock.png");
+		this.aLockImage = new CanTkImage();
+		this.aLockImage.setImageSrc("/drawapp8/images/lock.png");
 	}
 
 	if(this.aLockImage) {
@@ -2445,9 +2444,7 @@ UIElement.prototype.updateHighlightTransform = function() {
 			this.offsetY = half + 0.5 * delta * factor;
 		}
 
-		setTimeout(function() {
-			me.postRedraw();
-		}, 10);
+		UIElement.setAnimTimer(function() {me.postRedraw();});
 	}
 
 	return;
@@ -2989,8 +2986,10 @@ var CANTK_IMAGE_DISPLAY_SCALE  = 3;
 var CANTK_IMAGE_DISPLAY_AUTO = 4;
 var CANTK_IMAGE_DISPLAY_DEFAULT = 5;
 var CANTK_IMAGE_DISPLAY_SCALE_KEEP_RATIO  = 6;
+var CANTK_IMAGE_DISPLAY_TILE_V = 7;
+var CANTK_IMAGE_DISPLAY_TILE_H = 8;
 
-var CANTK_IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)"];
+var CANTK_IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)", "vtile", "htile"];
 
 var C_X_FIX_LEFT = 0;
 var C_X_FIX_RIGHT = 1;
@@ -3150,9 +3149,16 @@ UIElement.prototype.setImage = function(type, src) {
 		image.setImageSrc(src);
 	}
 	else {
-		image = new CanTkImage(src, function(img) {
+		image = new CanTkImage();
+
+		image.setImageSrc(src, function(img) {
 			if(src && src.indexOf("#") >= 0) {
-				me.setImage("real-image", img.src);
+				if(img) {
+					me.setImage("real-image", img.src);
+				}
+				else {
+					console.log("load failed src:" + src);
+				}
 			}
 
 			me.postRedraw();
@@ -3509,6 +3515,14 @@ UIElement.prototype.autoScaleFontSize = function(scale) {
 }
 
 
+UIElement.prototype.getRelayoutWidth = function() {
+	return this.getWidth(true);
+}
+
+UIElement.prototype.getRelayoutHeight = function() {
+	return this.getHeight(true);
+}
+
 UIElement.prototype.relayout = function() {
 	if(this.disableRelayout) {
 		return;
@@ -3535,8 +3549,8 @@ UIElement.prototype.relayout = function() {
 	var h = 0;
 	var x = 0;
 	var y = 0;
-	var wParent = p.getWidth(true);
-	var hParent = p.getHeight(true);
+	var wParent = p.getRelayoutWidth();
+	var hParent = p.getRelayoutHeight();
 	var hMargin = p.getHMargin();
 	var vMargin = p.getVMargin();
 
@@ -3873,7 +3887,7 @@ UIElement.prototype.getDeviceConfig = function() {
 	return null;
 }
 
-UIElement.prototype.isOnTopWindow = function() {
+UIElement.prototype.isTopWindow = function() {
 	var win = this.getWindow();
 	var windowManager = this.getWindowManager();
 	var curWin = windowManager.getCurrentFrame();
@@ -4456,17 +4470,17 @@ UIElement.prototype.addMovementForVelocityTracker = function() {
 	return;
 }
 
-UIElement.prototype.animShow = function(animHint) {
+UIElement.prototype.animShow = function(animHint, onAnimDone) {
 	if(!this.visible) {
-		animateUIElement(this, animHint);
+		animateUIElement(this, animHint, onAnimDone);
 	}
 
 	return;
 }
 
-UIElement.prototype.animHide = function(animHint) {
+UIElement.prototype.animHide = function(animHint, onAnimDone) {
 	if(this.isVisible()) {
-		animateUIElement(this, animHint);
+		animateUIElement(this, animHint, onAnimDone);
 	}
 	else {
 		this.setVisible(false);
@@ -4728,3 +4742,21 @@ UIElement.setAnimTimer = function(func) {
 	return;
 }
 
+UIElement.getMainCanvasScale = function() {
+	if(!UIElement.canvasScale) {
+		var xScale = 1;
+		var yScale = 1;
+		UIElement.canvasScale = {};
+		var mainCanvas = document.getElementById("main_canvas");
+		
+		if(mainCanvas.style.width && mainCanvas.style.height) {
+			xScale = mainCanvas.width/parseFloat(mainCanvas.style.width);
+			yScale = mainCanvas.height/parseFloat(mainCanvas.style.height);
+		}
+
+		UIElement.canvasScale.x = xScale;
+		UIElement.canvasScale.y = yScale;
+	}
+
+	return UIElement.canvasScale;
+}

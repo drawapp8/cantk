@@ -20,12 +20,18 @@ var browser = {
 		iPad: u.indexOf('iPad') > -1, 
 		blackberry: u.indexOf('BlackBerry') > -1, 
 		firefoxMobile:u.indexOf('Mobile') > -1 && u.indexOf('Firefox') > -1,
+		firefoxOS:u.indexOf('Mobile') > -1 && u.indexOf('Firefox') > -1 && u.indexOf('Android') < 0,
 		windowPhone: u.indexOf('Windows Phone') > -1,
 		webkit: u.indexOf("WebKit") > -1,
-		weixin: u.indexOf("MicroMessenger") >= 0
+		weixin: u.indexOf("MicroMessenger") >= 0,
+		qq: u.indexOf("QQ") >= 0
 	};
 	}()
 } 
+
+function isQQ() {
+	return browser.versions.qq;
+}
 
 function isWeiXin() {
 	return browser.versions.weixin;
@@ -92,7 +98,7 @@ function isFirefoxMobile() {
 }
 
 function isFirefoxOS () {
-	return browser.versions.firefoxMobile;
+	return browser.versions.firefoxOS;
 }
 
 function isPhoneGap() {

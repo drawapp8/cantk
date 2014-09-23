@@ -565,7 +565,7 @@ function drawRoundRect(canvas, w, h, r, which) {
 	return;
 }
 
-function getViewPort() {
+function cantkGetViewPort() {
 	 var viewportwidth;
 	 var viewportheight;
 		
@@ -589,7 +589,7 @@ function getViewPort() {
 }
 
 if(!window.orgViewPort) {
-	window.orgViewPort = getViewPort();
+	window.orgViewPort = cantkGetViewPort();
 	//console.log("OrgViewPort: " + window.orgViewPort.width + "x" + window.orgViewPort.height);
 }
 
@@ -935,6 +935,11 @@ function cantkInitViewPort(scale) {
 	var meta = document.createElement('meta');
 	var head = document.getElementsByTagName('head')[0];
 	
+	if(window.devicePixelRatio && window.devicePixelRatio > 2.0) {
+		window.realDevicePixelRatio = window.devicePixelRatio;
+		window.devicePixelRatio = 2;
+	}
+
 	var defaultRatio = window.devicePixelRatio ? window.devicePixelRatio : 1;
 
 	scale = scale ? scale : (1/defaultRatio);
@@ -945,16 +950,16 @@ function cantkInitViewPort(scale) {
 	}
 	else if(isAndroid()) {
 	  var ver = browserVersion();
-	  if(ver < 535.00 || isWeiXin()) {
+	  if(ver < 535.00 || isWeiXin() || isQQ()) {
+	  	window.devicePixelRatio = window.realDevicePixelRatio;
 	  	value = 'target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
 	  }
-	  else {
-	  	//target-densitydpi is not supported any longer in new version.
+	  else { //target-densitydpi is not supported any longer in new version.
 	  	value =  'width=device-width, ' + scaleValues; 
 	  }
 	}
 	else if(isFirefoxMobile()) {
-      var vp = getViewPort();
+      var vp = cantkGetViewPort();
 	  value =  'width='+vp.width+', ' + scaleValues; 
 	}
 	else {
@@ -966,16 +971,6 @@ function cantkInitViewPort(scale) {
 
 	console.log("viewport: " + value);
 	head.appendChild(meta);
-
-//	if(window.orgViewPort) {
-//		var vp = getViewPort();
-//		var ratio = vp.width/window.orgViewPort.width;
-//		
-//		console.log("ratio: " + ratio);
-//		if(!window.devicePixelRatio) {
-//			window.devicePixelRatio = ratio;
-//		}
-//	}
 
 	return;
 }

@@ -26,7 +26,7 @@ function cantkDetectDeviceConfig() {
 	else if(isIPhone () || isIPad()) {
 		deviceConfig.platform = "iphone";
 	}
-	else if(isFirefoxMobile()) {
+	else if(isFirefoxOS()) {
 		deviceConfig.platform = "firefox";
 	}
 	else if(isWinPhone()) {
@@ -53,7 +53,6 @@ function cantkDetectDeviceConfig() {
 	}
 	else if(!window.devicePixelRatio) {
 		var minSize = Math.min(window.orgViewPort.width, window.orgViewPort.height);
-
 		if(minSize > 600) {
 			deviceConfig.lcdDensity = "xhdpi";
 		}
@@ -65,7 +64,7 @@ function cantkDetectDeviceConfig() {
 		deviceConfig.lcdDensity = "ldpi";
 	}
 
-	if(isFirefoxMobile()) {
+	if(isFirefoxOS()) {
 		deviceConfig.lcdDensity = "mdpi";
 	}
 

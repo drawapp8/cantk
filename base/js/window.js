@@ -39,7 +39,7 @@ function Window(manager, x, y, w, h) {
 	}
 	
 	this.moveToCenter = function() {
-		var view = getViewPort();
+		var view = cantkGetViewPort();
 		var sw = Math.min(this.manager.w, view.width);
 		var sh = Math.min(this.manager.h, view.height);
 		

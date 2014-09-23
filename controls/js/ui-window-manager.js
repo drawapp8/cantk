@@ -23,8 +23,17 @@ UIWindowManager.prototype.initUIWindowManager = function(type) {
 	this.progressTextColor = "Green";
 	this.loadingTextColor = "White";
 	this.loadingBgColor = "Black";
+	this.setImage("force-landscape-tips", null);
+	this.setImage("force-portrait-tips", null);
 
 	return this;
+}
+
+UIWindowManager.prototype.onFromJsonDone = function() {
+	this.designWidth = this.w;
+	this.designHeight = this.h;
+
+	return;
 }
 
 UIWindowManager.prototype.beforeAddShapeIntoChildren = function(shape) {
@@ -133,6 +142,46 @@ UIWindowManager.prototype.callOnUnload = function() {
 	return true;
 }
 
+UIWindowManager.prototype.resize = function(w, h) {
+	if(this.mode === C_MODE_RUNNING && this.fixResolution && isMobile()) {
+		var canvas = this.view.getCanvas();
+
+		var screenWidth = canvas.width;
+		var screenHeight = canvas.height;
+		var designWidth = this.designWidth;
+		var designHeight = this.designHeight;
+
+		if((screenWidth > screenHeight && designWidth > designHeight)
+			|| (screenWidth < screenHeight && designWidth < designHeight)) {
+			var scale = designWidth/screenWidth;
+
+			canvas.style.width = screenWidth + "px";
+			canvas.style.height = screenHeight + "px";
+			
+			canvas.width = designWidth;
+			canvas.height = screenHeight * scale;
+		}
+		else {
+			canvas.style.width = screenWidth + "px";
+			canvas.style.height = screenHeight + "px";
+			
+			canvas.width = screenWidth;
+			canvas.height = screenHeight;
+		}
+
+		w = canvas.width;
+		h = canvas.height;
+	
+		console.log("Canvas Size: w =" + canvas.width + " h=" + canvas.height);
+		console.log("Canvas Style Size: w =" + canvas.style.width + " h=" + canvas.style.height);
+	}
+
+	this.setSizeLimit(w, h, w, h);
+	UIElement.prototype.call(this);
+
+	return;
+}
+
 UIWindowManager.prototype.systemInit = function() {
 	this.callOnLoad();
 	console.log("systemInit");
@@ -149,21 +198,6 @@ UIWindowManager.prototype.systemExit = function() {
 	console.log("systemExit");
 
 	return;
-}
-
-function preparseBackendCanvas(leftWin, RightWin) {
-	var w = leftWin.w;
-	var h = leftWin.h;
-	var backendCanvas = BackendCanvasGet(2 * w, h);
-	var context = backendCanvas.getContext("2d");
-	context.clearRect(0, 0, 2*w, h);
-	context.save();
-	leftWin.paint(context);
-	context.translate(w, 0);
-	RightWin.paint(context);
-	context.restore();
-
-	return backendCanvas;
 }
 
 UIWindowManager.prototype.findBestFitWindowByName = function(name) {
@@ -275,6 +309,7 @@ UIWindowManager.prototype.openWindow = function(name, onClose, closeCurrent, ini
 		return false;
 	}
 	
+	newWin.relayout();	
 	newWin.openPending = true;
 	newWin.initData = initData;
 	newWin.onClose = onClose;
@@ -311,8 +346,8 @@ UIWindowManager.prototype.openPopupWindow = function(newWin, closeCurrent) {
 		curWin.callOnSwitchToBack();
 		if(newWin.isAnimationEnabled()) {
 			var p = this.getPositionInScreen();
-			var animation = animationCreate(newWin.getAnimationName(true)); 
-			var backendCanvas = preparseBackendCanvas(curWin, newWin);
+			var animation = AnimationFactory.create(newWin.getAnimationName(true)); 
+			var backendCanvas = UIFrames.preparseBackendCanvas(curWin, newWin);
 			animation.setScale(this.getRealScale());
 			animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, openPopupWindow);
 			animation.setRectOfFront(newWin.x, newWin.y, newWin.w, newWin.h);
@@ -352,8 +387,8 @@ UIWindowManager.prototype.openNormalWindow = function(newWin, closeCurrent) {
 		curWin.callOnSwitchToBack();
 		if(newWin.isAnimationEnabled()) {
 			var p = this.getPositionInScreen();
-			var animation = animationCreate(newWin.getAnimationName(true)); 
-			var backendCanvas = preparseBackendCanvas(curWin, newWin);
+			var animation = AnimationFactory.create(newWin.getAnimationName(true)); 
+			var backendCanvas = UIFrames.preparseBackendCanvas(curWin, newWin);
 			animation.setScale(this.getRealScale());
 			animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, closeAndOpenWindow);
 			animation.run();
@@ -396,8 +431,8 @@ UIWindowManager.prototype.backToHomeWin = function() {
 	
 	if(curWin.isAnimationEnabled()) {
 		var p = this.getPositionInScreen();
-		var animation = animationCreate(curWin.getAnimationName(false)); 
-		var backendCanvas = preparseBackendCanvas(lastWin, curWin);
+		var animation = AnimationFactory.create(curWin.getAnimationName(false)); 
+		var backendCanvas = UIFrames.preparseBackendCanvas(lastWin, curWin);
 		animation.setScale(this.getRealScale());
 		animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, function() {});
 		animation.run();
@@ -442,10 +477,10 @@ UIWindowManager.prototype.closeCurrentPopupWindow = function(popupWin, retInfo, 
 
 		if(popupWin.isAnimationEnabled() && !syncClose) {
 			var p = this.getPositionInScreen();
-			var animation = animationCreate(popupWin.getAnimationName(false)); 
+			var animation = AnimationFactory.create(popupWin.getAnimationName(false)); 
 
 			curWin.removePopupWindow(popupWin);
-			var backendCanvas = preparseBackendCanvas(curWin, popupWin);
+			var backendCanvas = UIFrames.preparseBackendCanvas(curWin, popupWin);
 			curWin.setPopupWindow(popupWin);
 		
 			animation.setScale(this.getRealScale());
@@ -491,8 +526,8 @@ UIWindowManager.prototype.closeCurrentNormalWindow = function(curWin, retInfo, s
 	}
 	else if(curWin.isAnimationEnabled()) {
 		var p = this.getPositionInScreen();
-		var animation = animationCreate(curWin.getAnimationName(false)); 
-		var backendCanvas = preparseBackendCanvas(lastWin, curWin);
+		var animation = AnimationFactory.create(curWin.getAnimationName(false)); 
+		var backendCanvas = UIFrames.preparseBackendCanvas(lastWin, curWin);
 		animation.setScale(this.getRealScale());
 		animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, showLastWindow);
 		animation.run();
@@ -574,7 +609,59 @@ UIWindowManager.prototype.scaleForDensity = function(sizeScale, lcdDensity, recu
 	return;
 }
 
+UIWindowManager.prototype.resize = function(w, h) {
+	if(this.mode === C_MODE_RUNNING && this.fixResolution && isMobile()) {
+		var canvas = this.view.getCanvas();
+
+		var screenWidth = canvas.width;
+		var screenHeight = canvas.height;
+		var designWidth = this.designWidth;
+		var designHeight = this.designHeight;
+
+		if((screenWidth > screenHeight && designWidth > designHeight)
+			|| (screenWidth < screenHeight && designWidth < designHeight)) {
+			var scale = designWidth/screenWidth;
+
+			canvas.style.width = screenWidth + "px";
+			canvas.style.height = screenHeight + "px";
+			
+			canvas.width = designWidth;
+			canvas.height = screenHeight * scale;
+
+			var xInputScale = canvas.width/screenWidth;
+			var yInputScale = canvas.height/screenHeight;
+
+			WindowManager.setInputScale(xInputScale, yInputScale);
+		}
+		else {
+			canvas.style.width = screenWidth + "px";
+			canvas.style.height = screenHeight + "px";
+			
+			canvas.width = screenWidth;
+			canvas.height = screenHeight;
+			WindowManager.setInputScale(1, 1);
+		}
+
+		w = canvas.width;
+		h = canvas.height;
+	
+		console.log("Canvas Size: w =" + canvas.width + " h=" + canvas.height);
+		console.log("Canvas Style Size: w =" + canvas.style.width + " h=" + canvas.style.height);
+	}
+
+	this.setSizeLimit(w, h, w, h);
+	UIElement.prototype.resize.call(this, w, h);
+
+	return;
+}
+
 UIWindowManager.prototype.setDeviceConfig = function(deviceConfig) {
+	if(this.fixResolution) {
+		this.oldConfig = this.deviceConfig;
+
+		return;
+	}
+
 	var oldConfig = this.deviceConfig;
 	
 	this.oldConfig = this.deviceConfig;
@@ -609,7 +696,7 @@ UIWindowManager.prototype.getDeviceConfig = function() {
 
 UIWindowManager.prototype.paintLoadingStatus = function(canvas, percent, text) {
 	var text = "Loading...";
-	var percent = CanTkImage.getLoadProgress();
+	var percent = ResLoader.getPercent();
 	
 	var w = this.w;
 	var h = this.h;
@@ -644,10 +731,31 @@ UIWindowManager.prototype.paintLoadingStatus = function(canvas, percent, text) {
 	return;
 }
 
-UIFrames.prototype.paintChildren = function(canvas) {
+UIWindowManager.prototype.paintChildren = function(canvas) {
+	if(this.mode == C_MODE_RUNNING) {
+		if(this.forcePortrait && this.w > this.h) {
+			var image = this.getHtmlImageByType("force-portrait-tips");	
+
+			canvas.fillStyle = this.style.fillColor;
+			canvas.fillRect(0, 0, this.w, this.h);	
+			this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h);
+
+			return;
+		}
+		else if(this.forceLandscape && this.w < this.h) {
+			var image = this.getHtmlImageByType("force-landscape-tips");	
+			
+			canvas.fillStyle = this.style.fillColor;
+			canvas.fillRect(0, 0, this.w, this.h);	
+			this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h);
+
+			return;
+		}
+	}
+
 	if(this.mode === C_MODE_RUNNING && this.showLoadingProgress) {
 		var me = this;
-		var percent = CanTkImage.getLoadProgress();
+		var percent = ResLoader.getPercent();
 
 		if(percent < 95) {
 			setTimeout(function() {

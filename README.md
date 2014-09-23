@@ -51,7 +51,7 @@ Documentation
 
 [Application Programming Interface](https://github.com/drawapp8/cantk/wiki/English-API)
 
-[Chinaese Introduction](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
+[Chinese Introduction](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
 
 QQ Groups: html5apps
 

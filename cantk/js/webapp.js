@@ -21,13 +21,13 @@ function webappInit(type) {
 }
 
 function WebApp(type) {
-	var args = ["idraw_canvas", type];
+	var args = ["main_canvas", type];
 	AppBase.apply(this, args);
 
 	webappInit(type);
 
 	this.onSizeChanged = function() {
-		var viewPort = getViewPort();
+		var viewPort = cantkGetViewPort();
 
 		if(viewPort.width === this.viewPort.width && viewPort.height === this.viewPort.height) {
 			console.log("onSizeChanged: size is not changed.");
@@ -61,7 +61,7 @@ function WebApp(type) {
 		return;
 	}
 
-	this.viewPort = getViewPort();
+	this.viewPort = cantkGetViewPort();
 
 	return this;
 }
@@ -547,7 +547,7 @@ function AppView(parent, x, y, w, h, app) {
 		this.device = device = ShapeFactoryGet().createShape(js.type, C_CREATE_FOR_PROGRAM);
 		device.fromJson(js);
 
-		var viewPort = getViewPort();
+		var viewPort = cantkGetViewPort();
 		if(device.h < viewPort.height && device.w < viewPort.width) {
 			y = (viewPort.height - device.h)/2;
 			document.body.style.overflow = "hidden";
@@ -572,7 +572,6 @@ function AppView(parent, x, y, w, h, app) {
 	
 	this.resizeWindowManager = function(w, h) {
 		if(this.windowManager) {
-			this.windowManager.setSizeLimit(w, h, w, h);
 			this.windowManager.resize(w, h);
 			console.log("this.windowManager.x=" + this.windowManager.x);
 			console.log("this.windowManager.y=" + this.windowManager.y);
@@ -671,12 +670,13 @@ function AppView(parent, x, y, w, h, app) {
 			newConfig.lcdDensity = wm.deviceConfig.lcdDensity;
 		}
 
-		wm.setDeviceConfig(newConfig);
-		wm.setSizeLimit(w, h, w, h);
-		wm.setSize(w, h);
-		wm.move(0, 0);
-		wm.setMode(C_MODE_RUNNING, true);
 		this.addShape(wm);
+		
+		wm.setDeviceConfig(newConfig);
+		wm.setMode(C_MODE_RUNNING, true);
+		wm.move(0, 0);
+		wm.resize(w, h);
+
 		this.runApp(wm);
 		
 		this.windowManager = wm;	
