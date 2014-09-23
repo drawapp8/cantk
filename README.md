@@ -33,13 +33,13 @@ Features
 
 6. Game engine integration, cocos2d, panda.js, phaser.js, pixi.js, etc.
 
-7. Easy to use, you can create application with 画APP吧(www.drawapp8.com) by drag & drop.
+7. Easy to use, you can create application with Gamebuilder(gamebuilder.duapp.com)/画APP吧(www.drawapp8.com) by drag & drop.
 
 8. Easy to extension, there are several ways to extend existed controls to get different appearance or function.
 
 9. Support the main stream mobile platform, iOS, android, windows phone, firefox, blackberry, tizen, etc.
 
-Tools
+Online Design Tools
 ==============================================
 
 [Game Builder For CanTK](http://gamebuilder.duapp.com/)
