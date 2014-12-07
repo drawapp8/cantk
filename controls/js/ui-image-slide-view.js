@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Image Slide View.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 function UIImageSlideView() {
@@ -19,7 +19,7 @@ UIImageSlideView.prototype.initUIImageSlideView = function(type, w, h) {
 	
 	this.offset = 0;
 	this.addEventNames(["onChanged"]);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	imageSlideViewInitCustomProp(this);
 
 	return this;
@@ -31,7 +31,7 @@ UIImageSlideView.prototype.onInit = function() {
 	this.currFrame = 0;
 
 	function nextFrame() {
-		if(slideview.mode != C_MODE_EDITING && slideview.isVisible()) {
+		if(slideview.mode != Shape.MODE_EDITING && slideview.isVisible()) {
 			var duration = slideview.getFrameDuration();
 			
 			slideview.postRedraw();
@@ -80,7 +80,7 @@ UIImageSlideView.prototype.setCurrentFrame = function(currFrame) {
 	this.currFrame = (currFrame + this.userImages.length)%this.userImages.length;
 	this.postRedraw();
 
-	this.callOnChanged(this.currFrame);
+	this.callOnChangedHandler(this.currFrame);
 
 	return;
 }
@@ -299,15 +299,15 @@ UIImageSlideView.prototype.getNextFrame = function() {
 UIImageSlideView.prototype.drawOneImage = function(canvas, image) {
 	var fillColor = this.style.fillColor;
 
-	if(this.images.display === CANTK_IMAGE_DISPLAY_SCALE) {
+	if(this.images.display === UIElement.IMAGE_DISPLAY_SCALE) {
 		canvas.drawImage(image, 0, 0, image.width, image.height, 0, 0, this.w, this.h);
 	}
-	else if(this.images.display === CANTK_IMAGE_DISPLAY_SCALE_KEEP_RATIO) {
+	else if(this.images.display === UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO) {
 		var rect = {x:0, y:0};
 		rect.w = image.width;
 		rect.h = image.height;
 
-		this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_SCALE_KEEP_RATIO, 0, 0, this.w, this.h, rect);
+		this.drawImageAt(canvas, image, UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO, 0, 0, this.w, this.h, rect);
 	}
 	else {
 		UIImageView.drawImageAtCenter(canvas, image, 0, 0, this.w, this.h, true, fillColor);

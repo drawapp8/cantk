@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Basic sprite for game. 
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,9 +18,9 @@ UISprite.prototype.initUISprite = function(type, w, h, bg) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setImage("option_image_0", null);
 	this.setImage("option_image_1", null);
 	this.setImage("option_image_2", null);
@@ -37,41 +37,41 @@ UISprite.prototype.initUISprite = function(type, w, h, bg) {
 	this.setImage("option_image_13", null);
 	this.setImage("option_image_14", null);
 	this.setCanRectSelectable(false, true);
-	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
+	this.addEventNames(["onUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
 
 
 	return this;
 }
 
 UISprite.prototype.afterChildAppended = function(shape) {
-	shape.xAttr = C_X_CENTER_IN_PARENT;
-	shape.yAttr = C_Y_MIDDLE_IN_PARENT;
+	shape.xAttr = UIElement.X_CENTER_IN_PARENT;
+	shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
 
 	return;
 }
 
 UISprite.prototype.setValue = function(value) {
-	this.setImage(CANTK_IMAGE_DEFAULT, value);
+	this.setImage(UIElement.IMAGE_DEFAULT, value);
 
 	return;
 }
 
 UISprite.prototype.setImageSrc = function(value) {
-	this.setImage(CANTK_IMAGE_DEFAULT, value);
+	this.setImage(UIElement.IMAGE_DEFAULT, value);
 
 	return;
 }
 
 UISprite.prototype.getImageSrc = function(type) {
-	return this.getImageSrcByType(type ? type : CANTK_IMAGE_DEFAULT);
+	return this.getImageSrcByType(type ? type : UIElement.IMAGE_DEFAULT);
 }
 
 UISprite.prototype.getHtmlImage = function() {
-	return this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	return this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 }
 
 UISprite.prototype.getImageSrcRect = function() {
-	var image = this.getImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getImageByType(UIElement.IMAGE_DEFAULT);
 	if(image) {
 		return image.getImageRect();
 	}
@@ -105,8 +105,10 @@ UISprite.prototype.beforePaintChildren = function(canvas) {
 }
 
 UISprite.prototype.shapeCanBeChild = function(shape) {
-	return shape.isUIPhysicsShape || shape.isUIMouseJoint;
+	return shape.isUIPhysicsShape || shape.isUIMouseJoint || shape.isUISprite || shape.isUIStatus;
 }
+
+UISprite.prototype.onSized = UIImage.prototype.onSized;
 
 function UISpriteCreator() {
 	var args = ["ui-sprite", "ui-sprite", null, 1];

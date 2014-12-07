@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Vertical ScrollView
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -28,7 +28,7 @@ UIVScrollView.prototype.needScroll = function(point) {
 	var dx = Math.abs(this.getMoveAbsDeltaX());
 	var dy = Math.abs(this.getMoveAbsDeltaY());
 	
-	return (dy > 50 && dy > dx) || (dy > 50 && this.mode != C_MODE_EDITING);
+	return (dy > 50 && dy > dx) || (dy > 50 && this.mode != Shape.MODE_EDITING);
 }
 
 UIVScrollView.prototype.getScrolledSize = function() {
@@ -62,7 +62,7 @@ UIVScrollView.prototype.getScrollRange = function() {
 		 range = this.h;
 	}
 
-	var n = (this.mode === C_MODE_EDITING) ? this.h : 10;
+	var n = (this.mode === Shape.MODE_EDITING) ? this.h : 10;
 
 	range = Math.ceil(range/n) * n;
 
@@ -70,16 +70,16 @@ UIVScrollView.prototype.getScrollRange = function() {
 }
 
 UIVScrollView.prototype.fixChildPosition = function(child) {
-	if(child.widthAttr === C_WIDTH_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT) {
 		child.x = this.hMargin;
 	}
 
-	if(child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		child.y = this.offset + this.vMargin;
-		child.heightAttr = C_HEIGHT_SCALE;
+		child.heightAttr = UIElement.HEIGHT_SCALE;
 	}
 	
-	if(child.widthAttr === C_WIDTH_FILL_PARENT && child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT && child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		child.setUserMovable(false);
 	}
 

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  View Page (AKA Tab Control)
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -19,9 +19,9 @@ UIViewPager.prototype.initUIViewPager = function(type) {
 
 	this.current = 0;
 	this.setDefSize(200, 200);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.widthAttr = C_WIDTH_FILL_PARENT;
-	this.heightAttr = C_HEIGHT_FILL_PARENT;
+	this.setTextType(Shape.TEXT_NONE);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT;
+	this.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 
 	return this;
 }
@@ -113,7 +113,7 @@ UIViewPager.prototype.needShowIndicator = function() {
 		return false;
 	}
 
-	if(this.mode === C_MODE_EDITING || this.showIndicator) {
+	if(this.mode === Shape.MODE_EDITING || this.showIndicator) {
 		return true;
 	}
 

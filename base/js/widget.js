@@ -3,34 +3,10 @@
  * Author:	Li XianJing <xianjimli@hotmail.com>
  * Brief: widget is base class of all ui element.
  * 
- * Copyright (c) 2011 - 2014	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
  * 
  */
  
-var C_WIDGET_STATE_NORMAL		 = 0;
-var C_WIDGET_STATE_ACTIVE		 = 1;
-var C_WIDGET_STATE_OVER			 = 2;
-var C_WIDGET_STATE_INSENSITIVE   = 3;
-var C_WIDGET_STATE_NR			 = 4;
- 
-var C_WIDGET_TYPE_NONE = 0;
-var C_WIDGET_TYPE_WINDOW = 1;
-var C_WIDGET_TYPE_DIALOG = 2;
-var C_WIDGET_TYPE_MENU_BAR = 3;
-var C_WIDGET_TYPE_TOOL_BAR = 4;
-var C_WIDGET_TYPE_MENU_ITEM = 5;
-var C_WIDGET_TYPE_MENU_BUTTON = 6;
-var C_WIDGET_TYPE_CONTEXT_MENU_BAR=7;
-var C_WIDGET_TYPE_MENU = 8;
-var C_WIDGET_TYPE_POPUP = 9;
-var C_WIDGET_TYPE_HBOX = 10;
-var C_WIDGET_TYPE_VBOX = 11;
-var C_WIDGET_TYPE_GRID = 12;
-var C_WIDGET_TYPE_USER = 13;
-var C_WIDGET_TYPE_NR = 14;
-
-var C_MENU_ITEM_HEIGHT = 40;
-
 function Widget(parent, x, y, w, h) {
 	this.id    = 0;
 	this.text  = "";
@@ -41,7 +17,7 @@ function Widget(parent, x, y, w, h) {
 	this.insensitive = 0;
 	this.parent = parent;
 	this.rect = new Rect(x, y, w, h);
-	this.state = C_WIDGET_STATE_NORMAL;
+	this.state = Widget.STATE_NORMAL;
 	this.point = new Point(0, 0);	
 	this.children = new Array();
 	this.theme = CanTkTheme.get(this.type);
@@ -86,6 +62,14 @@ function Widget(parent, x, y, w, h) {
 		return this.getTopWindow().manager;
 	}
 	
+	this.getFrameRate = function() {
+		return this.getManager().getFrameRate();
+	}
+	
+	this.showFPS = function(maxFpsMode) {
+		return this.getManager().showFPS(maxFpsMode);
+	}
+
 	this.isPointerDown = function() {
 		return this.getManager().isPointerDown();
 	}
@@ -257,11 +241,11 @@ function Widget(parent, x, y, w, h) {
 		this.enable = value;
 		
 		if(!value) {
-			this.state = C_WIDGET_STATE_INSENSITIVE;
+			this.state = Widget.STATE_INSENSITIVE;
 		}
 		else {
-			if(this.state === C_WIDGET_STATE_INSENSITIVE) {
-				this.state = C_WIDGET_STATE_NORMAL;
+			if(this.state === Widget.STATE_INSENSITIVE) {
+				this.state = Widget.STATE_NORMAL;
 			}
 		}
 		
@@ -385,7 +369,7 @@ function Widget(parent, x, y, w, h) {
 		for(var i = 0; i < this.children.length; i++) {
 			child = this.children[i];
 
-			if(child.state === C_WIDGET_STATE_OVER) {
+			if(child.state === Widget.STATE_OVER) {
 				focusChild = child;
 			}
 			else {
@@ -457,8 +441,8 @@ function Widget(parent, x, y, w, h) {
 	this.onPointerDown = function(point) {
 		 this.getTopWindow().grab(this);
 
-		 if(this.state !== C_WIDGET_STATE_INSENSITIVE) {
-		 	this.state = C_WIDGET_STATE_ACTIVE;
+		 if(this.state !== Widget.STATE_INSENSITIVE) {
+		 	this.state = Widget.STATE_ACTIVE;
 		 	this.postRedraw();
 		 }
 
@@ -472,11 +456,11 @@ function Widget(parent, x, y, w, h) {
 	}
 
 	this.onPointerUp = function(point) {
-		if(this.state !== C_WIDGET_STATE_INSENSITIVE) {
-			this.state = C_WIDGET_STATE_NORMAL;
+		if(this.state !== Widget.STATE_INSENSITIVE) {
+			this.state = Widget.STATE_NORMAL;
 		}
 		this.getTopWindow().ungrab();
-		if(this.listener && this.state !== C_WIDGET_STATE_INSENSITIVE) {
+		if(this.listener && this.state !== Widget.STATE_INSENSITIVE) {
 			this.listener(this);
 		}
 		this.postRedraw();
@@ -501,3 +485,24 @@ function Widget(parent, x, y, w, h) {
 	return this;
 }
 
+Widget.STATE_NORMAL		 = 0;
+Widget.STATE_ACTIVE		 = 1;
+Widget.STATE_OVER			 = 2;
+Widget.STATE_INSENSITIVE   = 3;
+Widget.STATE_NR			 = 4;
+Widget.TYPE_NONE = 0;
+Widget.TYPE_WINDOW = 1;
+Widget.TYPE_DIALOG = 2;
+Widget.TYPE_MENU_BAR = 3;
+Widget.TYPE_TOOL_BAR = 4;
+Widget.TYPE_MENU_ITEM = 5;
+Widget.TYPE_MENU_BUTTON = 6;
+Widget.TYPE_CONTEXT_MENU_BAR=7;
+Widget.TYPE_MENU = 8;
+Widget.TYPE_POPUP = 9;
+Widget.TYPE_HBOX = 10;
+Widget.TYPE_VBOX = 11;
+Widget.TYPE_GRID = 12;
+Widget.TYPE_USER = 13;
+Widget.TYPE_NR = 14;
+Widget.MENU_ITEM_HEIGHT = 40;

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Circle Layout
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -28,9 +28,9 @@ UICircleLayout.prototype.initUICircleLayout = function(type, w, h, img) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, img);
-	this.images.display = CANTK_IMAGE_DISPLAY_SCALE;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, img);
+	this.images.display = UIElement.IMAGE_DISPLAY_SCALE;
 	this.setCanRectSelectable(false, false);
 	this.addEventNames(["onInit"]);
 	this.origin =  UICircleLayout.O_CENTER;
@@ -48,7 +48,7 @@ UICircleLayout.prototype.shapeCanBeChild = function(shape) {
 }
 
 UICircleLayout.prototype.paintSelfOnly = function(canvas) {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		switch(this.origin) {
 			case UICircleLayout.O_CENTER: {
 				var ox = this.w >> 1;
@@ -135,10 +135,10 @@ UICircleLayout.prototype.relayoutChildren = function() {
 }
 
 UICircleLayout.prototype.afterChildAppended = function(shape) {
-	shape.yAttr = C_Y_FIX_TOP;
-	shape.xAttr = C_X_FIX_LEFT;
-	shape.widthAttr = C_WIDTH_SCALE;
-	shape.heightAttr = C_HEIGHT_SCALE;
+	shape.yAttr = UIElement.Y_FIX_TOP;
+	shape.xAttr = UIElement.X_FIX_LEFT;
+	shape.widthAttr = UIElement.WIDTH_SCALE;
+	shape.heightAttr = UIElement.HEIGHT_SCALE;
 	shape.setUserMovable(true);
 	shape.setUserResizable(true);
 	shape.setCanRectSelectable(false, true);

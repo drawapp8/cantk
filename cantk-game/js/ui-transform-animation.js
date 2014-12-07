@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Animation By Change Transform.
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -56,7 +56,7 @@ UITransformAnimation.prototype.getScaleFrom = function() {
 UITransformAnimation.prototype.setScaleFrom = function(scaleFrom) {
 	this.animationConfig.scaleFrom = scaleFrom;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getScaleTo = function() {
@@ -66,7 +66,7 @@ UITransformAnimation.prototype.getScaleTo = function() {
 UITransformAnimation.prototype.setScaleTo = function(scaleTo) {
 	this.animationConfig.scaleTo = scaleTo;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.RADIAN_TO_ANGLE = 180/Math.PI;
@@ -78,7 +78,7 @@ UITransformAnimation.prototype.getRotationFrom = function() {
 UITransformAnimation.prototype.setRotationFrom = function(rotationFrom) {
 	this.animationConfig.rotationFrom = rotationFrom/UITransformAnimation.RADIAN_TO_ANGLE;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getRotationTo = function() {
@@ -88,7 +88,7 @@ UITransformAnimation.prototype.getRotationTo = function() {
 UITransformAnimation.prototype.setRotationTo = function(rotationTo) {
 	this.animationConfig.rotationTo = rotationTo/UITransformAnimation.RADIAN_TO_ANGLE;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getOpacityFrom = function() {
@@ -98,7 +98,7 @@ UITransformAnimation.prototype.getOpacityFrom = function() {
 UITransformAnimation.prototype.setOpacityFrom = function(opacityFrom) {
 	this.animationConfig.opacityFrom = opacityFrom;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getOpacityTo = function() {
@@ -108,7 +108,7 @@ UITransformAnimation.prototype.getOpacityTo = function() {
 UITransformAnimation.prototype.setOpacityTo = function(opacityTo) {
 	this.animationConfig.opacityTo = opacityTo;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getXFrom = function() {
@@ -118,7 +118,7 @@ UITransformAnimation.prototype.getXFrom = function() {
 UITransformAnimation.prototype.setXFrom = function(offsetXFrom) {
 	this.animationConfig.offsetXFrom = offsetXFrom;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getXTo = function() {
@@ -128,7 +128,7 @@ UITransformAnimation.prototype.getXTo = function() {
 UITransformAnimation.prototype.setXTo = function(offsetXTo) {
 	this.animationConfig.offsetXTo = offsetXTo;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getYFrom = function() {
@@ -138,7 +138,7 @@ UITransformAnimation.prototype.getYFrom = function() {
 UITransformAnimation.prototype.setYFrom = function(offsetYFrom) {
 	this.animationConfig.offsetYFrom = offsetYFrom;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getYTo = function() {
@@ -148,7 +148,7 @@ UITransformAnimation.prototype.getYTo = function() {
 UITransformAnimation.prototype.setYTo = function(offsetYTo) {
 	this.animationConfig.offsetYTo = offsetYTo;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getFrequency = function() {
@@ -158,7 +158,7 @@ UITransformAnimation.prototype.getFrequency = function() {
 UITransformAnimation.prototype.setFrequency = function(frequency) {
 	this.animationConfig.frequency = frequency;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.getRandom = function() {
@@ -168,7 +168,7 @@ UITransformAnimation.prototype.getRandom = function() {
 UITransformAnimation.prototype.setRandom = function(random) {
 	this.animationConfig.random = random%1000;
 
-	return;
+	return this;
 }
 
 UITransformAnimation.prototype.taFromJson = function(js) {

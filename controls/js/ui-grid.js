@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Grid
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -70,10 +70,10 @@ UIGrid.prototype.initUIGrid = function(type, border, itemSize, bg) {
 	this.itemHeight = itemSize;
 	this.itemWidthType = UIGrid.ITEM_FIXED_WIDTH;
 	this.itemHeightType = UIGrid.ITEM_FIXED_HEIGHT;
-	this.widthAttr = C_WIDTH_FILL_PARENT; 
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
-	this.setImage(CANTK_IMAGE_DELETE_ITEM, null);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
+	this.setImage(UIElement.IMAGE_DELETE_ITEM, null);
 	this.regSerializer(this.gridToJson, this.gridFromJson);
 	this.rectSelectable = false;
 	this.addEventNames(["onChildDragged", "onChildDragging", "onInit"]);
@@ -149,7 +149,7 @@ UIGrid.prototype.childIsBuiltin = function(child) {
 }
 
 UIGrid.prototype.afterPaintChildren =function(canvas) {
-	if(this.mode !== C_MODE_EDITING) {
+	if(this.mode !== Shape.MODE_EDITING) {
 		return;
 	}
 	
@@ -175,6 +175,7 @@ UIGrid.prototype.afterPaintChildren =function(canvas) {
 		drawDashedLine(canvas, {x:offset, y:y}, {x:offset, y:h}, 8, 4);
 	}
 
+	canvas.lineWidth = this.style.lineWidth;
 	canvas.strokeStyle = this.style.lineColor;
 	canvas.stroke();
 
@@ -219,7 +220,7 @@ UIGrid.prototype.sortChildren = function() {
 		
 		if(ar === br) {
 			bb = b.x;
-			aa = (b.pointerDown && b.hitTestResult === C_HIT_TEST_MM) ? (a.x + a.w) : a.x;
+			aa = (b.pointerDown && b.hitTestResult === Shape.HIT_TEST_MM) ? (a.x + a.w) : a.x;
 		}
 		else {
 			aa = ar;
@@ -256,7 +257,7 @@ UIGrid.prototype.onChildDragging = function(child, point) {
 	var targetChildIndex = this.getChildIndexByPosition(point);
 	var sourceChildIndex = this.getIndexOfChild(child);
 	
-	this.callOnChildDragging(sourceChildIndex, targetChildIndex);
+	this.callOnChildDraggingHandler(sourceChildIndex, targetChildIndex);
 
 	return;
 }
@@ -265,7 +266,7 @@ UIGrid.prototype.onChildDragged = function(child, point) {
 	var targetChildIndex = this.getChildIndexByPosition(point);
 	var sourceChildIndex = this.getIndexOfChild(child);
 	
-	this.callOnChildDragged(sourceChildIndex, targetChildIndex);
+	this.callOnChildDraggedHandler(sourceChildIndex, targetChildIndex);
 	
 	this.relayoutChildren("default");
 
@@ -311,17 +312,17 @@ UIGrid.prototype.relayoutChildren = function(animHint) {
 		x = hborder + c * itemW;
 		y = vborder + r * itemH;
 
-		if(animHint || this.mode === C_MODE_EDITING) {
+		if(animHint || this.mode === Shape.MODE_EDITING) {
 			child.animMove(x, y, animHint);
 		}
 		else {
 			child.move(x, y);
 		}
 
-		child.xAttr = C_X_FIX_LEFT;
-		child.yAttr = C_Y_FIX_TOP;
-		child.widthAttr = C_WIDTH_FIX;
-		child.heightAttr = C_HEIGHT_FIX;
+		child.xAttr = UIElement.X_FIX_LEFT;
+		child.yAttr = UIElement.Y_FIX_TOP;
+		child.widthAttr = UIElement.WIDTH_FIX;
+		child.heightAttr = UIElement.HEIGHT_FIX;
 		child.setSize(itemSize.w, itemSize.h);
 		child.setUserMovable(true);
 		child.setUserResizable(false);
@@ -335,7 +336,7 @@ UIGrid.prototype.relayoutChildren = function(animHint) {
 }
 
 UIGrid.prototype.afterChildAppended = function(shape) {
-	if(shape.view && this.mode === C_MODE_EDITING && shape.isCreatingElement()) {
+	if(shape.view && this.mode === Shape.MODE_EDITING && shape.isCreatingElement()) {
 		this.sortChildren();
 	}
 
@@ -345,16 +346,16 @@ UIGrid.prototype.afterChildAppended = function(shape) {
 	shape.setCanRectSelectable(false, true);
 	shape.setDraggable(this.itemDraggable);
 
-	shape.xAttr = C_X_FIX_LEFT;
-	shape.yAttr = C_Y_FIX_TOP;
-	shape.widthAttr = C_WIDTH_FIX;
-	shape.heightAttr = C_HEIGHT_FIX;
+	shape.xAttr = UIElement.X_FIX_LEFT;
+	shape.yAttr = UIElement.Y_FIX_TOP;
+	shape.widthAttr = UIElement.WIDTH_FIX;
+	shape.heightAttr = UIElement.HEIGHT_FIX;
 
 	return true;
 }
 
 UIGrid.prototype.triggerUserEditingMode = function() {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		return;
 	}
 
@@ -375,7 +376,7 @@ UIGrid.prototype.triggerUserEditingMode = function() {
 }
 
 UIGrid.prototype.isInUserEditingMode = function() {
-	return this.userEditingMode && this.mode != C_MODE_EDITING;
+	return this.userEditingMode && this.mode != Shape.MODE_EDITING;
 }
 
 UIGrid.prototype.beforePaintChild = function(child, canvas) {
@@ -396,7 +397,7 @@ UIGrid.prototype.beforePaintChild = function(child, canvas) {
 
 UIGrid.prototype.afterPaintChild = function(child, canvas) {
 	if(this.isInUserEditingMode()) {
-		var image = this.getHtmlImageByType(CANTK_IMAGE_DELETE_ITEM);
+		var image = this.getHtmlImageByType(UIElement.IMAGE_DELETE_ITEM);
 
 		if(image && image.width > 0) {
 			var y = child.y + child.vMargin;

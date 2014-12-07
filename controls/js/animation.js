@@ -3,7 +3,7 @@
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: ui animation.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -218,6 +218,7 @@ function AnimationFactory() {
 	this.animations = [];
 
 	this.createAnimation = function(name) {
+		UIElement.getMainCanvasScale(true);
 		var animation = this.animations[name];
 		if(animation) {
 			return animation;
@@ -486,12 +487,10 @@ function Animation(showWin) {
 	}
 
 	this.moveResizeCanvas = function(canvasElement, x, y, w, h) {
-		
 		canvasElement.style.position = "absolute";
 		canvasElement.width = w;
 		canvasElement.height = h;
-		canvasElement.style.left = x + "px";
-		canvasElement.style.top = y + "px";
+		setElementPosition(canvasElement, x, y);
 		canvasElement.style.visibility = 'visible';
 
 		Animation.scaleCanvas(canvasElement, w, h);
@@ -514,7 +513,7 @@ function Animation(showWin) {
 
 	this.hide = function() {
 		this.visible = false;
-		if(this.canvasElement) {
+		if(this.canvasElement && this.canvasElement.parentNode) {
 			document.body.removeChild(this.canvasElement);
 			this.canvasElement = null;
 		}

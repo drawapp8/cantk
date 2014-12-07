@@ -3,7 +3,7 @@
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: some tool functions.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -32,13 +32,26 @@ Array.prototype.insert = function(index, obj) {
 }
 
 Array.prototype.indexOf = function(obj) {
-    for (var i=0; i < this.length; ++i ) {
+	var n = this.length;
+    for (var i=0; i < n; ++i ) {
         if ( this[i] === obj ) {
         	return i;
         }
     }
     
     return -1;
+}
+
+Array.prototype.find = function(check) { 
+	var n = this.length;
+    for (var i=0; i < n; ++i ) {
+    	var  iter = this[i];
+        if (check(iter)) {
+        	return iter;
+        }
+    }
+
+    return null;
 }
 
 Array.prototype.binarySearch = function(find, comparator) {
@@ -419,7 +432,7 @@ function drawNinePatchEx(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
 	}
 
 	if(w < s_w && h < s_h) {
-		canvas.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
+		context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
 
 		return;
 	}
@@ -916,7 +929,11 @@ function httpGetJSON(url, onDone) {
 	httpGetURL(url, function(result, xhr, data) {
 		var json = null;
 		if(result) {
-			json = JSON.parse(data);
+			try {
+				json = JSON.parse(data);
+			}catch(e) {
+				console.log("JSON.parse failed： url=" + url + " data:" + data);
+			}
 		}
 		onDone(json);
 	})
@@ -935,9 +952,9 @@ function cantkInitViewPort(scale) {
 	var meta = document.createElement('meta');
 	var head = document.getElementsByTagName('head')[0];
 	
-	if(window.devicePixelRatio && window.devicePixelRatio > 2.0) {
+	if(window.devicePixelRatio && window.devicePixelRatio > 1.5) {
 		window.realDevicePixelRatio = window.devicePixelRatio;
-		window.devicePixelRatio = 2;
+		window.devicePixelRatio = 1.5;
 	}
 
 	var defaultRatio = window.devicePixelRatio ? window.devicePixelRatio : 1;
@@ -950,7 +967,7 @@ function cantkInitViewPort(scale) {
 	}
 	else if(isAndroid()) {
 	  var ver = browserVersion();
-	  if(ver < 535.00 || isWeiXin() || isQQ()) {
+	  if(ver < 535.00) {
 	  	window.devicePixelRatio = window.realDevicePixelRatio;
 	  	value = 'target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
 	  }
@@ -1072,89 +1089,6 @@ function isScriptLoaded(url) {
 
 /////////////////////////////////////////////////////////
 
-var gUserAppScripts = [];
-
-function clearUserAppScript() {
-	for(var i = 0; i < gUserAppScripts.length; i++) {
-		var iter = gUserAppScripts[i];
-
-		if(iter.script) {
-			console.log("Remove Script:" + iter.url);
-			if(iter.script.parentNode) {
-				try {
-					iter.script.parentNode.removeChild(iter.script);
-				}catch(e) {
-					console.log("Remove Script Failed:" + e.message);
-				}
-			}
-		}
-	}
-
-	gUserAppScripts.clear();
-
-	return;
-}
-
-function addUserAppScript(url) {
-	var item = {};
-	item.url = url;
-	item.script = null;
-	item.loaded = false;
-
-	gUserAppScripts.push(item);
-
-	return;
-}
-	
-function notifyUserAppScriptsLoadDone(onDone) {
-	for(var i = 0; i < gUserAppScripts.length; i++) {
-		var iter = gUserAppScripts[i];
-		if(!iter.script || !iter.script.loaded) {
-			return;
-		}
-	}
-
-	onDone();
-
-	return;
-}
-
-function loadUserAppScripts(onDone) {
-	var node = document.head ? document.head : document.body;
-
-	for(var i = 0; i < gUserAppScripts.length; i++) {
-		var iter = gUserAppScripts[i];
-		iter.script = getScriptByUrl(iter.url);
-
-		if(iter.script) {
-			iter.script.loaded = true;
-			notifyUserAppScriptsLoadDone(onDone);
-			console.log("User App Script Already Loaded: " + iter.url);
-			continue;
-		}
-
-		iter.script = document.createElement("script");
-		iter.script.onload = function() {
-			this.loaded = true;
-			notifyUserAppScriptsLoadDone(onDone);
-		}
-		
-		iter.script.onerror = function() {
-			this.loaded = true;
-			this.error = true;
-			notifyUserAppScriptsLoadDone(onDone);
-		}
-
-		iter.script.src = iter.url;
-		node.appendChild(iter.script);
-		console.log("Load User App Script: " + iter.url)
-	}
-
-	return;
-}
-
-/////////////////////////////////////////////////////////
-
 function getLanguageName() {
 	var lang = "";
 	if(navigator.language) {
@@ -1180,7 +1114,7 @@ var requestAnimFrame = (function(){
 		window.oRequestAnimationFrame ||
 		window.msRequestAnimationFrame ||
 		function(callback) {
-			window.setTimeout(callback, 5);
+			return window.setTimeout(callback, 5);
 		};
 })();
 
@@ -1230,8 +1164,62 @@ function dirname(path) {
 	return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
 }
 
+function cantkIsFullscreen() {
+	return document.fullscreenElement || document.mozFullScreen || document.webkitIsFullScreen;
+}
+
+function cantkRequestFullscreen(onDone) {
+	function onFullscreenChanged(e) {
+		if(onDone) {
+			onDone(cantkIsFullscreen());
+		}
+		console.log("fullscreenchange:" + cantkIsFullscreen());
+
+		return true;
+	}
+
+	if(cantkIsFullscreen()) {
+		onFullscreenChanged();
+		return true;
+	}
+
+    var element = document.documentElement;
+    if (document.documentElement.requestFullscreen) {
+		element.addEventListener('fullscreenchange', onFullscreenChanged, true);
+    	return element.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+		element.addEventListener('mozfullscreenchange', onFullscreenChanged, true);
+    	return element.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullScreen) {
+		element.addEventListener('webkitfullscreenchange', onFullscreenChanged, true);
+    	return element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+	
+	return false;
+}
 
 window.makeUniqRandArray = makeUniqRandArray;
+
+Object.destroy = function(obj) {
+	if(obj.children) {
+		var n = obj.children.length;
+		for(var i = 0; i < n; i++) {
+			Object.destroy(obj.children[i]);
+		}
+		obj.children.length = 0;
+	}
+
+	for(var key in obj) {
+		var value = obj[key];
+		if(typeof value != "function") {
+			obj[key] = null;
+		}
+	}
+
+	obj = null;
+
+	return;
+}
 
 console.log("Build At " + gBuildDate);
 

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  The game scene
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -16,14 +16,15 @@ UIScene.prototype.isUIScene = true;
 
 UIScene.prototype.initUIScene = function(type, w, h, bg) {
 	this.initUIWindow(type, 0, 0, w, h, bg);	
-	this.widthAttr  = C_WIDTH_FILL_PARENT;
-	this.heightAttr = C_HEIGHT_FILL_PARENT;
-	this.images.display = CANTK_IMAGE_DISPLAY_SCALE;
+	this.widthAttr  = UIElement.WIDTH_FILL_PARENT;
+	this.heightAttr = UIElement.HEIGHT_FILL_PARENT;
+	this.images.display = UIElement.IMAGE_DISPLAY_SCALE;
 
 	this.xOffset = 0;
 	this.yOffset = 0;
 	this.virtualWidth = 0;
 	this.virtualHeight = 0;
+	this.setAnimHint("none");
 	this.setCanRectSelectable(false, true);
 	this.addEventNames(["onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
 
@@ -31,7 +32,9 @@ UIScene.prototype.initUIScene = function(type, w, h, bg) {
 }
 
 UIScene.prototype.saveGameState = function() {
-	this.gameState = this.toJson();
+	if(!this.gameState) {
+		this.gameState = this.toJson();
+	}
 
 	return;
 }
@@ -39,6 +42,7 @@ UIScene.prototype.saveGameState = function() {
 UIScene.prototype.restoreGameState = function() {
 	if(this.gameState) {
 		this.fromJson(this.gameState);
+		this.relayout();
 	}
 
 	return;
@@ -47,16 +51,52 @@ UIScene.prototype.restoreGameState = function() {
 UIScene.prototype.resetGame = function() {
 	if(this.world) {
 		var world = this.world;
-		Physics.clearAllBodyAndJoints(world);
-		delete world;
+		Physics.destroyWorld(world);
 		this.world = null;
+
+		var soundsValue = [];
+
+		for(var i = 0; i < this.children.length; i++) {
+			var iter = this.children[i];
+			if(iter.isUISound) {
+				soundsValue.push(iter.getValue());
+			}
+		}
 
 		this.restoreGameState();
 		this.doInit();
 		this.initChildren();
+		
+		for(var i = 0; i < this.children.length; i++) {
+			var iter = this.children[i];
+			if(iter.isUISound && soundsValue.length) {
+				var value = soundsValue.shift();
+				iter.setValue(value);
+			}
+		}
 	}
+	this.updateStickyChildren();
 
 	return;
+}
+
+UIScene.prototype.updateStickyChildren = function() {
+	this.stickyChildren = [];
+	var a = this.children;
+	for(var i = 0; i < a.length; i++) {
+		var iter = a[i];
+		if(iter.sticky) {
+			if(iter.orgX === undefined) {
+				iter.orgX = iter.x;
+			}
+			if(iter.orgY === undefined) {
+				iter.orgY = iter.y;
+			}
+			this.stickyChildren.push(iter);
+		}
+	}
+
+	return this;
 }
 
 UIScene.prototype.doInit = function() {
@@ -80,7 +120,20 @@ UIScene.prototype.onInit = function() {
 	}
 
 	this.doInit();
-	this.playing = true;
+	this.play();
+	this.updateStickyChildren();
+	
+	return;
+}
+
+UIScene.prototype.onDeinit = function() {
+	if(this.world) {
+		var world = this.world;
+		Physics.destroyWorld(world);
+		this.world = null;
+	}
+
+	this.stop();
 
 	return;
 }
@@ -101,24 +154,44 @@ UIScene.prototype.getVirtualHeight = function() {
 	return this.virtualHeight;
 }
 
+UIScene.prototype.onScrolled = function() {
+	var a = this.stickyChildren;
+	if(a && a.length) {
+		var ox = this.xOffset;
+		var oy = this.yOffset;
+		for(var i = 0; i < a.length; i++) {
+			var iter = a[i];
+			var x = iter.orgX + ox;
+			var y = iter.orgY + oy;
+			iter.setPosition(x, y);
+		}
+	}
+
+	return;
+}
+
 UIScene.prototype.setOffset = function(xOffset, yOffset) {
 	if(xOffset || xOffset === 0) {
 		var maxOffset = this.getVirtualWidth() - this.w;
 		
-		this.xOffset = Math.max(0, xOffset);
-		if(this.xOffset > maxOffset) {
-			this.xOffset = maxOffset;
+		var xOffsetNew = Math.max(0, xOffset);
+		if(xOffsetNew > maxOffset) {
+			xOffsetNew = maxOffset;
 		}
+		this.xOffset = xOffsetNew;
 	}
 
 	if(yOffset || yOffset === 0) {
 		var maxOffset = this.getVirtualHeight() - this.h;
 
-		this.yOffset = Math.max(0, yOffset);
-		if(this.yOffset > maxOffset) {
-			this.yOffset = maxOffset;
+		var yOffsetNew = Math.max(0, yOffset);
+		if(yOffsetNew > maxOffset) {
+			yOffsetNew = maxOffset;
 		}
+		this.yOffset = yOffsetNew;
 	}
+
+	this.onScrolled();
 
 	return;
 }
@@ -169,10 +242,10 @@ UIScene.prototype.drawBgImage = function(canvas) {
 		var display = this.images.display;
 
 		image = image.getImage();
-		if(display === CANTK_IMAGE_DISPLAY_TILE_V) {
+		if(display === UIElement.IMAGE_DISPLAY_TILE_V) {
 			this.drawBgImageVTile(canvas, image);
 		}
-		else if(display === CANTK_IMAGE_DISPLAY_TILE_H) {
+		else if(display === UIElement.IMAGE_DISPLAY_TILE_H) {
 			this.drawBgImageHTile(canvas, image);
 		}
 		else {
@@ -228,7 +301,7 @@ UIScene.prototype.drawBgImageHTile = function(canvas, image) {
 }
 
 UIScene.prototype.afterPaintChildren = function(canvas) {
-	if(!this.selected || this.mode !== C_MODE_EDITING) {
+	if(!this.selected || this.mode !== Shape.MODE_EDITING) {
 		return;
 	}
 	
@@ -364,19 +437,19 @@ UIScene.prototype.afterRelayoutChild = function(child) {
 	var vw = this.getVirtualWidth();
 	var vh = this.getVirtualHeight();
 
-	if(child.widthAttr === C_WIDTH_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT) {
 		child.x = 0;
 		child.w = vw;
 	}
-	else if(child.widthAttr === C_WIDTH_FILL_AVAILABLE) {
+	else if(child.widthAttr === UIElement.WIDTH_FILL_AVAILABLE) {
 		child.w = vw - child.x;
 	}
 
-	if(child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		child.y = 0;
 		child.h = vh;
 	}
-	else if(child.heightAttr === C_HEIGHT_FILL_AVAILABLE) {
+	else if(child.heightAttr === UIElement.HEIGHT_FILL_AVAILABLE) {
 		child.h = vh - child.y;
 	}
 
@@ -384,7 +457,7 @@ UIScene.prototype.afterRelayoutChild = function(child) {
 }
 
 UIScene.prototype.afterChildAppended = function(shape) {
-	if(this.mode === C_MODE_EDITING || !this.world) {
+	if(this.mode === Shape.MODE_EDITING || !this.world) {
 		return;
 	}
 
@@ -392,7 +465,7 @@ UIScene.prototype.afterChildAppended = function(shape) {
 }
 
 UIScene.prototype.afterChildRemoved = function(shape) {
-	if(this.mode === C_MODE_EDITING || !this.world) {
+	if(this.mode === Shape.MODE_EDITING || !this.world) {
 		return;
 	}
 
@@ -414,12 +487,12 @@ UIScene.prototype.translatePoint = function(point) {
 }
 
 UIScene.prototype.isPlaying = function() {
-	return this.playing && this.mode != C_MODE_EDITING;
+	return this.playing && this.mode != Shape.MODE_EDITING;
 }
 
 UIScene.prototype.replay = function() {
 	this.resetGame();
-	this.playing = true;
+	this.play();
 
 	return;
 }

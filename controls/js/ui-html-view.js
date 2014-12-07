@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  HTML View
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -76,7 +76,7 @@ UIHtmlView.prototype.paintSelfOnly = function(canvas) {
 UIHtmlView.prototype.initUIHtmlView = function(type) {
 	this.initUIHtml(type, 400, 300);
 	this.setValue("<p>hello html view");
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.setScrollable(true);
 
 	return this;

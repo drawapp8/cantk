@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Image
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,9 +18,9 @@ UIImage.prototype.initUIImage = function(type, w, h, bg) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setImage("option_image_0", null);
 	this.setImage("option_image_1", null);
 	this.setImage("option_image_2", null);
@@ -36,7 +36,7 @@ UIImage.prototype.initUIImage = function(type, w, h, bg) {
 	this.setImage("option_image_12", null);
 	this.setImage("option_image_13", null);
 	this.setImage("option_image_14", null);
-	this.addEventNames(["onOnUpdateTransform"]); 
+	this.addEventNames(["onUpdateTransform"]); 
 
 	this.clickable = false;
 	this.clickedStyleParam = 0.8;
@@ -46,7 +46,7 @@ UIImage.prototype.initUIImage = function(type, w, h, bg) {
 }
 
 UIImage.prototype.getImageSrcRect = function() {
-	var image = this.getImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getImageByType(UIElement.IMAGE_DEFAULT);
 	if(this.srcRect) {
 		return this.srcRect;
 	}
@@ -69,23 +69,23 @@ UIImage.prototype.setImageSrcRect = function(x, y, w, h) {
 }
 
 UIImage.prototype.setValue = function(value) {
-	this.setImage(CANTK_IMAGE_DEFAULT, value);
+	this.setImage(UIElement.IMAGE_DEFAULT, value);
 
 	return;
 }
 
 UIImage.prototype.setImageSrc = function(value) {
-	this.setImage(CANTK_IMAGE_DEFAULT, value);
+	this.setImage(UIElement.IMAGE_DEFAULT, value);
 
 	return;
 }
 
 UIImage.prototype.getImageSrc = function(type) {
-	return this.getImageSrcByType(type ? type : CANTK_IMAGE_DEFAULT);
+	return this.getImageSrcByType(type ? type : UIElement.IMAGE_DEFAULT);
 }
 
 UIImage.prototype.getHtmlImage = function() {
-	return this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	return this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 }
 
 UIImage.prototype.setBorderStyle = function(borderColor, borderWidth) {
@@ -201,6 +201,20 @@ UIImage.prototype.setClickable = function(clickable) {
 
 UIImage.prototype.shapeCanBeChild = UIGroup.prototype.shapeCanBeChild;
 
+UIImage.prototype.onSized = function() {
+	UIElement.prototype.onSized.call(this);
+
+	if(this.images.display === UIElement.IMAGE_DISPLAY_DEFAULT) {
+		var image = this.getHtmlImage();
+		if(image && image.width) {
+			var srcRect = this.getImageSrcRect();
+			this.w = srcRect ? srcRect.w : image.width;
+			this.h = srcRect ? srcRect.h : image.height;
+		}
+	}
+
+	return;
+}
 
 function UIImageCreator(type, w, h, defaultImage) {
 	var args = [type, "ui-image", null, 1];

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Image Animation.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -19,7 +19,7 @@ UIImageAnimation.prototype.initUIImageAnimation = function(type, w, h) {
 	this.initUIImageView(w, h);
 	
 	this.addEventNames(["onChanged"]);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	imageAnimationInitCustomProp(this);
 
 	return this;
@@ -31,7 +31,7 @@ UIImageAnimation.prototype.setCurrent = function(current) {
 	}
 
 	if(this.currFrame != current) {
-		this.callOnChanged(current);
+		this.callOnChangedHandler(current);
 	}
 
 	this.currFrame = current;

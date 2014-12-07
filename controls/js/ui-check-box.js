@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Check Box
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,21 +18,21 @@ UICheckBox.prototype.initUICheckBox = function(type, w, h, onFocusedImg, onActiv
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_INPUT);
-	this.images.display = CANTK_IMAGE_DISPLAY_SCALE;
+	this.setTextType(Shape.TEXT_INPUT);
+	this.images.display = UIElement.IMAGE_DISPLAY_SCALE;
 
 	onFocusedImg  = onFocusedImg ? onFocusedImg : onImg;
 	onActiveImg   = onActiveImg ? onActiveImg : onImg;
 	offFocusedImg = offFocusedImg ? offFocusedImg : offImg;
 	offActiveImg   = offActiveImg ? offActiveImg : offImg;
 
-	this.setImage(CANTK_IMAGE_ON_FG, onImg);
-	this.setImage(CANTK_IMAGE_ON_ACTIVE, onActiveImg);
-	this.setImage(CANTK_IMAGE_ON_FOCUSED, onFocusedImg);
-	this.setImage(CANTK_IMAGE_OFF_FG, offImg);
-	this.setImage(CANTK_IMAGE_OFF_ACTIVE, offActiveImg);
-	this.setImage(CANTK_IMAGE_OFF_FOCUSED, offFocusedImg);
-	this.addEventNames(["onChanged", "onOnUpdateTransform"]);
+	this.setImage(UIElement.IMAGE_ON_FG, onImg);
+	this.setImage(UIElement.IMAGE_ON_ACTIVE, onActiveImg);
+	this.setImage(UIElement.IMAGE_ON_FOCUSED, onFocusedImg);
+	this.setImage(UIElement.IMAGE_OFF_FG, offImg);
+	this.setImage(UIElement.IMAGE_OFF_ACTIVE, offActiveImg);
+	this.setImage(UIElement.IMAGE_OFF_FOCUSED, offFocusedImg);
+	this.addEventNames(["onChanged", "onUpdateTransform"]);
 	this.setRoundRadius(5);
 	this.value = true;
 
@@ -50,18 +50,18 @@ UICheckBox.prototype.getValue = function() {
 UICheckBox.prototype.setValue = function(value) {
 	if(this.value != value) {
 		this.value = value;
-		this.callOnChanged(this.value);
+		this.callOnChangedHandler(this.value);
 	}
 
-	return;
+	return this;
 }
 
-UICheckBox.prototype.getFgImage =function() {
+UICheckBox.prototype.getFgImage = function() {
 	var image = null;
 	var offset = 5;
 	if(this.value) {
 		if(this.pointerDown) {
-			image = this.getImageByType(CANTK_IMAGE_ON_ACTIVE).getImage();
+			image = this.getImageByType(UIElement.IMAGE_ON_ACTIVE);
 			this.offsetX = image ? 0 : offset;
 			this.offsetY = image ? 0 : offset;
 		}
@@ -69,17 +69,17 @@ UICheckBox.prototype.getFgImage =function() {
 			delete this.offsetX;
 			delete this.offsetY;
 			if(this.selected) {
-				image = this.getImageByType(CANTK_IMAGE_ON_FOCUSED).getImage();
+				image = this.getImageByType(UIElement.IMAGE_ON_FOCUSED);
 			}
 		}
 
-		if(!image) {
-			image = this.getImageByType(CANTK_IMAGE_ON_FG).getImage();
+		if(!image || !image.src) {
+			image = this.getImageByType(UIElement.IMAGE_ON_FG);
 		}
 	}
 	else {
 		if(this.pointerDown) {
-			image = this.getImageByType(CANTK_IMAGE_OFF_ACTIVE).getImage();
+			image = this.getImageByType(UIElement.IMAGE_OFF_ACTIVE);
 			this.offsetX = image ? 0 : offset;
 			this.offsetY = image ? 0 : offset;
 		}
@@ -87,12 +87,12 @@ UICheckBox.prototype.getFgImage =function() {
 			delete this.offsetX;
 			delete this.offsetY;
 			if(this.selected) {
-				image = this.getImageByType(CANTK_IMAGE_OFF_FOCUSED).getImage();
+				image = this.getImageByType(UIElement.IMAGE_OFF_FOCUSED);
 			}
 		}
 
-		if(!image) {
-			image = this.getImageByType(CANTK_IMAGE_OFF_FG).getImage();
+		if(!image || !image.src) {
+			image = this.getImageByType(UIElement.IMAGE_OFF_FG);
 		}
 	}
 
@@ -116,7 +116,10 @@ UICheckBox.prototype.drawFgImage =function(canvas) {
 	var image = this.getFgImage();
 
 	if(image) {
-		this.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h);
+		var srcRect = image.getImageRect();
+
+		image = image.getImage();
+		this.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h, srcRect);
 	}
 	else {
 		var hw = this.w >> 1;
@@ -149,7 +152,7 @@ UICheckBox.prototype.onClick = function(point, beforeChild) {
 	}
 	
 	this.setValue(!this.value);
-	this.callClickHandler(point);
+	this.callOnClickHandler(point);
 
 	return;
 }

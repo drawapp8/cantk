@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  List Item
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,15 +18,15 @@ UIListItem.prototype.initUIListItem = function(type, focusedImg, activeImg, norm
 	this.initUIElement(type);	
 
 	this.setDefSize(200, 120);
-	this.widthAttr = C_WIDTH_FILL_PARENT; 
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
-	this.setImage(CANTK_IMAGE_FOCUSED, focusedImg);
-	this.setImage(CANTK_IMAGE_ACTIVE, activeImg);
-	this.setImage(CANTK_IMAGE_NORMAL, normalImg);
-	this.setImage(CANTK_IMAGE_DISABLE, disableImg);
-	this.setImage(CANTK_IMAGE_POINTER_OVER, null);
-	this.setImage(CANTK_IMAGE_DELETE_ITEM, null);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
+	this.setImage(UIElement.IMAGE_FOCUSED, focusedImg);
+	this.setImage(UIElement.IMAGE_ACTIVE, activeImg);
+	this.setImage(UIElement.IMAGE_NORMAL, normalImg);
+	this.setImage(UIElement.IMAGE_DISABLE, disableImg);
+	this.setImage(UIElement.IMAGE_POINTER_OVER, null);
+	this.setImage(UIElement.IMAGE_DELETE_ITEM, null);
 	this.addEventNames(["onLongPress", "onRemoved"]);
 
 	return this;
@@ -40,7 +40,7 @@ UIListItem.prototype.dragMove = function(dx, dy) {
 }
 
 UIListItem.prototype.getDeleteItemIcon = function() {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DELETE_ITEM);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DELETE_ITEM);
 
 	return image;
 }
@@ -93,13 +93,13 @@ UIListItem.prototype.getCacheImage = function(name, w, h) {
 UIListItem.prototype.setSlideToRemove = function(value) {
 	this.slideToRemove = value;
 
-	return;
+	return this;
 }
 
 UIListItem.prototype.setHeightVariable = function(value) {
 	this.heightVariable = value;
 	
-	return;
+	return this;
 }
 
 UIListItem.prototype.isHeightVariable = function() {
@@ -278,8 +278,8 @@ UIListItem.prototype.afterPaintChildren = function(canvas) {
 
 UIListItem.prototype.afterChildAppended = function(shape) {
 	if(shape.isUIButton || shape.isUICheckBox) {
-		this.setImage(CANTK_IMAGE_ACTIVE, this.getImageByType(CANTK_IMAGE_NORMAL).getImageSrc());
-		this.setImage(CANTK_IMAGE_FOCUSED, this.getImageByType(CANTK_IMAGE_NORMAL).getImageSrc());
+		this.setImage(UIElement.IMAGE_ACTIVE, this.getImageByType(UIElement.IMAGE_NORMAL).getImageSrc());
+		this.setImage(UIElement.IMAGE_FOCUSED, this.getImageByType(UIElement.IMAGE_NORMAL).getImageSrc());
 	}
 
 	return true;

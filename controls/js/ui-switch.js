@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Switch
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,9 +18,9 @@ UISwitch.prototype.initUISwitch = function(type, w, h, maskWidth, img) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
-	this.setImage(CANTK_IMAGE_DEFAULT, img);
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
+	this.setImage(UIElement.IMAGE_DEFAULT, img);
 	
 	this.value = true;
 	this.imageWidth = 412;
@@ -79,7 +79,7 @@ UISwitch.prototype.animateChange = function() {
 }
 
 UISwitch.prototype.onClick = function(point, beforeChild) {
-	if(beforeChild || this.mode !== C_MODE_EDITING) {
+	if(beforeChild || this.mode !== Shape.MODE_EDITING) {
 		return;
 	}
 	this.setValue(!this.value);
@@ -116,11 +116,11 @@ UISwitch.prototype.onPointerUpRunning = function(point, beforeChild) {
 UISwitch.prototype.setValue = function(value) {
 	if(this.value != value) {
 		this.value = value;
-		this.callOnChanged(this.value);
+		this.callOnChangedHandler(this.value);
 		this.animateChange();
 	}
 
-	return;
+	return this;
 }
 
 UISwitch.prototype.drawBgImage =function(canvas) {
@@ -128,7 +128,7 @@ UISwitch.prototype.drawBgImage =function(canvas) {
 }
 
 UISwitch.prototype.drawFgImage =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(image) {
 		this.updateImageSize(image.width);

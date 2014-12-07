@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Scroll Text
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,8 +18,8 @@ UIScrollText.prototype.initUIScrollText = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_TEXTAREA);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setTextType(Shape.TEXT_TEXTAREA);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.addEventNames(["onScrollDone"]);
 
 	return this;
@@ -107,7 +107,7 @@ UIScrollText.prototype.startVScroll = function() {
 			}
 			else {
 				delete interpolator;
-				scrolltext.callOnScrollDone();
+				scrolltext.callOnScrollDoneHandler();
 			}
 
 			delete startTime;
@@ -170,7 +170,7 @@ UIScrollText.prototype.startHScroll = function() {
 			}
 			else {
 				delete startTime;
-				scrolltext.callOnScrollDone();
+				scrolltext.callOnScrollDoneHandler();
 			}
 		}
 

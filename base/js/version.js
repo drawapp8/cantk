@@ -1,2 +1,2 @@
-var gBuildMonth = "14*12+09";
-var gBuildDate = "2014-09-22 16:36:29";
+var gBuildMonth = "14*12+12";
+var gBuildDate = "2014-12-07 11:29:27";

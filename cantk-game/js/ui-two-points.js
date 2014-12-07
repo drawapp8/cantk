@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  two anchor points 
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -17,8 +17,8 @@ UITwoPoints.prototype.initUITwoPoints = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
 
 	this.points = [{x:0, y:0}, {x:80, y:80}];
 	this.regSerializer(this.twoPointsToJson, this.twoPointsFromJson);
@@ -57,7 +57,7 @@ UITwoPoints.prototype.asIcon = function() {
 }
 
 UITwoPoints.prototype.relayout = function() {
-	if(this.disableRelayout || this.mode === C_MODE_EDITING) {
+	if(this.disableRelayout || this.mode === Shape.MODE_EDITING) {
 		return;
 	}
 
@@ -65,12 +65,12 @@ UITwoPoints.prototype.relayout = function() {
 	var wParent = p.getWidth(true);
 	var hParent = p.getHeight(true);
 
-	if(this.xAttr === C_X_SCALE) {
+	if(this.xAttr === UIElement.X_SCALE) {
 		this.points[0].x = wParent * this.x0Param;
 		this.points[1].x = wParent * this.x1Param;
 	}
 	
-	if(this.yAttr === C_Y_SCALE) {
+	if(this.yAttr === UIElement.Y_SCALE) {
 		this.points[0].y = hParent * this.y0Param;
 		this.points[1].y = hParent * this.y1Param;
 	}
@@ -90,12 +90,12 @@ UITwoPoints.prototype.updateLayoutParams = function() {
 	var wParent = p.getWidth(true);
 	var hParent = p.getHeight(true);
 	
-	if(this.xAttr === C_X_SCALE) {
+	if(this.xAttr === UIElement.X_SCALE) {
 		this.x0Param = this.points[0].x / wParent;
 		this.x1Param = this.points[1].x / wParent;
 	}
 
-	if(this.yAttr === C_Y_SCALE) {
+	if(this.yAttr === UIElement.Y_SCALE) {
 		this.y0Param = this.points[0].y / hParent;
 		this.y1Param = this.points[1].y / hParent;
 	}
@@ -117,10 +117,10 @@ UITwoPoints.prototype.hitTest = function(point) {
 	cp.y = (this.points[0].y + this.points[1].y)>>1;
 
 	if(Math.distanceBetween(point, cp) < 30) {
-		return C_HIT_TEST_MM;
+		return Shape.HIT_TEST_MM;
 	}
 
-	return C_HIT_TEST_NONE;
+	return Shape.HIT_TEST_NONE;
 }
 
 UITwoPoints.prototype.getSelectMark = function(type, point) {
@@ -151,6 +151,10 @@ UITwoPoints.prototype.onAppendedInParent = function() {
 }
 
 UITwoPoints.prototype.drawSelectMarks = function(canvas) {
+	if(this.mode !== Shape.MODE_EDITING) {
+		return;
+	}
+
 	canvas.save();
 	canvas.beginPath();
 	
@@ -165,8 +169,8 @@ UITwoPoints.prototype.drawSelectMarks = function(canvas) {
 		canvas.beginPath();
 		canvas.lineWidth = lineWidth;
 		
-		for(var type = C_HIT_TEST_NONE + 1; 
-			type < C_HIT_TEST_MAX; type++) {
+		for(var type = Shape.HIT_TEST_NONE + 1; 
+			type < Shape.HIT_TEST_MAX; type++) {
 			if(this.getSelectMark(type, this.selectMarkPoint)) {
 				this.createSelectedMark(canvas, this.selectMarkPoint.x, this.selectMarkPoint.y, type == this.hitTestResult);
 			}
@@ -197,7 +201,7 @@ UITwoPoints.prototype.getHeight = function() {
 }
 
 UITwoPoints.prototype.paintSelf = function(canvas) {
-	if(!this.runtimeVisible && this.mode != C_MODE_EDITING && !this.isIcon) {
+	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
 		return;
 	}
 
@@ -231,16 +235,36 @@ UITwoPoints.prototype.shapeCanBeChild = function(shape) {
 	return false;
 }
 
+UITwoPoints.prototype.getPoint = function(index) {
+	return this.points[index ? 1 : 0];
+}
+
+UITwoPoints.prototype.setPoint = function(index, x, y) {
+	var p = this.points[index ? 1 : 0];
+	p.x = x;
+	p.y = y;
+
+	return;
+}
+
+UITwoPoints.prototype.getDistance = function() {
+	return Math.round(Math.distanceBetween(this.points[0], this.points[1]));
+}
+
+UITwoPoints.prototype.getAngle = function() {
+	return Math.lineAngle(this.points[0], this.points[1]);
+}
+
 UITwoPoints.prototype.onPointerDownCreating = function(point) {
 	switch(this.state) {
-		case C_STAT_CREATING_0: {
+		case Shape.STAT_CREATING_0: {
 			this.points[0].x = point.x;
 			this.points[0].y = point.y;
-			this.state = C_STAT_CREATING_1;
+			this.state = Shape.STAT_CREATING_1;
 
 			return true;
 		}
-		case C_STAT_CREATING_1: {
+		case Shape.STAT_CREATING_1: {
 			return true;
 		}
 		default: {
@@ -251,14 +275,14 @@ UITwoPoints.prototype.onPointerDownCreating = function(point) {
 
 UITwoPoints.prototype.onPointerMoveCreating = function(point) {
 	switch(this.state) {
-		case C_STAT_CREATING_0: {
+		case Shape.STAT_CREATING_0: {
 			this.points[0].x = point.x;
 			this.points[0].y = point.y;
 			this.points[1].x = point.x + 50;
 			this.points[1].y = point.y + 50;
 			return true;
 		}
-		case C_STAT_CREATING_1: {
+		case Shape.STAT_CREATING_1: {
 			this.points[1].x = point.x;
 			this.points[1].y = point.y;
 			return true;
@@ -271,11 +295,11 @@ UITwoPoints.prototype.onPointerMoveCreating = function(point) {
 
 UITwoPoints.prototype.onPointerUpCreating = function(point) {
 	switch(this.state) {
-		case C_STAT_CREATING_0: {
+		case Shape.STAT_CREATING_0: {
 			return true;
 		}
-		case C_STAT_CREATING_1: {
-			this.state = C_STAT_NORMAL;
+		case Shape.STAT_CREATING_1: {
+			this.state = Shape.STAT_NORMAL;
 			return true;
 		}
 		default: {
@@ -286,7 +310,7 @@ UITwoPoints.prototype.onPointerUpCreating = function(point) {
 
 UITwoPoints.prototype.onPointerDownNormal = function(point) {
 	this.hitTestResult = this.hitTest(point);
-	this.selected = this.hitTestResult != C_HIT_TEST_NONE;
+	this.selected = this.hitTestResult != Shape.HIT_TEST_NONE;
 
 	return this.hitTestResult;
 }
@@ -300,7 +324,7 @@ UITwoPoints.prototype.onPointerMoveNormal = function(point) {
 }
 
 UITwoPoints.prototype.onPointerUpNormal = function(point) {
-	this.hitTestResult = C_HIT_TEST_NONE;
+	this.hitTestResult = Shape.HIT_TEST_NONE;
 
 	return;
 }

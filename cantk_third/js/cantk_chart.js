@@ -3,7 +3,7 @@
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: wrap chart.js for mobile toolkit.
  * 
- * Copyright (c) 2011 - 2013  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,7 +18,7 @@ UIChartLegendItem.prototype.initUIChartLegendItem = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_INPUT);
+	this.setTextType(Shape.TEXT_INPUT);
 
 	return this;
 }
@@ -98,9 +98,9 @@ UIChart.prototype.initUIChart = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
 
 	this.options = {};
 

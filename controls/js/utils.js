@@ -91,28 +91,6 @@ function cantkPreloadImage(src) {
 	return image;
 }
 	
-function cantkLoadUserScripts() {
-	console.log("cantkLoadUserScripts");
-	registerViewBeforeLoadListener(function(view, js) {
-		var meta = js.meta;
-		if(meta && meta.extlibs) {
-			clearUserAppScript();
-
-			for(var i = 0; i < meta.extlibs.length; i++) {
-				addUserAppScript(meta.extlibs[i]);
-			}
-			loadUserAppScripts(function() {
-				console.log("All User App Scripts Loaded");
-			});
-		}
-	});
-
-	registerViewAfterLoadListener(function(view, js) {
-	});
-
-	return;
-}
-
 var gTempCanvas = null;
 function cantkGetTempCanvas(width, height) {
 	if(!gTempCanvas) {

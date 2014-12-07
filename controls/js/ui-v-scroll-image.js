@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Vertical Scrollable Image
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -15,9 +15,9 @@ UIVScrollImage.prototype = new UIVScrollView();
 
 UIVScrollImage.prototype.initUIVScrollImage = function(type) {
 	this.initUIVScrollView(type, 0, null, null);	
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
-	this.widthAttr = C_WIDTH_SCALE;
-	this.heightAttr = C_HEIGHT_SCALE;
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
+	this.widthAttr = UIElement.WIDTH_SCALE;
+	this.heightAttr = UIElement.HEIGHT_SCALE;
 	this.setSize(200, 200);
 	
 	this.setImage("option_image_0", null);
@@ -40,7 +40,7 @@ UIVScrollImage.prototype.initUIVScrollImage = function(type) {
 }
 
 UIVScrollImage.prototype.drawBgImage = function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 	if(!image || !image.height) {
 		canvas.fillStyle = this.style.fillColor;
 		canvas.fillRect(0, 0, this.w, this.h);
@@ -64,7 +64,7 @@ UIVScrollImage.prototype.drawBgImage = function(canvas) {
 }
 
 UIVScrollImage.prototype.getScrollRange = function() {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 	if(image && image.height && image.width) {
 		var scale = this.w/image.width;
 
@@ -78,7 +78,7 @@ UIVScrollImage.prototype.getScrollRange = function() {
 UIVScrollImage.prototype.afterPaintChildren = function(canvas) {
 	this.drawScrollBar(canvas);
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.drawPageDownUp(canvas);
 	}
 

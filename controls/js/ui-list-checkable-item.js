@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Checkable List Item 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -20,8 +20,8 @@ UIListCheckableItem.prototype.initUIListCheckableItem = function(isRadio, type, 
 	this.initUIListItem(type, focusedImg, activeImg, normalImg, disableImg);
 
 	this.isRadio = isRadio;
-	this.setImage(CANTK_IMAGE_CHECKED_FG, checkedImg);
-	this.setImage(CANTK_IMAGE_UNCHECK_FG, uncheckImg);
+	this.setImage(UIElement.IMAGE_CHECKED_FG, checkedImg);
+	this.setImage(UIElement.IMAGE_UNCHECK_FG, uncheckImg);
 	this.addEventNames(["onChanged"]);
 
 	return this;
@@ -34,7 +34,7 @@ UIListCheckableItem.prototype.getValue = function() {
 UIListCheckableItem.prototype.setValue = function(value) {
 	if(this.value != value) {
 		this.value = value;
-		this.callOnChanged(this.value);
+		this.callOnChangedHandler(this.value);
 	}
 
 	return;
@@ -82,7 +82,7 @@ UIListCheckableItem.prototype.onClick = function(point, beforeChild) {
 }
 
 UIListCheckableItem.prototype.drawFgImage = function(canvas) {
-	var image = this.getHtmlImageByType(this.value ? CANTK_IMAGE_CHECKED_FG : CANTK_IMAGE_UNCHECK_FG);
+	var image = this.getHtmlImageByType(this.value ? UIElement.IMAGE_CHECKED_FG : UIElement.IMAGE_UNCHECK_FG);
 
 	if(image) {
 		var x = this.w - image.width - 20;

@@ -3,7 +3,7 @@
  * Author:	Li XianJing <xianjimli@hotmail.com>
  * Brief: the base class of the drawing view.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -46,7 +46,7 @@ function notifyViewAfterLoad(view, js) {
 }
 
 function ViewBase(parent, x, y, w, h) {
-	this.type = C_WIDGET_TYPE_USER;
+	this.type = Widget.TYPE_USER;
 	Widget.apply(this, arguments);
 	
 	this.grid = 10;
@@ -565,11 +565,11 @@ function ViewBase(parent, x, y, w, h) {
 			this.creatingShape = null;
 		}
 
-		if(shape.state !== C_STAT_NORMAL) {
+		if(shape.state !== Shape.STAT_NORMAL) {
 			this.creatingShape = shape;
 		}
 
-		if(shape.mode != C_MODE_RUNNING && shape.isUIDevice) {
+		if(shape.mode != Shape.MODE_RUNNING && shape.isUIDevice) {
 			this.autoScale();
 		}
 

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Button Group
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -22,9 +22,9 @@ UIButtonGroup.prototype.initUIButtonGroup = function(type, border, buttonMaxWidt
 	this.setSizeLimit(100, 40, 1000, 120);
 
 	this.buttonMaxWidth = buttonMaxWidth;
-	this.widthAttr = C_WIDTH_FILL_PARENT; 
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.rectSelectable = false;
 	this.addEventNames(["onInit"]);
 
@@ -44,7 +44,7 @@ UIButtonGroup.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIButtonGroup.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image && !this.isFillColorTransparent()) {
 		canvas.beginPath();
@@ -88,7 +88,7 @@ UIButtonGroup.prototype.relayoutChildren = function() {
 }
 
 UIButtonGroup.prototype.afterChildAppended = function(shape) {
-	shape.yAttr = C_Y_MIDDLE_IN_PARENT;
+	shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
 
 	return true;
 }

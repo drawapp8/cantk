@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Place Holder
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -17,7 +17,7 @@ UIPlaceholder.prototype.initUIPlaceholder = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	this.setCanRectSelectable(false, false);
 
 	return this;
@@ -28,7 +28,7 @@ UIPlaceholder.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIPlaceholder.prototype.paintSelfOnly = function(canvas) {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		var x = this.vMargin;
 		var y = this.hMargin;
 		var w = this.getWidth(true);
@@ -49,7 +49,7 @@ function UIVPlaceholderCreator(w, h) {
 		var g = new UIPlaceholder();
 
 		g.initUIPlaceholder(this.type, w, h);
-		g.widthAttr = C_WIDTH_FILL_PARENT;
+		g.widthAttr = UIElement.WIDTH_FILL_PARENT;
 		g.MIN_SIZE = 4;
 		g.setSizeLimit(20, 4);
 
@@ -67,7 +67,7 @@ function UIHPlaceholderCreator(w, h) {
 		var g = new UIPlaceholder();
 
 		g.initUIPlaceholder(this.type, w, h);
-		g.heightAttr = C_HEIGHT_FILL_PARENT;
+		g.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 		g.MIN_SIZE = 4;
 		g.setSizeLimit(4, 20);
 

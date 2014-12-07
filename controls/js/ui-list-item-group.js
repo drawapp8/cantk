@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  List Item Group
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -31,7 +31,7 @@ UIListItemGroup.prototype.relayoutChildren = function(animHint) {
 		return;
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.collapsed = false;
 	}
 		
@@ -155,7 +155,7 @@ UIListItemGroup.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIListItemGroup.prototype.measureHeight = function(height) {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.collapsed = false;
 	}
 
@@ -166,7 +166,7 @@ UIListItemGroup.prototype.fixListItemImage = function(item, position) {
 }
 
 UIListItemGroup.prototype.onModeChanged = function() {
-	if(this.collapsedDefault && this.mode != C_MODE_EDITING) {
+	if(this.collapsedDefault && this.mode != Shape.MODE_EDITING) {
 		this.collapsed = true;
 		this.h = this.getNewHeight();
 	}

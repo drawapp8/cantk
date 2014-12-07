@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Window Manager
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -126,7 +126,7 @@ UIWindowManager.prototype.callOnLoad = function() {
 	for(var i = 0; i < this.children.length; i++) {
 		var win = this.children[i];
 
-		win.callOnLoad();
+		win.callOnLoadHandler();
 	}
 
 	return true;
@@ -136,66 +136,36 @@ UIWindowManager.prototype.callOnUnload = function() {
 	for(var i = 0; i < this.children.length; i++) {
 		var win = this.children[i];
 
-		win.callOnUnload();
+		win.callOnUnloadHandler();
 	}
 
 	return true;
 }
 
-UIWindowManager.prototype.resize = function(w, h) {
-	if(this.mode === C_MODE_RUNNING && this.fixResolution && isMobile()) {
-		var canvas = this.view.getCanvas();
-
-		var screenWidth = canvas.width;
-		var screenHeight = canvas.height;
-		var designWidth = this.designWidth;
-		var designHeight = this.designHeight;
-
-		if((screenWidth > screenHeight && designWidth > designHeight)
-			|| (screenWidth < screenHeight && designWidth < designHeight)) {
-			var scale = designWidth/screenWidth;
-
-			canvas.style.width = screenWidth + "px";
-			canvas.style.height = screenHeight + "px";
-			
-			canvas.width = designWidth;
-			canvas.height = screenHeight * scale;
-		}
-		else {
-			canvas.style.width = screenWidth + "px";
-			canvas.style.height = screenHeight + "px";
-			
-			canvas.width = screenWidth;
-			canvas.height = screenHeight;
-		}
-
-		w = canvas.width;
-		h = canvas.height;
-	
-		console.log("Canvas Size: w =" + canvas.width + " h=" + canvas.height);
-		console.log("Canvas Style Size: w =" + canvas.style.width + " h=" + canvas.style.height);
-	}
-
-	this.setSizeLimit(w, h, w, h);
-	UIElement.prototype.call(this);
+UIWindowManager.prototype.onResLoadDone = function() {
+	this.callOnLoad();
+	this.resLoadDone = true;
+	this.showInitWindow();
 
 	return;
 }
 
 UIWindowManager.prototype.systemInit = function() {
-	this.callOnLoad();
+	this.resLoadDone = false;
 	console.log("systemInit");
 
 	return;
 }
 
 UIWindowManager.prototype.systemExit = function() {
-	var curWin = this.getCurrentWindow();
-	if(curWin) {
-		curWin.hide();
+	console.log("systemExit: ");
+	while(this.history.length > 0) {
+		var topIndex = this.history.length - 1;
+		console.log("CloseWindow: " + topIndex);
+		this.closeCurrentWindow(0, true);
 	}
+
 	this.callOnUnload();
-	console.log("systemExit");
 
 	return;
 }
@@ -414,19 +384,29 @@ UIWindowManager.prototype.getCurrentWindow = function() {
 UIWindowManager.prototype.backToHomeWin = function() {
 	var history = this.history;
 	var n = history.length - 1;
+	var curWin = this.getCurrentWindow();
 
 	if(!n) {
+		if(curWin.isUIPopupWindow) {
+			this.closeCurrentWindow(0);
+		}
+
 		return;
 	}
 
 	if(n === 1) {
-		this.closeCurrentWindow(0);
+		if(curWin.isUIPopupWindow) {
+			this.closeCurrentWindow(0, true);
+			this.closeCurrentWindow(0);
+		}
+		else {
+			this.closeCurrentWindow(0);
+		}
 
 		return;
 	}
 	
 	var mainWinIndex = history[0];
-	var curWin = this.getCurrentWindow();
 	var lastWin = this.getFrame(mainWinIndex);
 	
 	if(curWin.isAnimationEnabled()) {
@@ -448,7 +428,7 @@ UIWindowManager.prototype.backToHomeWin = function() {
 UIWindowManager.prototype.closeCurrentWindow = function(retInfo, syncClose) {
 	var curWin = this.getCurrentWindow();
 
-	if(!curWin || curWin.mode === C_MODE_EDITING) {
+	if(!curWin || curWin.mode === Shape.MODE_EDITING) {
 		return  false;
 	}
 	
@@ -470,9 +450,7 @@ UIWindowManager.prototype.closeCurrentPopupWindow = function(popupWin, retInfo, 
 			curWin.callOnSwitchToFront();
 			wm.postRedraw();
 
-			setTimeout(function() {
-				popupWin.callOnClose(retInfo);
-			}, 100);
+			popupWin.callOnClose(retInfo);
 		}
 
 		if(popupWin.isAnimationEnabled() && !syncClose) {
@@ -501,6 +479,11 @@ UIWindowManager.prototype.closeCurrentNormalWindow = function(curWin, retInfo, s
 	var lastWin = null;
 
 	if(this.history.length < 2) {
+		if(syncClose && this.history.length) {
+			wm.history.remove(wm.current);
+			curWin.callOnClose(retInfo);
+		}
+
 		return false;
 	}
 
@@ -512,10 +495,7 @@ UIWindowManager.prototype.closeCurrentNormalWindow = function(curWin, retInfo, s
 		lastWin.callOnSwitchToFront();
 		
 		wm.postRedraw();
-
-		setTimeout(function() {
-			curWin.callOnClose(retInfo);
-		}, 100);
+		curWin.callOnClose(retInfo);
 
 		return;
 	}
@@ -543,8 +523,8 @@ UIWindowManager.prototype.isWindowOpen = function(win) {
 	for(var i = 0; i < this.history.length; i++) {
 		var index = this.history[i];
 		var iter = this.children[index];
-		if(iter === win || iter.popupWindow === win) {
-			return true;
+		for(var w = iter; w != null; w = w.popupWindow) {
+			if(w === win) return true;
 		}
 	}
 
@@ -553,7 +533,7 @@ UIWindowManager.prototype.isWindowOpen = function(win) {
 
 UIWindowManager.prototype.shapeCanBeChild = function(shape) {
 	if(shape.isUIWindow) {
-		if(this.mode == C_MODE_EDITING) {
+		if(this.mode == Shape.MODE_EDITING) {
 			var win = this.findChildByName(shape.name);
 			if(win) {
 				shape.name = shape.name + this.children.length;
@@ -570,7 +550,7 @@ UIWindowManager.prototype.onChildrenChanged = function() {
 }
 
 UIWindowManager.prototype.afterChildAppended = function(shape) {
-	if(this.mode !== C_MODE_RUNNING && !this.isUnpacking) {
+	if(this.mode !== Shape.MODE_RUNNING && !this.isUnpacking) {
 		var index = this.getFrameIndex(shape);
 		this.showFrame(index);
 	}
@@ -610,45 +590,76 @@ UIWindowManager.prototype.scaleForDensity = function(sizeScale, lcdDensity, recu
 }
 
 UIWindowManager.prototype.resize = function(w, h) {
-	if(this.mode === C_MODE_RUNNING && this.fixResolution && isMobile()) {
+	var x = 0;
+	var y = 0;
+	var fixWidth = this.screenScaleMode === "fix-width";
+	var fixHeight = this.screenScaleMode === "fix-height";
+	var fixResolution = this.screenScaleMode === "fix-resolution";
+	var isInDevice = this.parentShape != null;
+
+	if(this.mode === Shape.MODE_RUNNING && (fixWidth || fixHeight || fixResolution) && !isInDevice) {
 		var canvas = this.view.getCanvas();
 
 		var screenWidth = canvas.width;
 		var screenHeight = canvas.height;
 		var designWidth = this.designWidth;
 		var designHeight = this.designHeight;
+		var canvasStyleSizeSupported = !(isWeiBo() || isPhoneGap());
+		var sizeIsRight = (screenWidth > screenHeight && designWidth > designHeight) 
+			|| (screenWidth < screenHeight && designWidth < designHeight);
 
-		if((screenWidth > screenHeight && designWidth > designHeight)
-			|| (screenWidth < screenHeight && designWidth < designHeight)) {
-			var scale = designWidth/screenWidth;
+		canvas.style.width = screenWidth + "px";
+		canvas.style.height = screenHeight + "px";
+		if(canvasStyleSizeSupported && sizeIsRight) {
 
-			canvas.style.width = screenWidth + "px";
-			canvas.style.height = screenHeight + "px";
-			
-			canvas.width = designWidth;
-			canvas.height = screenHeight * scale;
-
+			if(fixWidth) {
+				var scale = designWidth/screenWidth;
+				canvas.width = designWidth;
+				canvas.height = screenHeight * scale;
+				w = canvas.width;
+				h = canvas.height;
+			}
+			else if(fixHeight) {
+				var scale = designHeight/screenHeight;
+				canvas.height = designHeight;
+				canvas.width = screenWidth * scale;
+				w = canvas.width;
+				h = canvas.height;
+			}
+			else {
+				var scaleW = designWidth/screenWidth;
+				var scaleH = designHeight/screenHeight;
+				var scale = Math.max(scaleW, scaleH);
+				canvas.width = screenWidth * scale;
+				canvas.height = screenHeight * scale;
+				
+				x = (canvas.width - designWidth)>>1; 
+				y = (canvas.height - designHeight)>>1;
+				w = designWidth;
+				h = designHeight;
+			}
 			var xInputScale = canvas.width/screenWidth;
 			var yInputScale = canvas.height/screenHeight;
-
 			WindowManager.setInputScale(xInputScale, yInputScale);
 		}
 		else {
-			canvas.style.width = screenWidth + "px";
-			canvas.style.height = screenHeight + "px";
-			
 			canvas.width = screenWidth;
 			canvas.height = screenHeight;
 			WindowManager.setInputScale(1, 1);
+			w = canvas.width;
+			h = canvas.height;
 		}
 
-		w = canvas.width;
-		h = canvas.height;
-	
+		var vp = cantkGetViewPort();	
+		this.app.onCanvasSized(canvas.width, canvas.height);
+
 		console.log("Canvas Size: w =" + canvas.width + " h=" + canvas.height);
+		console.log("ViewPort Size: w =" + vp.width + " h=" + vp.height);
 		console.log("Canvas Style Size: w =" + canvas.style.width + " h=" + canvas.style.height);
 	}
 
+	this.lastWin = null;
+	this.setPosition(x, y);
 	this.setSizeLimit(w, h, w, h);
 	UIElement.prototype.resize.call(this, w, h);
 
@@ -656,7 +667,8 @@ UIWindowManager.prototype.resize = function(w, h) {
 }
 
 UIWindowManager.prototype.setDeviceConfig = function(deviceConfig) {
-	if(this.fixResolution) {
+	var screenScaleMode = this.screenScaleMode;
+	if(screenScaleMode === "fix-resolution" || screenScaleMode === "fix-width" || screenScaleMode === "fix-height") {
 		this.oldConfig = this.deviceConfig;
 
 		return;
@@ -732,13 +744,13 @@ UIWindowManager.prototype.paintLoadingStatus = function(canvas, percent, text) {
 }
 
 UIWindowManager.prototype.paintChildren = function(canvas) {
-	if(this.mode == C_MODE_RUNNING) {
+	if(this.mode != Shape.MODE_EDITING) {
 		if(this.forcePortrait && this.w > this.h) {
 			var image = this.getHtmlImageByType("force-portrait-tips");	
 
 			canvas.fillStyle = this.style.fillColor;
 			canvas.fillRect(0, 0, this.w, this.h);	
-			this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h);
+			this.drawImageAt(canvas, image, UIElement.IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h);
 
 			return;
 		}
@@ -747,25 +759,29 @@ UIWindowManager.prototype.paintChildren = function(canvas) {
 			
 			canvas.fillStyle = this.style.fillColor;
 			canvas.fillRect(0, 0, this.w, this.h);	
-			this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h);
+			this.drawImageAt(canvas, image, UIElement.IMAGE_DISPLAY_CENTER, 0, 0, this.w, this.h);
+
+			return;
+		}
+
+		if(!this.resLoadDone) {
+			var me = this;
+			var percent = ResLoader.getPercent();
+
+			if(percent < 100) {
+				if(this.showLoadingProgress) {
+					setTimeout(function() { me.postRedraw();}, 100);
+					this.paintLoadingStatus(canvas, percent, webappGetText("Loading..."));
+				}
+			}
+			else {
+				this.onResLoadDone();
+			}
 
 			return;
 		}
 	}
 
-	if(this.mode === C_MODE_RUNNING && this.showLoadingProgress) {
-		var me = this;
-		var percent = ResLoader.getPercent();
-
-		if(percent < 95) {
-			setTimeout(function() {
-				me.postRedraw();
-			}, 100);
-
-			return this.paintLoadingStatus(canvas, percent, webappGetText("Loading..."));
-		}
-	}
-	
 	var child = this.getCurrentFrame();
 	if(child) {
 		canvas.save();
@@ -776,7 +792,6 @@ UIWindowManager.prototype.paintChildren = function(canvas) {
 
 	return;
 }
-
 UIWindowManager.prototype.afterPaintChildren = function(canvas) {
 	var creatingShape = this.getCreatingShape();
 
@@ -804,10 +819,24 @@ UIWindowManager.prototype.afterPaintChildren = function(canvas) {
 	return;
 }
 
+UIWindowManager.prototype.paintSelf = function(canvas) {
+	var child = this.getCurrentFrame();
+	if(child) {
+		if(!this.lastWin || this.lastWin !== child) {
+			if(!this.parentShape) {
+				this.view.clearBg(canvas, child.style.lineColor);
+			}
+			this.lastWin = child;
+		}
+	}
+
+	UIElement.prototype.paintSelf.call(this, canvas);
+}
+
 UIWindowManager.prototype.paintSelfOnly =function(canvas) {
 	this.setThisAsCurrentWindowManager();
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		canvas.fillStyle = "white";
 		canvas.fillRect(0, 0, this.w, this.h);
 
@@ -817,10 +846,20 @@ UIWindowManager.prototype.paintSelfOnly =function(canvas) {
 	return;
 }
 
+UIWindowManager.prototype.isDeviceDirectionOK = function() {
+	if((this.forcePortrait && this.w > this.h)
+		|| (this.forceLandscape && this.w < this.h)) {
+		console.log("Device Direction Incorrect.");
+		return false;
+	}
+
+	return true;
+}
+
 UIWindowManager.prototype.relayoutChildren = function() {
 	var curWin = this.getCurrentFrame();
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		for(var i = 0; i < this.children.length; i++) {
 			var iter = this.children[i];
 			iter.relayout();

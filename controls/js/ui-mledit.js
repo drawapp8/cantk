@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Multi Line Editor
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -19,9 +19,9 @@ UIMLEdit.prototype.initUIMLEdit = function(type, w, h, margin, initText, bg, foc
 
 	this.setDefSize(w, h);
 	this.setText(initText);
-	this.setTextType(C_SHAPE_TEXT_TEXTAREA);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
-	this.setImage(CANTK_IMAGE_FOCUSED, focusedBg);
+	this.setTextType(Shape.TEXT_TEXTAREA);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
+	this.setImage(UIElement.IMAGE_FOCUSED, focusedBg);
 	this.setMargin(margin, margin);
 	this.addEventNames(["onChanged", "onFocusIn", "onFocusOut"]);
 	this.setTextAlignV("top");
@@ -42,7 +42,7 @@ UIMLEdit.prototype.onClick = function(point, beforeChild) {
 	if(beforeChild) {
 		return;
 	}
-	if(this.mode !== C_MODE_EDITING) {
+	if(this.mode !== Shape.MODE_EDITING) {
 		this.editText();
 	}
 
@@ -92,7 +92,7 @@ UIMLEdit.prototype.editText = function(point) {
 		editor.element.onchange= function() {
 			if(text !== this.value) {
 				shape.setText(this.value);
-				shape.callOnChanged(shape.text);
+				shape.callOnChangedHandler(shape.text);
 				shape.postRedraw();
 			}
 			else {
@@ -102,12 +102,12 @@ UIMLEdit.prototype.editText = function(point) {
 			editor.element.onchange = null;
 			editor.hide();
 			
-			shape.callOnFocusOut();
+			shape.callOnFocusOutHandler();
 
 			return;
 		}
 		
-		this.callOnFocusIn();
+		this.callOnFocusInHandler();
 	}
 
 	return;

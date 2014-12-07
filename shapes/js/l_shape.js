@@ -181,10 +181,10 @@ LShape.prototype.initLShape = function(points, type) {
 
 	if(points) {
 		this.points.copy(points);
-		this.state = C_STAT_NORMAL;
+		this.state = Shape.STAT_NORMAL;
 	}
 	else {
-		this.state = C_STAT_CREATING_0;
+		this.state = Shape.STAT_CREATING_0;
 	}
 
 	this.style.setLineWidth(2);
@@ -196,7 +196,7 @@ LShape.prototype.onPointerDown = function(point) {
 	this.pointerDown = true;
 	this.lastPosition.copy(point);
 
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		this.hitTestResult = this.hitTest(point);
 	}
 		
@@ -253,9 +253,9 @@ LShape.prototype.isPointInSegment = function(canvas, first, second, point) {
 LShape.prototype.onPointerMove = function(point) {
 	var ret = true;
 
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		if(this.hitTestResult) {
-			if(this.hitTestResult === C_HIT_TEST_MM) {
+			if(this.hitTestResult === Shape.HIT_TEST_MM) {
 				var dx = point.x - this.lastPosition.x;
 				var dy = point.y - this.lastPosition.y;
 
@@ -377,11 +377,11 @@ LShape.prototype.onPointerUp = function(point) {
 			this.updatePoint(pointIndex, this.near.point);
 		}
 	}
-	else if(!this.isClicked() && state === C_STAT_NORMAL) {
+	else if(!this.isClicked() && state === Shape.STAT_NORMAL) {
 		this.clearAttachedNearPoints();
 	}
 
-	this.hitTestResult = C_HIT_TEST_NONE;
+	this.hitTestResult = Shape.HIT_TEST_NONE;
 	this.exec(new LineMoveCommand(this, this.savePoints, !this.near));
 	this.near = null;
 
@@ -438,7 +438,7 @@ LShape.prototype.drawTips = function(canvas) {
 }
 
 LShape.prototype.hitTest = function(point) {
-	var ret = C_HIT_TEST_NONE;
+	var ret = Shape.HIT_TEST_NONE;
 	var canvas = this.view.getCanvas2D();
 	
 	canvas.save();
@@ -449,12 +449,12 @@ LShape.prototype.hitTest = function(point) {
 		if(this.isInSelectedMark(canvas, smp.x, smp.y, point)) {
 			canvas.restore();
 
-			return this.selected ? (i + 1) : C_HIT_TEST_MM;
+			return this.selected ? (i + 1) : Shape.HIT_TEST_MM;
 		}				
 	}
 	
 	if(this.isPointIn(canvas, point)) {
-		ret = C_HIT_TEST_MM;
+		ret = Shape.HIT_TEST_MM;
 	}
 	
 	canvas.restore();
@@ -512,7 +512,7 @@ LShape.prototype.fromJson = function(js) {
 	this.style.fromJson(js.style);
 	this.pointsFromJson(js);	
 	
-	this.state = C_STAT_NORMAL;
+	this.state = Shape.STAT_NORMAL;
 	
 	return;
 }

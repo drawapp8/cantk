@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Basic sound for game. 
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -21,8 +21,8 @@ UISound.prototype.initUISound = function(type, w, h, bg) {
 	this.loop = true;
 	this.autoPlay = true;
 	this.runtimeVisible = true;
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
 
 	return this;
 }
@@ -34,6 +34,7 @@ UISound.prototype.setSoundURL = function(soundURL) {
 }
 
 UISound.prototype.setAutoPlay = function(autoPlay) {
+	this.value = autoPlay;
 	this.autoPlay = autoPlay;
 
 	return;
@@ -107,10 +108,30 @@ UISound.prototype.onModeChanged = function() {
 	return;
 }
 
+UISound.songs = [];
+UISound.addSong = function(song) {
+	UISound.songs.push(song);
+
+	return;
+}
+
+UISound.removeSong = function(url) {
+	for(var i = 0; i < UISound.songs.length; i++) {
+		var iter = UISound.songs[i];
+		if(iter.url === url) {
+			iter.stop();
+			UISound.songs.remove(iter);
+			
+			return iter;
+		}
+	}
+
+	return null;
+}
+
 UISound.prototype.onInit = function() {
 	var me = this;
 	this.visible = this.runtimeVisible;
-
 	if(this.soundURL) {
 		var config = {
 			urls: [this.soundURL],
@@ -124,7 +145,10 @@ UISound.prototype.onInit = function() {
 			console.log("audio end.");
 		}
 
+		UISound.removeSong(this.soundURL);
 		var audio = new Howl(config);
+		audio.url = this.soundURL;
+		UISound.addSong(audio);
 
 		if(!this.getValue()) {
 			audio.mute();
@@ -135,7 +159,6 @@ UISound.prototype.onInit = function() {
 		}
 
 		this.audio = audio;
-		this.value = this.autoPlay;
 
 		return;
 	}
@@ -146,12 +169,12 @@ UISound.prototype.shapeCanBeChild = function(shape) {
 }
 
 UISound.prototype.onClick = function(point, beforeChild) {
-	if(beforeChild || this.mode === C_MODE_EDITING) {
+	if(beforeChild || this.mode === Shape.MODE_EDITING) {
 		return;
 	}
 	
 	this.setValue(!this.value);
-	this.callClickHandler(point);
+	this.callOnClickHandler(point);
 
 	return;
 }

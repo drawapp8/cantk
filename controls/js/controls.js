@@ -79,8 +79,8 @@ function cantkRegisterUIElements() {
 	shapeFactory.addShapeCreator(new UIMLEditCreator(300, 300, 12, null, null), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UIImageCreator("ui-icon", 32, 32, null), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UIImageCreator("ui-image", 200, 200, null), C_UI_ELEMENTS);
-	shapeFactory.addShapeCreator(new UIWaitBarCreator("ui-wait-box", 60, 60, null, CANTK_IMAGE_DISPLAY_CENTER), C_UI_ELEMENTS);
-	shapeFactory.addShapeCreator(new UIWaitBarCreator("ui-wait-bar", 200, 24, null, CANTK_IMAGE_DISPLAY_SCALE), C_UI_ELEMENTS);
+	shapeFactory.addShapeCreator(new UIWaitBarCreator("ui-wait-box", 60, 60, null, UIElement.IMAGE_DISPLAY_CENTER), C_UI_ELEMENTS);
+	shapeFactory.addShapeCreator(new UIWaitBarCreator("ui-wait-bar", 200, 24, null, UIElement.IMAGE_DISPLAY_SCALE), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UIButtonCreator(120, 60), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UICheckBoxCreator(160, 60, null, null, null, null,	null, null), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UIRadioBoxCreator(50, 50, null, null, null, null, null, null), C_UI_ELEMENTS);

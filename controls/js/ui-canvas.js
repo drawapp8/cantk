@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Canvas
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,9 +18,9 @@ UICanvas.prototype.initUICanvas = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.addEventNames(["onPaint", "onTimer", "onPointerDown", "onPointerMove", "onPointerUp", 
-		"onKeyDown", "onKeyUp", "onLongPress", "onDoubleClick"]);
+	this.setTextType(Shape.TEXT_NONE);
+	this.addEventNames(["onPaint", "onPointerDown", "onPointerMove", "onPointerUp", "onKeyDown", 
+		"onKeyUp", "onLongPress", "onDoubleClick"]);
 
 	this.setImage("option_image_0", null);
 	this.setImage("option_image_1", null);
@@ -41,20 +41,6 @@ UICanvas.prototype.initUICanvas = function(type, w, h) {
 	return this;
 }
 
-UICanvas.prototype.paintChildren = function(canvas) {
-	canvas.save();	
-	canvas.beginPath();
-	canvas.rect(0, 0, this.w, this.h);
-	canvas.clip();
-	canvas.beginPath();
-
-	this.defaultPaintChildren(canvas);
-
-	canvas.restore();
-
-	return;
-}
-
 UICanvas.prototype.shapeCanBeChild = function(shape) {
 	return shape.isUIImage || shape.isUIButton || shape.isUIGroup || shape.isUILabel;
 }
@@ -64,10 +50,10 @@ UICanvas.prototype.paintSelfOnly =function(canvas) {
 	canvas.rect(0, 0, this.w, this.h);
 	canvas.clip();
 	canvas.beginPath();
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		canvas.fillRect(0, 0, this.w, this.h);
 	}
-	this.callPaintHandler(canvas);
+	this.callOnPaintHandler(canvas);
 	canvas.restore();
 
 	return;

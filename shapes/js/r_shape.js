@@ -26,7 +26,6 @@ RShape.prototype.isRect = true;
 RShape.prototype.initRShape = function(x, y, w, h, type) {
 	this.initShape(x, y, w, h, type);
 
-	this.scale = 1;
 	this.opacity = 1;
 	this.hMargin = 0;
 	this.vMargin = 0;
@@ -35,9 +34,8 @@ RShape.prototype.initRShape = function(x, y, w, h, type) {
 	this.saveHeight = 0;
 	this.image = null;
 	this.imageUrl = "";
-	this.rect = new Rect(0, 0, w, h);
-	this.lastPosition = new Point(0, 0);
-	this.pointerDownPosition = new Point(0, 0);
+	this.lastPosition = {x:0, y:0};
+	this.pointerDownPosition = {x:0, y:0};
 	this.defWidth = 200;
 	this.defHeight = 60;
 	this.pointerDown = false;
@@ -48,50 +46,50 @@ RShape.prototype.initRShape = function(x, y, w, h, type) {
 	if(w === 0 || h === 0) {
 		this.w = this.MIN_SIZE;
 		this.h = this.MIN_SIZE;	
-		this.setState(C_STAT_CREATING_0);
-
-		this.onPointerDown = function(point) {
-			this.pointerDownPosition.x = point.x;
-			this.pointerDownPosition.y = point.y;
-			this.postRedraw();
-
-			if(this.onPointerDownCreating(point)) {
-				return true;
-			}
-
-			return this.onPointerDownNormal(point);
-		}
-	
-		this.onPointerMove = function(point) {
-			if(this.onPointerMoveCreating(point)) {
-				return true;
-			}
-
-			return this.onPointerMoveNormal(point);
-		}
-
-		this.onPointerUp = function(point) {
-			var ret = false;	
-
-			if(this.onPointerUpCreating(point)) {
-				ret = true;
-			}
-			else {
-				ret = this.onPointerUpNormal(point);
-			}
-			this.pointerDown = false;
-			this.postRedraw();
-
-			return ret;
-		}
+		this.setState(Shape.STAT_CREATING_0);
 	}
 
 	return;
 }
 
+RShape.prototype.onPointerDown = function(point) {
+	this.pointerDownPosition.x = point.x;
+	this.pointerDownPosition.y = point.y;
+	this.postRedraw();
+
+	if(this.onPointerDownCreating(point)) {
+		return true;
+	}
+
+	return this.onPointerDownNormal(point);
+}
+
+RShape.prototype.onPointerMove = function(point) {
+	if(this.onPointerMoveCreating(point)) {
+		return true;
+	}
+
+	return this.onPointerMoveNormal(point);
+}
+
+RShape.prototype.onPointerUp = function(point) {
+	var ret = false;	
+
+	if(this.onPointerUpCreating(point)) {
+		ret = true;
+	}
+	else {
+		ret = this.onPointerUpNormal(point);
+	}
+	this.pointerDown = false;
+	this.postRedraw();
+
+	return ret;
+}
+
 RShape.prototype.onPointerDownCreating = function(point) {
-	if(this.state === C_STAT_CREATING_0) {
-		this.state = C_STAT_CREATING_1;
+	if(this.state === Shape.STAT_CREATING_0) {
+		this.state = Shape.STAT_CREATING_1;
 		this.move(point.x, point.y);
 		this.lastPosition.x = point.x;
 		this.lastPosition.y = point.y;
@@ -105,7 +103,7 @@ RShape.prototype.onPointerDownCreating = function(point) {
 }
 
 RShape.prototype.onPointerUpCreating = function(point) {
-	if(this.state !== C_STAT_NORMAL) {
+	if(this.state !== Shape.STAT_NORMAL) {
 		var dx = point.x - this.lastPosition.x;
 		var dy = point.y - this.lastPosition.y;
 		
@@ -116,7 +114,7 @@ RShape.prototype.onPointerUpCreating = function(point) {
 			this.resizeDelta(dx, dy);
 		}
 
-		this.state = C_STAT_NORMAL;
+		this.state = Shape.STAT_NORMAL;
 		this.setSelected(true);
 		this.afterCreated();		
 		this.postRedraw();
@@ -126,7 +124,7 @@ RShape.prototype.onPointerUpCreating = function(point) {
 }
 
 RShape.prototype.onPointerMoveCreating = function(point) {
-	if(this.state === C_STAT_CREATING_0) {
+	if(this.state === Shape.STAT_CREATING_0) {
 		this.move(point.x, point.y);
 		
 		this.lastPosition.x = point.x;
@@ -135,7 +133,7 @@ RShape.prototype.onPointerMoveCreating = function(point) {
 		
 		return true;
 	}		
-	else if(this.state === C_STAT_CREATING_1) {
+	else if(this.state === Shape.STAT_CREATING_1) {
 		var w = point.x - this.view.pointerDownPosition.x;
 		var h = point.y - this.view.pointerDownPosition.y;
 
@@ -180,7 +178,7 @@ RShape.prototype.onPointerMoveNormal = function(point) {
 RShape.prototype.onPointerUpNormal = function(point) {
 	if(this.hitTestResult) {
 		this.handlePointerEvent(point, -1);
-		this.hitTestResult = C_HIT_TEST_NONE;
+		this.hitTestResult = Shape.HIT_TEST_NONE;
 
 		return true;
 	}
@@ -250,7 +248,7 @@ RShape.prototype.setDefSize= function(w, h) {
 	this.w = w;
 	this.h = h;
 
-	return;
+	return this;
 }
 
 RShape.prototype.setSizeLimit = function(wMin, hMin, wMax, hMax, whRadio) {
@@ -260,7 +258,7 @@ RShape.prototype.setSizeLimit = function(wMin, hMin, wMax, hMax, whRadio) {
 	this.hMax = hMax;
 	this.whRadio = whRadio;
 
-	return;
+	return this;
 }
 
 RShape.prototype.resizeDelta =function(dw, dh) {
@@ -273,14 +271,14 @@ RShape.prototype.setPosition = function(x, y) {
 	this.x = x;
 	this.y = y;
 
-	return;
+	return this;
 }
 
 RShape.prototype.setSize = function(w, h) {
 	this.w = Math.floor(w);
 	this.h = Math.floor(h);
 
-	return;
+	return this;
 }
 
 RShape.prototype.resize = function(w, h) {
@@ -330,8 +328,10 @@ RShape.prototype.applyTransform = function(canvas) {
 	}
 	
 	canvas.translate(hw, hh);
-	if(this.scale) {
-		canvas.scale(this.scale, this.scale);
+	var scaleX = this.getScaleX();
+	var scaleY = this.getScaleY();
+	if(scaleX && scaleY) {
+		canvas.scale(scaleX, scaleY);
 	}
 	
 	if(this.rotation) {
@@ -452,22 +452,22 @@ RShape.prototype.getNearPoint = function(i) {
 RShape.prototype.getSelectMarkMobile = function(type, point) {
 	var ret = true;
 	switch(type) {
-		case C_HIT_TEST_TL: {
+		case Shape.HIT_TEST_TL: {
 			point.x = 0;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_TR: {
+		case Shape.HIT_TEST_TR: {
 			point.x = this.w;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_BL: {
+		case Shape.HIT_TEST_BL: {
 			point.x = 0;
 			point.y = this.h;
 			break;
 		}
-		case C_HIT_TEST_BR: {
+		case Shape.HIT_TEST_BR: {
 			point.x = this.w;
 			point.y = this.h;
 			break;
@@ -483,42 +483,42 @@ RShape.prototype.getSelectMarkMobile = function(type, point) {
 RShape.prototype.getSelectMarkPC = function(type, point) {
 	var ret = true;
 	switch(type) {
-		case C_HIT_TEST_TL: {
+		case Shape.HIT_TEST_TL: {
 			point.x = 0;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_TM: {
+		case Shape.HIT_TEST_TM: {
 			point.x = this.w/2;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_TR: {
+		case Shape.HIT_TEST_TR: {
 			point.x = this.w;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_ML: {
+		case Shape.HIT_TEST_ML: {
 			point.x = 0;
 			point.y = this.h/2;
 			break;
 		}
-		case C_HIT_TEST_MR: {
+		case Shape.HIT_TEST_MR: {
 			point.x = this.w;
 			point.y = this.h/2;
 			break;
 		}
-		case C_HIT_TEST_BL: {
+		case Shape.HIT_TEST_BL: {
 			point.x = 0;
 			point.y = this.h;
 			break;
 		}
-		case C_HIT_TEST_BM: {
+		case Shape.HIT_TEST_BM: {
 			point.x = this.w/2;
 			point.y = this.h;
 			break;
 		}
-		case C_HIT_TEST_BR: {
+		case Shape.HIT_TEST_BR: {
 			point.x = this.w;
 			point.y = this.h;
 			break;
@@ -554,11 +554,11 @@ RShape.prototype.paintShape = function(canvas) {
 RShape.prototype.setTextNeedRelayout = function(value) {
 	this.textNeedRelayout = value;
 
-	return;
+	return this;
 }
 
 RShape.prototype.layoutText = function(canvas) {
-	if(!this.textNeedRelayout || this.textType === C_SHAPE_TEXT_NONE) {
+	if(!this.textNeedRelayout || this.textType === Shape.TEXT_NONE) {
 		return;
 	}
 
@@ -641,7 +641,7 @@ RShape.prototype.needDrawTextTips = function() {
 RShape.prototype.setInputTips = function(inputTips) {
 	this.inputTips = inputTips;
 
-	return;
+	return this;
 }
 
 RShape.prototype.getTextTipsPosition = function() {
@@ -707,7 +707,7 @@ RShape.prototype.setMargin = function(vMargin, hMargin) {
 	this.vMargin = Math.floor(Math.min(vMargin, 0.5 * this.w));
 	this.hMargin = Math.floor(Math.min(hMargin, 0.5 * this.h));
 
-	return;
+	return this;
 }
 
 RShape.prototype.getVMargin = function() {
@@ -839,8 +839,8 @@ RShape.prototype.drawSelectMarks = function(canvas) {
 		canvas.beginPath();
 		canvas.lineWidth = lineWidth;
 		
-		for(var type = C_HIT_TEST_NONE + 1; 
-			type < C_HIT_TEST_MAX; type++) {
+		for(var type = Shape.HIT_TEST_NONE + 1; 
+			type < Shape.HIT_TEST_MAX; type++) {
 			if(this.getSelectMark(type, this.selectMarkPoint)) {
 				this.createSelectedMark(canvas, this.selectMarkPoint.x, this.selectMarkPoint.y, type == this.hitTestResult);
 			}
@@ -872,12 +872,12 @@ RShape.prototype.paintSelf = function(canvas) {
 
 	this.drawImage(canvas);
 
-	if(this.drawText && this.textType !== C_SHAPE_TEXT_NONE) {
+	if(this.drawText && this.textType !== Shape.TEXT_NONE) {
 		this.drawText(canvas);
 		this.drawTextTips(canvas);
 	}
 
-	if(this.hitTestResult !== C_HIT_TEST_NONE || this.state !== C_STAT_NORMAL) {
+	if(this.hitTestResult !== Shape.HIT_TEST_NONE || this.state !== Shape.STAT_NORMAL) {
 		this.drawSizeTips(canvas);
 	}
 		
@@ -888,7 +888,7 @@ RShape.prototype.paintSelf = function(canvas) {
 }
 
 RShape.prototype.hitTest = function(point) {
-	var ret = C_HIT_TEST_NONE;
+	var ret = Shape.HIT_TEST_NONE;
 	var canvas = this.view.getCanvas2D();
 	
 	canvas.save();
@@ -896,8 +896,8 @@ RShape.prototype.hitTest = function(point) {
 	this.applyTransform(canvas);
 
 	if(this.selected) {
-		for(var type = C_HIT_TEST_NONE + 1; 
-			type < C_HIT_TEST_MAX; type++) {
+		for(var type = Shape.HIT_TEST_NONE + 1; 
+			type < Shape.HIT_TEST_MAX; type++) {
 			var smp = this.selectMarkPoint;
 			if(this.getSelectMark(type, smp)) {
 				if(this.isInSelectedMark(canvas, 
@@ -909,11 +909,11 @@ RShape.prototype.hitTest = function(point) {
 		}
 		
 		if(this.isPointIn(canvas, point)) {
-			ret = C_HIT_TEST_MM;
+			ret = Shape.HIT_TEST_MM;
 		}
 	}
 	else if(this.isPointIn(canvas, point)) {
-		ret = C_HIT_TEST_MM;
+		ret = Shape.HIT_TEST_MM;
 	}
 	
 	canvas.restore();
@@ -955,7 +955,7 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 	var new_h = this.h;
 	
 	switch(this.hitTestResult) {
-		case C_HIT_TEST_TL: {
+		case Shape.HIT_TEST_TL: {
 			new_dx = tdx;
 			new_dy = tdy;
 			new_w = this.w - tdx;
@@ -963,43 +963,43 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 			
 			break;
 		}
-		case C_HIT_TEST_TM: {
+		case Shape.HIT_TEST_TM: {
 			new_dy = tdy;
 			new_h = this.h - tdy;			
 			break;
 		}			
-		case C_HIT_TEST_TR: {
+		case Shape.HIT_TEST_TR: {
 			new_dx = 0;
 			new_dy = tdy;
 			new_w = this.w + tdx;
 			new_h = this.h - tdy;			
 			break;
 		}
-		case C_HIT_TEST_ML: {
+		case Shape.HIT_TEST_ML: {
 			new_dx = tdx;
 			new_w = this.w - tdx;		
 			break;
 		}			
-		case C_HIT_TEST_MR: {
+		case Shape.HIT_TEST_MR: {
 			new_w = this.w  + tdx;				
 			break;
 		}				
-		case C_HIT_TEST_BL: {
+		case Shape.HIT_TEST_BL: {
 			new_dx = tdx;
 			new_w = this.w - tdx;
 			new_h = this.h + tdy;			
 			break;
 		}
-		case C_HIT_TEST_BM: {
+		case Shape.HIT_TEST_BM: {
 			new_h = this.h + tdy;			
 			break;
 		}			
-		case C_HIT_TEST_BR: {
+		case Shape.HIT_TEST_BR: {
 			new_w = this.w + tdx;
 			new_h = this.h + tdy;			
 			break;
 		}			
-		case C_HIT_TEST_MM: {		
+		case Shape.HIT_TEST_MM: {		
 			new_dx = tdx;
 			new_dy = tdy;
 			break;
@@ -1031,7 +1031,7 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 				this.onUserResized();
 			}
 		}
-		this.hitTestResult = C_HIT_TEST_NONE;
+		this.hitTestResult = Shape.HIT_TEST_NONE;
 	}
 	else {
 		if(new_dx || new_dy) {
@@ -1049,7 +1049,7 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 		}
 	}
 	
-	if(this.hitTestResult === C_HIT_TEST_HANDLE) {
+	if(this.hitTestResult === Shape.HIT_TEST_HANDLE) {
 		this.moveHandle(dx, dy);
 	}
 	
@@ -1074,7 +1074,7 @@ RShape.prototype.toJsonMore = function(o) {
 }
 
 RShape.prototype.toJson = function() {
-	var o = new Object();
+	var o = {};
 	o.type = "";
 	o.name = "";
 
@@ -1124,14 +1124,6 @@ RShape.prototype.toJson = function() {
 	delete o.editing;
 	delete o.textBaseline;
 
-	if(o.enable) {
-		delete o.enable;
-	}
-	
-	if(o.visible) {
-		delete o.visible;
-	}
-
 	if(!o.textType) {
 		delete o.vTextAlign;
 		delete o.hTextAlign;
@@ -1154,10 +1146,9 @@ RShape.prototype.toJson = function() {
 		delete o.opacity;
 	}
 
-	if(o.scale === 1) {
-		delete o.scale;
-	}
-
+	delete o.scale;
+	delete o.scaleX;
+	delete o.scaleY;
 	delete o.needRelayout;
 	delete o.rectSelectable;
 
@@ -1240,8 +1231,11 @@ RShape.prototype.fromJson = function(js) {
 		this.opacity = 1;
 	}
 	
-	if(js.scale === undefined) {
-		this.scale = 1;
+	if(js.scaleX === undefined) {
+		this.scaleX = 1;
+	}
+	if(js.scaleX === undefined) {
+		this.scaleX = 1;
 	}
 
 	this.fromJsonMore(js);
@@ -1264,7 +1258,7 @@ RShape.prototype.fromJson = function(js) {
 
 	this.setText(this.text);
 	this.textNeedRelayout = true;
-	this.state = C_STAT_NORMAL;
+	this.state = Shape.STAT_NORMAL;
 	delete this.isUnpacking;
 
 	this.onFromJsonDone();
@@ -1280,7 +1274,7 @@ RShape.prototype.setImage = function(value) {
 	this.imageUrl = value;
 	this.image = new CanTkImage(value);
 	
-	return;
+	return this;
 }
 
 
@@ -1321,7 +1315,7 @@ RShape.prototype.getMoveAbsDeltaY = function() {
 RShape.prototype.setRoundRadius = function(roundRadius) {
 	this.roundRadius = roundRadius;
 
-	return;
+	return this;
 }
 
 

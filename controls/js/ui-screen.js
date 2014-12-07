@@ -3,7 +3,7 @@
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: Screen 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,7 +18,7 @@ UIScreen.prototype.initUIScreen = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	
 	return this;
 }
@@ -76,7 +76,7 @@ UIScreen.prototype.relayoutChildren = function() {
 		child.w = w;
 		child.setUserMovable(false);
 		child.setUserResizable(false);
-		child.widthAttr = C_WIDTH_FILL_PARENT;
+		child.widthAttr = UIElement.WIDTH_FILL_PARENT;
 
 		if(child.type === "ui-status-bar") {
 			statusBar = child;

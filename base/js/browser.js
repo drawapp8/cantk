@@ -3,7 +3,7 @@
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: portable log
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -24,6 +24,7 @@ var browser = {
 		windowPhone: u.indexOf('Windows Phone') > -1,
 		webkit: u.indexOf("WebKit") > -1,
 		weixin: u.indexOf("MicroMessenger") >= 0,
+		weibo: u.indexOf("weibo") >= 0,
 		qq: u.indexOf("QQ") >= 0
 	};
 	}()
@@ -31,6 +32,10 @@ var browser = {
 
 function isQQ() {
 	return browser.versions.qq;
+}
+
+function isWeiBo() {
+	return browser.versions.weibo;
 }
 
 function isWeiXin() {

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Color Bar
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -20,7 +20,7 @@ UIColorBar.prototype.initUIColorBar = function(type, w, h) {
 
 	this.setBarPosition(0);
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	this.setCanRectSelectable(false, false);
 	this.barDierction = 0;
 
@@ -30,7 +30,7 @@ UIColorBar.prototype.initUIColorBar = function(type, w, h) {
 UIColorBar.prototype.setBarDirection = function(direction) {
 	this.barDirection = direction;
 
-	return;
+	return this;
 }
 
 UIColorBar.prototype.getBarDirection = function() {
@@ -41,7 +41,7 @@ UIColorBar.prototype.getBarDirection = function() {
 UIColorBar.prototype.setBarPosition = function(position) {
 	this.barPosition = position;
 
-	return;
+	return this;
 }
 
 UIColorBar.prototype.getBarPosition = function() {

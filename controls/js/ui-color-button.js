@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Color Button
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -21,7 +21,7 @@ UIColorButton.prototype.initUIColorTile = function(type, w, h) {
 	this.isUIColorButton = false;
 	this.isUIColorTile = true;
 	this.setAutoScaleFontSize(true);
-	this.addEventNames(["onOnUpdateTransform"]); 
+	this.addEventNames(["onUpdateTransform"]); 
 
 	return this;
 }
@@ -31,10 +31,10 @@ UIColorButton.prototype.initUIColorButton = function(type, w, h) {
 
 	this.roundRadius = 5;
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_INPUT);
+	this.setTextType(Shape.TEXT_INPUT);
 	this.setCanRectSelectable(false, false);
 	this.setMargin(8, 8);
-	this.addEventNames(["onOnUpdateTransform"]); 
+	this.addEventNames(["onUpdateTransform"]); 
 
 	return this;
 }
@@ -61,10 +61,10 @@ UIColorButton.prototype.paintSelfOnly =function(canvas) {
 	canvas.beginPath();
 
 	if(this.isUIColorButton && this.pointerDown) {
-		canvas.lineWidth = 5;
+		canvas.lineWidth = this.style.lineWidth * 2;
 	}
 	else {
-		canvas.lineWidth = 3;
+		canvas.lineWidth = this.style.lineWidth;
 	}
 
 	canvas.translate(this.hMargin, this.vMargin);

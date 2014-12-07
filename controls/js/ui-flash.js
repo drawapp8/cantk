@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Flash 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -27,7 +27,7 @@ UIFlash.prototype.getHtmlContent = function() {
 UIFlash.prototype.initUIFlash = function(type) {
 	this.initUIHtml(type, 400, 300);
 	this.setValue("test/5.swf");
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 
 	return this;
 }

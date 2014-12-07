@@ -1,15 +1,89 @@
 /*
- * File: core.js
+ * File: ui-element.js
  * Author:	Li XianJing <xianjimli@hotmail.com>
  * Brief: UIElement
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
 function UIElement() {
 	return;
 }
+
+UIElement.IMAGE_DISPLAY_CENTER = 0;
+UIElement.IMAGE_DISPLAY_TILE   = 1;
+UIElement.IMAGE_DISPLAY_9PATCH = 2;
+UIElement.IMAGE_DISPLAY_SCALE  = 3;
+UIElement.IMAGE_DISPLAY_AUTO = 4;
+UIElement.IMAGE_DISPLAY_DEFAULT = 5;
+UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO  = 6;
+UIElement.IMAGE_DISPLAY_TILE_V = 7;
+UIElement.IMAGE_DISPLAY_TILE_H = 8;
+UIElement.IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)", "vtile", "htile"];
+
+UIElement.X_FIX_LEFT = 0;
+UIElement.X_FIX_RIGHT = 1;
+UIElement.X_SCALE = 2;
+UIElement.X_CENTER_IN_PARENT = 3;
+UIElement.X_LEFT_IN_PARENT	 = 4;
+UIElement.X_RIGHT_IN_PARENT  = 5;
+UIElement.X_AFTER_PREV       = 6;
+UIElement.X_LAYOUT_NAMES = ["fix_left", "fix_right", "scale", "center_in_parent", "left_in_parent", "right_in_parent", "after_prev"];
+
+UIElement.Y_FIX_TOP = 0;
+UIElement.Y_FIX_BOTTOM = 1;
+UIElement.Y_SCALE = 2;
+UIElement.Y_MIDDLE_IN_PARENT = 3;
+UIElement.Y_TOP_IN_PARENT	 = 4;
+UIElement.Y_BOTTOM_IN_PARENT = 5;
+UIElement.Y_AFTER_PREV       = 6;
+UIElement.Y_LAYOUT_NAMES = ["fix_top", "fix_bottom", "scale", "middle_in_parent", "top_in_parent", "bottom_in_parent", "after_prev"];
+
+UIElement.WIDTH_FIX = 0;
+UIElement.WIDTH_SCALE = 1;
+UIElement.WIDTH_FILL_PARENT = 2;
+UIElement.WIDTH_FILL_AVAILABLE = 3;
+
+UIElement.HEIGHT_FIX = 0;
+UIElement.HEIGHT_SCALE = 1;
+UIElement.HEIGHT_FILL_PARENT = 2;
+UIElement.HEIGHT_FILL_AVAILABLE = 3;
+UIElement.HEIGHT_KEEP_RATIO_WITH_WIDTH = 4;
+
+UIElement.WIDTH_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible"];
+UIElement.HEIGHT_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible", "keep_ratio_with_width"];
+
+UIElement.IMAGE_DEFAULT	   = "default_bg";
+UIElement.IMAGE_MASK	   = "mask_fg";
+UIElement.IMAGE_NORMAL	   = "normal_bg";
+UIElement.IMAGE_FOCUSED	   = "focused_bg";
+UIElement.IMAGE_ACTIVE	   = "active_bg";
+UIElement.IMAGE_POINTER_OVER = "pointer_over_bg";
+UIElement.IMAGE_DISABLE	   = "disable_bg";
+UIElement.IMAGE_DISABLE_FG = "disable_fg";
+UIElement.IMAGE_NORMAL_FG  = "normal_fg";
+UIElement.IMAGE_ACTIVE_FG  = "active_fg";
+UIElement.IMAGE_ON_FG	   = "on_fg";
+UIElement.IMAGE_OFF_FG	   = "off_fg";
+UIElement.IMAGE_CHECKED_FG	   = "checked_fg";
+UIElement.IMAGE_UNCHECK_FG	   = "uncheck_fg";
+UIElement.IMAGE_ON_FOCUSED	   = "focused_on_bg";
+UIElement.IMAGE_ON_ACTIVE	   = "active_on_bg";
+UIElement.IMAGE_OFF_FOCUSED	   = "focused_off_bg";
+UIElement.IMAGE_OFF_ACTIVE	   = "active_off_bg";
+UIElement.IMAGE_NORMAL_DRAG    = "normal_drag";
+UIElement.IMAGE_DELETE_ITEM    = "delete_item";
+
+UIElement.ITEM_BG_NORMAL  = "item_bg_normal";
+UIElement.ITEM_BG_ACTIVE  = "item_bg_active";
+UIElement.ITEM_BG_CURRENT_NORMAL = "item_bg_current_normal";
+UIElement.ITEM_BG_CURRENT_ACTIVE = "item_bg_current_active";
+
+UIElement.TEXT_ALIGN_CENTER = 0;
+UIElement.TEXT_ALIGN_LEFT	= 0;
+UIElement.TEXT_ALIGN_RIGHT = 0;
+UIElement.TEXT_ALIGN_NAMES = ["center", "left", "right"];
 
 UIElement.prototype = new RShape();
 
@@ -60,20 +134,21 @@ UIElement.prototype.clone = function() {
 }
 
 UIElement.prototype.getRelativePathOfURL = function(url) {
-	if(UIElement.disableGetRelativePathOfURL) {
+	if(UIElement.disableGetRelativePathOfURL || !url) {
 		return url;
 	}
 
-	if(!url) {
-		return null;
+	var str = "";
+	if(window.location.protocol === "file:") {
+		str = dirname(window.location.href) + "/";
 	}
-
-	var str = window.location.protocol + "//" + window.location.host + "/";
+	else {
+		str = window.location.protocol + "//" + window.location.host + "/";
+	}
+	
 	if(url.indexOf("/web/backend/") >= 0 && url.indexOf(str) >= 0) {
 		return url;
 	}
-
-
 	url = url.replace(str, "");
 
 	return url;
@@ -96,11 +171,11 @@ UIElement.prototype.fixChildPosition = function(child) {
 		return;
 	}
 
-	if(child.widthAttr === C_WIDTH_FILL_PARENT || x < minX) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT || x < minX) {
 		x = minX;
 	}
 
-	if(child.heightAttr === C_HEIGHT_FILL_PARENT || y < minY) {
+	if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT || y < minY) {
 		y = minY;
 	}
 	
@@ -136,9 +211,9 @@ UIElement.prototype.fixChildSize = function(child) {
 	var right = wParent + this.hMargin;
 	var bottom = hParent + this.vMargin;
 
-	if((x + w) > right && child.widthAttr != C_WIDTH_FILL_PARENT 
-		&& child.xAttr != C_X_AFTER_PREV && child.widthAttr != C_WIDTH_FILL_AVAILABLE 
-		&& this.mode === C_MODE_EDITING) {
+	if((x + w) > right && child.widthAttr != UIElement.WIDTH_FILL_PARENT 
+		&& child.xAttr != UIElement.X_AFTER_PREV && child.widthAttr != UIElement.WIDTH_FILL_AVAILABLE 
+		&& this.mode === Shape.MODE_EDITING) {
 		x = right - w;
 		if(x < 0) {
 			x = 0;
@@ -147,9 +222,9 @@ UIElement.prototype.fixChildSize = function(child) {
 		w = right - x;
 	}
 
-	if((y + h) > bottom && child.heightAttr != C_HEIGHT_FILL_PARENT 
-		&& child.yAttr != C_Y_AFTER_PREV && child.heightAttr != C_HEIGHT_FILL_AVAILABLE 
-		&& this.mode === C_MODE_EDITING) {
+	if((y + h) > bottom && child.heightAttr != UIElement.HEIGHT_FILL_PARENT 
+		&& child.yAttr != UIElement.Y_AFTER_PREV && child.heightAttr != UIElement.HEIGHT_FILL_AVAILABLE 
+		&& this.mode === Shape.MODE_EDITING) {
 		y = bottom - h;
 		if(y < 0) {
 			y = 0;
@@ -178,12 +253,12 @@ UIElement.prototype.onInit = function() {
 		this.offset = 0;
 	}
 
-	if(this.mode !== C_MODE_EDITING) {
+	if(this.mode !== Shape.MODE_EDITING) {
 		if(this.dataSourceUrl && this.dataSourceUrl.length > 5) {
 			this.bindDataUrl(this.dataSourceUrl);
 		}
 	
-		this.callOnInit();
+		this.callOnInitHandler();
 	}
 
 	return;
@@ -233,12 +308,12 @@ UIElement.prototype.onModeChanged = function() {
 }
 
 UIElement.prototype.userRemovable = function() {
-	return this.mode === C_MODE_EDITING;
+	return this.mode === Shape.MODE_EDITING;
 }
 
 UIElement.prototype.postRedraw = function() {
 	if(this.view) {
-		if(this.mode === C_MODE_RUNNING) {
+		if(this.mode === Shape.MODE_RUNNING) {
 			var rect = {};
 			var p = this.getPositionInView();
 			rect.x = p.x;
@@ -260,7 +335,7 @@ UIElement.prototype.setMode = function(mode, recursive) {
 	this.mode = mode;
 
 	if(this.type !== "ui-menu-bar") {
-		if(mode === C_MODE_EDITING) {
+		if(mode === Shape.MODE_EDITING) {
 			this.setVisible(true);
 		}
 	}
@@ -275,7 +350,7 @@ UIElement.prototype.setMode = function(mode, recursive) {
 	}
 	this.onModeChanged();
 
-	return;
+	return this;
 }
 
 UIElement.prototype.calcChildrenRange = function() {
@@ -478,7 +553,7 @@ UIElement.prototype.initContainerShape = function(type) {
 
 	RShapeInit(this, type);
 	
-	this.mode = C_MODE_EDITING;
+	this.mode = Shape.MODE_EDITING;
 	this.rectSelectable = true;
 
 	return this;
@@ -486,10 +561,10 @@ UIElement.prototype.initContainerShape = function(type) {
 
 UIElement.prototype.defaultDispatchPointerDownToChildren = function(p) {
 	var targetShape = this.targetShape;
-	if(targetShape && targetShape.selected && targetShape.mode === C_MODE_EDITING) {
+	if(targetShape && targetShape.selected && targetShape.mode === Shape.MODE_EDITING) {
 		var hitTestResult = this.hitTest(p);
 
-		if(hitTestResult != C_HIT_TEST_MM && hitTestResult != C_HIT_TEST_NONE) {
+		if(hitTestResult != Shape.HIT_TEST_MM && hitTestResult != Shape.HIT_TEST_NONE) {
 			if(this.targetShape.onPointerDown(p)) {
 				return true;
 			}
@@ -513,72 +588,16 @@ UIElement.prototype.dispatchPointerDownToChildren = function(p) {
 	return this.defaultDispatchPointerDownToChildren(p);
 }
 
-UIElement.prototype.callPointerDownHandler = function(point) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handlePointerDown || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onPointerDown"];
-		if(sourceCode) {
-			sourceCode = "this.handlePointerDown = function(point) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handlePointerDown) {
-		try {
-			this.handlePointerDown(point);
-		}catch(e) {
-			console.log("this.handlePointerDown:" + e.message);
-		}
-	}
-
-	return true;
-}
-
 UIElement.prototype.onPointerDownEditing = function(point, beforeChild) {
 	return;
 }
 
 UIElement.prototype.onPointerDownRunning = function(point, beforeChild) {
-	if(!beforeChild) {
+	if(!beforeChild || this.popupWindow || !this.pointerDown) {
 		return;
 	}
 
-	return this.callPointerDownHandler(point);
-}
-
-UIElement.prototype.callPointerMoveHandler = function(point) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handlePointerMove || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onPointerMove"];
-		if(sourceCode) {
-			sourceCode = "this.handlePointerMove = function(point) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handlePointerMove) {
-		try {
-			this.handlePointerMove(point);
-		}catch(e) {
-			console.log("this.handlePointerMove:" + e.message);
-		}
-	}
-
-	return true;
+	return this.callOnPointerDownHandler(point);
 }
 
 UIElement.prototype.onPointerMoveEditing = function(point, beforeChild) {
@@ -586,39 +605,11 @@ UIElement.prototype.onPointerMoveEditing = function(point, beforeChild) {
 }
 
 UIElement.prototype.onPointerMoveRunning = function(point, beforeChild) {
-	if(!beforeChild) {
+	if(!beforeChild || this.popupWindow) {
 		return;
 	}
 
-	return this.callPointerMoveHandler(point);
-}
-
-UIElement.prototype.callPointerUpHandler = function(point) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handlePointerUp || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onPointerUp"];
-		if(sourceCode) {
-			sourceCode = "this.handlePointerUp = function(point) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handlePointerUp) {
-		try{
-			this.handlePointerUp(point);
-		}catch(e) {
-			console.log("this.handlePointerUp:" + e.message);
-		}
-	}
-	
-	return true;
+	return this.callOnPointerMoveHandler(point);
 }
 
 UIElement.prototype.onPointerUpEditing = function(point, beforeChild) {
@@ -626,162 +617,32 @@ UIElement.prototype.onPointerUpEditing = function(point, beforeChild) {
 }
 
 UIElement.prototype.onPointerUpRunning = function(point, beforeChild) {
-	if(!beforeChild) {
+	if(!beforeChild || this.popupWindow || !this.pointerDown) {
 		return;
 	}
-	return this.callPointerUpHandler(point);
-}
 
-UIElement.prototype.callLongPressHandler = function(point) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleLongPress || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onLongPress"];
-		if(sourceCode) {
-			sourceCode = "this.handleLongPress = function(point) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleLongPress) {
-		try {
-			this.handleLongPress(point);
-		}catch(e) {
-			console.log("this.handleLongPress:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callDoubleClickHandler = function(point) {
-	if(this.mode === C_MODE_EDITING) {
-		if(this.textType != C_SHAPE_TEXT_NONE) {
-			this.editText(point);
-		}
-		else {
-			this.showProperty();
-		}
-
-		return true;
-	}
-	
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleDoubleClick || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onDoubleClick"];
-		if(sourceCode) {
-			sourceCode = "this.handleDoubleClick = function(point) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleDoubleClick) {
-		try {
-			this.handleDoubleClick(point);
-		}catch(e) {
-			console.log("this.handleDoubleClick:" + e.message);
-		}
-	}
-
-	this.hitTestResult = 0;
-
-	return true;
-}
-
-UIElement.prototype.callTimerHandler = function() {
-	var win = this.getWindow();
-	if(win && !win.visible) {
-		return true;
-	}
-
-	if(this.mode === C_MODE_EDITING) {
-		return true;
-	}
-	
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleTimer || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onTimer"];
-		if(sourceCode) {
-			sourceCode = "this.handleTimer = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleTimer) {
-		try {
-			this.handleTimer();
-		}catch(e) {
-			console.log("this.handleTimer:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-
-UIElement.prototype.callPaintHandler = function(canvas2dCtx) {
-	if(this.mode === C_MODE_EDITING) {
-		return true;
-	}
-	
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handlePaint || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onPaint"];
-		if(sourceCode) {
-			sourceCode = "this.handlePaint = function(canvas2dCtx) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handlePaint) {
-		try {
-			this.handlePaint(canvas2dCtx);
-		}catch(e) {
-			console.log("this.handlePaint:" + e.message);
-		}
-	}
-
-	return true;
+	return this.callOnPointerUpHandler(point);
 }
 
 UIElement.prototype.onDoubleClick = function(point) {
+	if(this.popupWindow || !this.pointerDown) {
+		return;
+	}
+
 	if(this.targetShape) {
 		var p = this.translatePoint(point);
 		return this.targetShape.onDoubleClick(p);
 	}
 	else {
-		return this.callDoubleClickHandler(point);
+		return this.callOnDoubleClickHandler(point);
 	}
 }
 
 UIElement.prototype.onGesture = function(gesture) {
+	if(this.popupWindow) {
+		return;
+	}
+
 	if(this.targetShape) {
 		return this.targetShape.onGesture(gesture);
 	}
@@ -790,9 +651,12 @@ UIElement.prototype.onGesture = function(gesture) {
 }
 
 UIElement.prototype.onLongPress = function(point) {
-	this.longPressed = true;
+	if(this.popupWindow || !this.pointerDown) {
+		return;
+	}
 
-	this.callLongPressHandler(point);
+	this.longPressed = true;
+	this.callOnLongPressHandler(point);
 	if(this.targetShape) {
 		var p = this.translatePoint(point);
 		return this.targetShape.onLongPress(p);
@@ -801,47 +665,12 @@ UIElement.prototype.onLongPress = function(point) {
 	return;
 }
 
-UIElement.prototype.callClickHandler = function(point, onChild) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(this.mode === C_MODE_EDITING) {
-		return false;
-	}
-
-	if(!this.handleClick || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onClick"];
-		if(sourceCode) {
-			sourceCode = "this.handleClick = function(point) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(!this.children.length) {
-		console.log("clicked: " + this.type + "(" + this.name + ")");
-	}
-	if(this.handleClick) {
-		try {
-			this.handleClick(point);
-		}catch(e) {
-			console.log("this.handleClick:" + e.message);
-		}
-	}
-
-	return;
-}
-
 UIElement.prototype.onClick = function(point, beforeChild) {
-	if(beforeChild) {
+	if(beforeChild || this.popupWindow || !this.pointerDown) {
 		return;
 	}
 
-	return this.callClickHandler(point, beforeChild);
+	return this.callOnClickHandler(point);
 }
 
 UIElement.prototype.translatePoint = function(point) {
@@ -887,11 +716,11 @@ UIElement.prototype.callOnDragStartHandler = function() {
 		return false;
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		return false;
 	}
 
-	if(!this.handleDragStart || this.mode === C_MODE_PREVIEW) {
+	if(!this.handleDragStart || this.mode === Shape.MODE_PREVIEW) {
 		var sourceCode = this.events["onDragStart"];
 		if(sourceCode) {
 			sourceCode = "this.handleDragStart = function() {\n" + sourceCode + "\n}\n";
@@ -919,11 +748,11 @@ UIElement.prototype.callOnDragEndHandler = function() {
 		return false;
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		return false;
 	}
 
-	if(!this.handleDragEnd || this.mode === C_MODE_PREVIEW) {
+	if(!this.handleDragEnd || this.mode === Shape.MODE_PREVIEW) {
 		var sourceCode = this.events["onDragEnd"];
 		if(sourceCode) {
 			sourceCode = "this.handleDragEnd = function() {\n" + sourceCode + "\n}\n";
@@ -951,11 +780,11 @@ UIElement.prototype.callOnDragingHandler = function() {
 		return false;
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		return false;
 	}
 
-	if(!this.handleDraging || this.mode === C_MODE_PREVIEW) {
+	if(!this.handleDraging || this.mode === Shape.MODE_PREVIEW) {
 		var sourceCode = this.events["onDragging"];
 		if(sourceCode) {
 			sourceCode = "this.handleDraging = function() {\n" + sourceCode + "\n}\n";
@@ -1074,23 +903,24 @@ UIElement.prototype.animMove = function(x, y, hint) {
 		var percent = interpolator.get(timePercent);
 
 		if(el.dragging) {
-			return;
+			return false;
 		}
 
+		el.postRedraw();
 		if(timePercent < 1 && !el.pointerDown) {
 			el.x = Math.floor(xStart + percent * xRange);
 			el.y = Math.floor(yStart + percent * yRange);
-			UIElement.setAnimTimer(animStep);
+
+			return true;
 		}
 		else {
 			el.move(x, y);
-			delete startTime;
-			delete interpolator;
-		}
+			interpolator = null;
 
-		delete now;
-		el.postRedraw();
+			return false;
+		}
 	}
+
 	UIElement.setAnimTimer(animStep);
 
 	return;
@@ -1167,7 +997,8 @@ UIElement.prototype.animate = function(config) {
 				el.scale = scaleStart + percent * scaleRange;
 			}
 
-			UIElement.setAnimTimer(animStep);
+			el.postRedraw();
+			return true;
 		}
 		else {
 			if(xRange || yRange) {
@@ -1193,24 +1024,13 @@ UIElement.prototype.animate = function(config) {
 
 			delete startTime;
 			delete interpolator;
+			
+			el.postRedraw();
+			return false;
 		}
-
-		el.postRedraw();
 	}
 
-	var delay = config.delay;
-	if(el.pointerDown) {
-		delay = delay ? delay : 10;
-	}
-
-	if(delay) {
-		setTimeout(function() {
-			animStep();
-		}, delay);
-	}
-	else {
-		animStep();
-	}
+	UIElement.setAnimTimer(animStep);
 
 	return;
 }
@@ -1231,7 +1051,7 @@ UIElement.prototype.onPointerDownNormal = function(point) {
 	this.pointerDownTime = Date.now();
 	this.childrenRange = this.calcChildrenRange();
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.onPointerDownEditing(point, true);
 	}
 	else if(this.enable) {
@@ -1239,9 +1059,9 @@ UIElement.prototype.onPointerDownNormal = function(point) {
 	}
 
 	this.setPointerEventTarget(null);
-	if(this.hitTestResult === C_HIT_TEST_MM || !this.selected) {
+	if(this.hitTestResult === Shape.HIT_TEST_MM || !this.selected) {
 		if(this.dispatchPointerDownToChildren(p)) {
-			if(this.mode === C_MODE_EDITING) {
+			if(this.mode === Shape.MODE_EDITING) {
 				this.onPointerDownEditing(point, false);
 			}
 			else if(this.enable) {
@@ -1256,19 +1076,19 @@ UIElement.prototype.onPointerDownNormal = function(point) {
 		}
 	}
 
-	if(this.hitTestResult === C_HIT_TEST_MM && this.children.length > 1 && this.canRectSelectable()) {
-		this.hitTestResult = C_HIT_TEST_WORKAREA;
+	if(this.hitTestResult === Shape.HIT_TEST_MM && this.children.length > 1 && this.canRectSelectable()) {
+		this.hitTestResult = Shape.HIT_TEST_WORKAREA;
 	}
 
 	this.setTarget(null);
 	this.setSelected(true);
 	this.lastPosition.x = point.x;
 	this.lastPosition.y = point.y;
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.handlePointerEvent(point, 1);
 	}
 	
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.onPointerDownEditing(point, false);
 	}
 	else if(this.enable) {
@@ -1288,7 +1108,7 @@ UIElement.prototype.onPointerMoveNormal = function(point) {
 	}
 
 	if(this.draggable && this.pointerDown) {
-		if(this.mode !== C_MODE_EDITING) {
+		if(this.mode !== Shape.MODE_EDITING) {
 			this.handleDragMove(point);
 			return;
 		}
@@ -1298,7 +1118,7 @@ UIElement.prototype.onPointerMoveNormal = function(point) {
 	}
 
 	if(this.hitTestResult) {
-		if(this.mode === C_MODE_EDITING) {
+		if(this.mode === Shape.MODE_EDITING) {
 			this.onPointerMoveEditing(point, true);
 		}
 		else if(this.enable) {
@@ -1308,7 +1128,7 @@ UIElement.prototype.onPointerMoveNormal = function(point) {
 		var target = this.getPointerEventTarget();
 		if(target) {
 			target.onPointerMove(p);
-			if(this.mode === C_MODE_EDITING) {
+			if(this.mode === Shape.MODE_EDITING) {
 				this.onPointerMoveEditing(point, false);
 			}
 			else if(this.enable) {
@@ -1316,9 +1136,9 @@ UIElement.prototype.onPointerMoveNormal = function(point) {
 			}
 		}
 		else {
-			if(this.mode === C_MODE_EDITING) {
+			if(this.mode === Shape.MODE_EDITING) {
 				this.onPointerMoveEditing(point, false);
-				if(this.hitTestResult === C_HIT_TEST_WORKAREA) {
+				if(this.hitTestResult === Shape.HIT_TEST_WORKAREA) {
 					var p = {x:0, y:0};
 					var range = this.childrenRange;
 					var w = point.x - this.pointerDownPosition.x;
@@ -1337,7 +1157,7 @@ UIElement.prototype.onPointerMoveNormal = function(point) {
 						|| ((y < 30) && h < 0)
 						)
 					{
-						this.hitTestResult = C_HIT_TEST_MM;
+						this.hitTestResult = Shape.HIT_TEST_MM;
 						this.handlePointerEvent(point, 0);
 					}
 					else if(Math.abs(w) > 5 && Math.abs(h) > 5) {
@@ -1400,11 +1220,11 @@ UIElement.prototype.onPointerMoveNormal = function(point) {
 }
 
 UIElement.prototype.needDrawTextTips = function(point) {
-	return this.mode === C_MODE_EDITING && !this.children.length;	
+	return this.mode === Shape.MODE_EDITING && !this.children.length;	
 }
 
 UIElement.prototype.textEditable = function(point) {
-	return this.mode === C_MODE_EDITING;	
+	return this.mode === Shape.MODE_EDITING;	
 }
 
 UIElement.prototype.isClicked = function() {
@@ -1429,7 +1249,7 @@ UIElement.prototype.onPointerUpNormal = function(point) {
 		var p = this.translatePoint(point);
 		var isClick = this.isClicked();
 		
-		if(this.mode === C_MODE_EDITING) {
+		if(this.mode === Shape.MODE_EDITING) {
 			this.onPointerUpEditing(point, true);
 		}
 		else if(this.enable) {
@@ -1445,12 +1265,12 @@ UIElement.prototype.onPointerUpNormal = function(point) {
 			target.onPointerUp(p);
 		}
 		else {
-			if(this.mode === C_MODE_EDITING) {
+			if(this.mode === Shape.MODE_EDITING) {
 				this.handlePointerEvent(point, -1);
 			}
 		}
 
-		if(this.mode === C_MODE_EDITING) {
+		if(this.mode === Shape.MODE_EDITING) {
 			this.onPointerUpEditing(point, false);
 		}
 		else {
@@ -1466,10 +1286,10 @@ UIElement.prototype.onPointerUpNormal = function(point) {
 			this.onClick(p, false);
 		}
 		
-		this.hitTestResult = C_HIT_TEST_NONE;
+		this.hitTestResult = Shape.HIT_TEST_NONE;
 
 		if(this.longPressed) {
-			delete this.longPressed;
+			this.longPressed = false;
 		}
 
 		return true;
@@ -1477,7 +1297,7 @@ UIElement.prototype.onPointerUpNormal = function(point) {
 	else {
 		this.targetShape = null;
 
-		if(this.mode !== C_MODE_EDITING && this.enable) {
+		if(this.mode !== Shape.MODE_EDITING && this.enable) {
 			this.onPointerUpRunning(p, false);
 			if(isClick) {
 				this.onClick(p, false);
@@ -1485,7 +1305,7 @@ UIElement.prototype.onPointerUpNormal = function(point) {
 		}
 
 		if(this.longPressed) {
-			delete this.longPressed;
+			this.longPressed = false;
 		}
 	}
 
@@ -1493,7 +1313,7 @@ UIElement.prototype.onPointerUpNormal = function(point) {
 }
 
 UIElement.prototype.onKeyDownRunning = function(code) {
-	if(!this.handleKeyDown || this.mode === C_MODE_PREVIEW) {
+	if(!this.handleKeyDown || this.mode === Shape.MODE_PREVIEW) {
 		var sourceCode = this.events["onKeyDown"];
 		if(sourceCode) {
 			sourceCode = "this.handleKeyDown = function(code) {\n" + sourceCode + "\n}\n";
@@ -1524,7 +1344,7 @@ UIElement.prototype.onKeyDown = function(code) {
 		this.targetShape.onKeyDown(code);
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.onKeyDownEditing(code);
 	}
 	else {
@@ -1535,7 +1355,7 @@ UIElement.prototype.onKeyDown = function(code) {
 }
 
 UIElement.prototype.onKeyUpRunning = function(code) {
-	if(!this.handleKeyUp || this.mode === C_MODE_PREVIEW) {
+	if(!this.handleKeyUp || this.mode === Shape.MODE_PREVIEW) {
 		var sourceCode = this.events["onKeyUp"];
 		if(sourceCode) {
 			sourceCode = "this.handleKeyUp = function(code) {\n" + sourceCode + "\n}\n";
@@ -1559,7 +1379,7 @@ UIElement.prototype.onKeyUpRunning = function(code) {
 			var app = this.getApp();
 			var wm = this.getWindowManager();
 
-			if(this.mode === C_MODE_RUNNING) {
+			if(this.mode === Shape.MODE_RUNNING) {
 				wm.systemExit();
 				app.exitApp();
 				console.log("Back Key Pressed, Exit App.");
@@ -1588,7 +1408,7 @@ UIElement.prototype.onKeyUp = function(code) {
 		this.targetShape.onKeyUp(code);
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.onKeyUpEditing(code);
 	}
 	else {
@@ -1670,6 +1490,10 @@ UIElement.prototype.addChildWithJson = function(jsShape, index) {
 	if(shape) {
 		shape.fromJson(jsShape);
 		this.addShape(shape, false, null, index);
+
+		if(this.mode != Shape.MODE_EDITING) {
+			shape.init();
+		}
 	}
 
 	return shape;
@@ -1833,7 +1657,7 @@ UIElement.prototype.removeShape = function(shape) {
 
 	this.children.remove(shape);
 	
-	shape.callOnRemoved();
+	shape.callOnRemovedHandler();
 	this.afterChildRemoved(shape);
 
 	if(shape.getParent() === this) {
@@ -1842,11 +1666,37 @@ UIElement.prototype.removeShape = function(shape) {
 		shape.setApp(null);
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.relayout();
 	}
 
 	shape.onRemoved();
+
+	return;
+}
+
+UIElement.prototype.reparent = function(newParent, keepAbsPosition) {
+	var parent = this.getParent();
+	if(newParent === parent) {
+		return;
+	}
+
+	if(!newParent || !parent) {
+		return;
+	}
+
+	if(keepAbsPosition) {
+		var parentPos = parent.getPositionInWindow();
+		var newParentPos = newParent.getPositionInWindow();
+		var dx = parentPos.x - newParentPos.x;
+		var dy = parentPos.y - newParentPos.y;
+
+		this.x += dx;
+		this.y += dy;
+	}
+
+	parent.children.remove(this);
+	newParent.addShapeDirectly(this);
 
 	return;
 }
@@ -1918,6 +1768,8 @@ UIElement.prototype.findChildByName = function(name, recursive) {
 	return null;
 }
 
+UIElement.prototype.find = UIElement.prototype.findChildByName;
+
 UIElement.prototype.setValueOf = function(name, value) {
 	var child = this.findChildByName(name, true);
 	
@@ -1931,28 +1783,28 @@ UIElement.prototype.getValueOf = function(name) {
 }
 
 UIElement.prototype.getSelectMark = function(type, point) {
-	if(this.mode != C_MODE_EDITING) {
+	if(this.mode != Shape.MODE_EDITING) {
 		return false;
 	}
 
 	var ret = true;
 	switch(type) {
-		case C_HIT_TEST_TL: {
+		case Shape.HIT_TEST_TL: {
 			point.x = 0;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_TR: {
+		case Shape.HIT_TEST_TR: {
 			point.x = this.w;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_BL: {
+		case Shape.HIT_TEST_BL: {
 			point.x = 0;
 			point.y = this.h;
 			break;
 		}
-		case C_HIT_TEST_BR: {
+		case Shape.HIT_TEST_BR: {
 			point.x = this.w;
 			point.y = this.h;
 			break;
@@ -1966,7 +1818,7 @@ UIElement.prototype.getSelectMark = function(type, point) {
 }
 
 UIElement.prototype.paintSelectingBox = function(canvas) {
-	if(this.hitTestResult === C_HIT_TEST_WORKAREA) {
+	if(this.hitTestResult === Shape.HIT_TEST_WORKAREA) {
 		var w = this.lastPosition.x - this.pointerDownPosition.x;
 		var h = this.lastPosition.y - this.pointerDownPosition.y;
 		
@@ -1992,7 +1844,7 @@ UIElement.prototype.afterPaintChild = function(child, canvas) {
 
 UIElement.prototype.paintTargetShape = function(canvas) {
 	var targetShape = this.targetShape;
-	if(targetShape && targetShape.selected && (targetShape.mode === C_MODE_EDITING || targetShape.dragging)) {
+	if(targetShape && targetShape.selected && targetShape.dragging) {
 		shape = targetShape;
 		this.beforePaintChild(shape, canvas);
 		shape.paintSelf(canvas);
@@ -2100,7 +1952,7 @@ UIElement.prototype.getBgImage =function() {
 				image = this.images.active_bg;
 			}
 			else {
-				if(this.isPointerOverShape() && this.getHtmlImageByType(CANTK_IMAGE_POINTER_OVER)) {
+				if(this.isPointerOverShape() && this.getHtmlImageByType(UIElement.IMAGE_POINTER_OVER)) {
 					image = this.images.pointer_over_bg;
 				}
 				else if(this.isFocused()) {
@@ -2130,6 +1982,10 @@ UIElement.prototype.getBgImage =function() {
 }
 
 UIElement.prototype.drawImageAt = function(canvas, image, display, x, y, dw, dh, srcRect) {
+	UIElement.drawImageAt(canvas, image, display, x, y, dw, dh, srcRect);
+}
+
+UIElement.drawImageAt = function(canvas, image, display, x, y, dw, dh, srcRect) {
 	if(!image) {
 		return;
 	}
@@ -2148,47 +2004,61 @@ UIElement.prototype.drawImageAt = function(canvas, image, display, x, y, dw, dh,
 	var w = imageWidth;
 	var h = imageHeight;
 
-//	if((display === CANTK_IMAGE_DISPLAY_CENTER) && (imageWidth > dw || imageHeight > dh)) {
-//		display = CANTK_IMAGE_DISPLAY_AUTO;
+//	if((display === UIElement.IMAGE_DISPLAY_CENTER) && (imageWidth > dw || imageHeight > dh)) {
+//		display = UIElement.IMAGE_DISPLAY_AUTO;
 //	}
 
 	switch(display) {
-		case CANTK_IMAGE_DISPLAY_CENTER: {
+		case UIElement.IMAGE_DISPLAY_CENTER: {
 			dx = Math.floor(x + (dw - imageWidth)/2);
 			dy = Math.floor(y + (dh - imageHeight)/2);
 
 			canvas.drawImage(image, sx, sy, w, h, dx, dy, w, h);
 			break;
 		}
-		case CANTK_IMAGE_DISPLAY_SCALE: {
+		case UIElement.IMAGE_DISPLAY_SCALE: {
 			dx = x;
 			dy = y;
 			canvas.drawImage(image, sx, sy, imageWidth, imageHeight, dx, dy, dw, dh);
 			break;
 		}
-		case CANTK_IMAGE_DISPLAY_TILE: {
+		case UIElement.IMAGE_DISPLAY_TILE: {
 			dx = x;
 			dy = y;
 
-			while(dy < this.h) {
+			while(dy < dh) {
 				dx = x;
-				h = Math.min(this.h-dy, imageHeight);
-				while(dx < this.w) {
-					w = Math.min(this.w-dx, imageWidth);
+				h = Math.min(dh-dy, imageHeight);
+				while(dx < dw) {
+					w = Math.min(dw-dx, imageWidth);
 					canvas.drawImage(image, sx, sy, w, h, dx, dy, w, h);
 					dx = dx + w;
-					if(w === imageWidth) {
-						dx = dx - 2;
-					}
 				}
 				dy = dy + h;
-				if(h === imageHeight) {
-					dy = dy - 2;
-				}
 			}
 			break;
 		}
-		case CANTK_IMAGE_DISPLAY_9PATCH: {
+		case UIElement.IMAGE_DISPLAY_TILE_H: {
+			dx = x;
+			h = Math.min(dh, imageHeight);
+			while(dx < dw) {
+				w = Math.min(dw-dx, imageWidth);
+				canvas.drawImage(image, sx, sy, w, h, dx, y, w, h);
+				dx = dx + w;
+			}
+			break;
+		}
+		case UIElement.IMAGE_DISPLAY_TILE_V: {
+			dy = y;
+			w = Math.min(dw, imageWidth);
+			while(dy < dh) {
+				h = Math.min(dh-dy, imageHeight);
+				canvas.drawImage(image, sx, sy, w, h, x, dy, w, h);
+				dy = dy + h;
+			}
+			break;
+		}
+		case UIElement.IMAGE_DISPLAY_9PATCH: {
 			dx = x;
 			dy = y;
 			if(imageWidth >= dw && imageHeight >= dh) {
@@ -2199,7 +2069,7 @@ UIElement.prototype.drawImageAt = function(canvas, image, display, x, y, dw, dh,
 			}
 			break;
 		}
-		case CANTK_IMAGE_DISPLAY_AUTO: {
+		case UIElement.IMAGE_DISPLAY_AUTO: {
 			var scale = Math.min(dw/imageWidth, dh/imageHeight);
 			w = imageWidth * scale;
 			h = imageHeight * scale;
@@ -2209,7 +2079,7 @@ UIElement.prototype.drawImageAt = function(canvas, image, display, x, y, dw, dh,
 			canvas.drawImage(image, sx, sy, imageWidth, imageHeight, dx, dy, w, h);
 			break;
 		}
-		case CANTK_IMAGE_DISPLAY_SCALE_KEEP_RATIO: {
+		case UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO: {
 			var sw = imageWidth/dw;
 			var sh = imageHeight/dh;
 
@@ -2233,12 +2103,26 @@ UIElement.prototype.drawImageAt = function(canvas, image, display, x, y, dw, dh,
 		default: {
 			dx = x;
 			dy = y;
-			w = Math.min(imageWidth, this.w);
-			h = Math.min(imageHeight, this.h);
+			w = Math.min(imageWidth, dw);
+			h = Math.min(imageHeight, dh);
 			canvas.drawImage(image, sx, sy, w, h, dx, dy, w, h);
 			break;
 		}
 	}
+
+	return;
+}
+
+UIElement.drawImageLine = function(canvas, image, display, p0, p1, srcRect) {
+	var angle = Math.lineAngle(p0, p1);
+	var distance = Math.round(Math.distanceBetween(p0, p1));
+
+	canvas.save();
+	canvas.translate(p0.x, p0.y);
+	canvas.rotate(angle);
+	canvas.translate(0, -image.height>> 1);
+	UIElement.drawImageAt(canvas, image, display, 0, 0, distance, image.height, srcRect);
+	canvas.restore();
 
 	return;
 }
@@ -2307,30 +2191,6 @@ UIElement.prototype.resetStyle = function(canvas) {
 	return;
 }
 
-UIElement.prototype.callOnUpdateTransformHandler = function() {
-	if(!this.handleOnUpdateTransform || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onOnUpdateTransform"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnUpdateTransform = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnUpdateTransform) {
-		try {
-			this.handleOnUpdateTransform();
-		}catch(e) {
-			console.log("this.handleOnUpdateTransform:" + e.message);
-		}
-	}
-
-	return;
-}
-
 UIElement.prototype.updateTransform = function() {
 	this.callOnUpdateTransformHandler();
 
@@ -2359,6 +2219,8 @@ UIElement.prototype.saveTransform = function() {
 	this.savedTransform = {};
 	this.savedTransform.opacity = this.opacity;
 	this.savedTransform.scale = this.scale;
+	this.savedTransform.scaleX = this.scaleX;
+	this.savedTransform.scaleY = this.scaleY;
 	this.savedTransform.rotation = this.rotation;
 	this.savedTransform.offsetX = this.offsetX;
 	this.savedTransform.offsetY = this.offsetY;
@@ -2370,6 +2232,8 @@ UIElement.prototype.restoreTransform = function() {
 	if(this.savedTransform) {
 		this.opacity = this.savedTransform.opacity;
 		this.scale = this.savedTransform.scale;
+		this.scaleX = this.savedTransform.scaleX;
+		this.scaleY = this.savedTransform.scaleY;
 		this.rotation = this.savedTransform.rotation;
 		this.offsetX = this.savedTransform.offsetX;
 		this.offsetY = this.savedTransform.offsetY;
@@ -2381,9 +2245,39 @@ UIElement.prototype.restoreTransform = function() {
 UIElement.prototype.setHighlightConfig = function(highlightConfig) {
 	if(highlightConfig) {
 		//this.restoreTransform();
+		var c = highlightConfig;
 		this.saveTransform();
 		this.removeHighlightConfig = false;
 		this.highlightConfig = highlightConfig;
+
+		if(c.rotationFrom !== undefined && c.rotationTo !== undefined) {
+			c.rotationRange = c.rotationTo - c.rotationFrom;
+			c.rotationMiddle = (c.rotationTo + c.rotationFrom)/2;
+		}
+		if(c.opacityFrom !== undefined && c.opacityTo !== undefined) {
+			c.opacityRange = c.opacityTo - c.opacityFrom;
+			c.opacityMiddle = (c.opacityTo + c.opacityFrom)/2;
+		}
+		if(c.scaleFrom !== undefined && c.scaleTo !== undefined) {
+			c.scaleRange = c.scaleTo - c.scaleFrom;
+			c.scaleMiddle = (c.scaleTo + c.scaleFrom)/2;
+		}
+		if(c.scaleXFrom !== undefined && c.scaleXTo !== undefined) {
+			c.scaleXRange = c.scaleXTo - c.scaleXFrom;
+			c.scaleXMiddle = (c.scaleXTo + c.scaleXFrom)/2;
+		}
+		if(c.scaleYFrom !== undefined && c.scaleYTo !== undefined) {
+			c.scaleYRange = c.scaleYTo - c.scaleYFrom;
+			c.scaleYMiddle = (c.scaleYTo + c.scaleYFrom)/2;
+		}
+		if(c.offsetXFrom !== undefined && c.offsetXTo !== undefined) {
+			c.offsetXRange = c.offsetXTo - c.offsetXFrom;
+			c.offsetXMiddle = (c.offsetXTo + c.offsetXFrom)/2;
+		}
+		if(c.offsetYFrom !== undefined && c.offsetYTo !== undefined) {
+			c.offsetYRange = c.offsetYTo - c.offsetYFrom;
+			c.offsetYMiddle = (c.offsetYTo + c.offsetYFrom)/2;
+		}
 	}
 	else {
 		this.removeHighlightConfig = true;
@@ -2399,7 +2293,7 @@ UIElement.prototype.updateHighlightTransform = function() {
 		var random = c.random ? c.random : 0;	
 		var t = (Date.now() + random)/1000;
 		var frequency = c.frequency ? c.frequency : 4;
-		var factor = Math.cos(frequency*t);
+		var factor = Math.cos(frequency*t) * 0.5;
 
 		if(this.removeHighlightConfig && Math.abs(factor) < 0.1) {
 			this.removeHighlightConfig = false;
@@ -2409,42 +2303,31 @@ UIElement.prototype.updateHighlightTransform = function() {
 			return;
 		}
 
-		if(!isNaN(c.rotationFrom) && !isNaN(c.rotationTo)) {
-			var delta = c.rotationTo - c.rotationFrom;
-			var half = (c.rotationTo + c.rotationFrom)/2;
-
-			this.rotation = half + 0.5 * delta * factor;
+		if(c.rotationRange) {
+			this.rotation = c.rotationMiddle + c.rotationRange * factor;
+		}
+		if(c.opacityRange) {
+			this.opacity = c.opacityMiddle + c.opacityRange * factor;
+		}
+		if(c.scaleRange) {
+			var scale = c.scaleMiddle + c.scaleRange * factor;
+			this.scaleX = scale;
+			this.scaleY = scale;
+		}
+		if(c.scaleXRange) {
+			this.scaleX = c.scaleXMiddle + c.scaleXRange * factor;
+		}
+		if(c.scaleYRange) {
+			this.scaleY = c.scaleYMiddle + c.scaleYRange * factor;
+		}
+		if(c.offsetXRange) {
+			this.offsetX = c.offsetXMiddle + c.offsetXRange * factor;
+		}
+		if(c.offsetYRange) {
+			this.offsetY = c.offsetYMiddle + c.offsetYRange * factor;
 		}
 
-		if(!isNaN(c.opacityFrom) && !isNaN(c.opacityTo)) {
-			var delta = c.opacityTo - c.opacityFrom;
-			var half = (c.opacityTo + c.opacityFrom)/2;
-
-			this.opacity = half + 0.5 * delta * factor;
-		}
-		
-		if(!isNaN(c.scaleFrom) && !isNaN(c.scaleTo)) {
-			var delta = c.scaleTo - c.scaleFrom;
-			var half = (c.scaleTo + c.scaleFrom)/2;
-
-			this.scale = half + 0.5 * delta * factor;
-		}
-		
-		if(!isNaN(c.offsetXFrom) && !isNaN(c.offsetXTo)) {
-			var delta = c.offsetXTo - c.offsetXFrom;
-			var half = (c.offsetXTo + c.offsetXFrom)/2;
-
-			this.offsetX = half + 0.5 * delta * factor;
-		}
-
-		if(!isNaN(c.offsetYFrom) && !isNaN(c.offsetYTo)) {
-			var delta = c.offsetYTo - c.offsetYFrom;
-			var half = (c.offsetYTo + c.offsetYFrom)/2;
-
-			this.offsetY = half + 0.5 * delta * factor;
-		}
-
-		UIElement.setAnimTimer(function() {me.postRedraw();});
+		UIElement.setAnimTimer(function() {me.postRedraw(); return false;});
 	}
 
 	return;
@@ -2466,28 +2349,30 @@ UIElement.prototype.paintSelf = function(canvas) {
 	this.paintSelfOnly(canvas);
 	this.drawImage(canvas);
 
-	if(this.drawText && this.textType !== C_SHAPE_TEXT_NONE) {
+	if(this.drawText && this.textType !== Shape.TEXT_NONE) {
 		this.drawText(canvas);
 		this.drawTextTips(canvas);
 	}
 
-	if((this.hitTestResult !== C_HIT_TEST_NONE 
-		&& this.hitTestResult !== C_HIT_TEST_WORKAREA
-		&& this.hitTestResult !== C_HIT_TEST_MM) 
-		|| this.state !== C_STAT_NORMAL) {
+	if((this.hitTestResult !== Shape.HIT_TEST_NONE 
+		&& this.hitTestResult !== Shape.HIT_TEST_WORKAREA
+		&& this.hitTestResult !== Shape.HIT_TEST_MM) 
+		|| this.state !== Shape.STAT_NORMAL) {
 		this.drawSizeTips(canvas);
 	}
 		
 	this.resetStyle(canvas);
 	canvas.restore();
 
-	canvas.save();
-	this.beforePaintChildren(canvas);
-	this.paintChildren(canvas);
-	this.afterPaintChildren(canvas);
-	canvas.restore();
+	if(this.children.length || this.mode === Shape.MODE_EDITING) {
+		canvas.save();
+		this.beforePaintChildren(canvas);
+		this.paintChildren(canvas);
+		this.afterPaintChildren(canvas);
+		canvas.restore();
+	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.paintSelectingBox(canvas);
 		this.drawSelectMarks(canvas);
 	}
@@ -2496,7 +2381,7 @@ UIElement.prototype.paintSelf = function(canvas) {
 		this.afterDrawIcon(canvas);
 	}
 
-	if(this.selected && this.mode === C_MODE_EDITING) {
+	if(this.selected && this.mode === Shape.MODE_EDITING) {
 		this.applyTransform(canvas);
 		if(this.isPositionLocked) {
 			var image = this.getLockImage();
@@ -2547,7 +2432,7 @@ UIElement.prototype.toJsonMore = function(o) {
 	var n = this.children.length;
 	var children = this.children;
 	if(n) {
-		o.children = new Array();
+		o.children = [];
 
 		for(var i = 0; i < n; i++) {
 			var shape = children[i];
@@ -2632,7 +2517,7 @@ UIElement.prototype.canBindingData = function() {
 UIElement.prototype.onDataBindingTemplate = function(template) {
 	//template.name = this.name;
 	if(this.isUIImage) {
-		var image = this.getImageByType(CANTK_IMAGE_DEFAULT);
+		var image = this.getImageByType(UIElement.IMAGE_DEFAULT);
 		var src = image ? image.getImageSrc(): "";
 
 		src = this.getRelativePathOfURL(src);
@@ -2694,7 +2579,7 @@ UIElement.prototype.onBindData = function(data) {
 		this.setText(text);
 	}
 	if(image !== undefined) {
-		this.setImage(CANTK_IMAGE_DEFAULT, image);
+		this.setImage(UIElement.IMAGE_DEFAULT, image);
 	}
 	if(value !== undefined) {
 		this.setValue(value);
@@ -2824,6 +2709,22 @@ UIElement.prototype.dupTemplateChild = function() {
 	delete child.isTemplate;
 
 	return child;
+}
+
+UIElement.prototype.dupChild = function(name, zIndex) {
+	var child = this.findChildByName(name);
+
+	if(child) {
+		var shape = child.clone();
+		this.addShape(shape, false, null, zIndex);
+		shape.setVisible(true);
+		shape.init();
+
+		return shape;
+	}
+	else {
+		return null;
+	}
 }
 
 UIElement.prototype.getLastUserChild = function() {
@@ -2979,82 +2880,6 @@ UIElement.prototype.bindDataUrl = function(dataUrl, preprocess, onBindDone) {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-var CANTK_IMAGE_DISPLAY_CENTER = 0;
-var CANTK_IMAGE_DISPLAY_TILE   = 1;
-var CANTK_IMAGE_DISPLAY_9PATCH = 2;
-var CANTK_IMAGE_DISPLAY_SCALE  = 3;
-var CANTK_IMAGE_DISPLAY_AUTO = 4;
-var CANTK_IMAGE_DISPLAY_DEFAULT = 5;
-var CANTK_IMAGE_DISPLAY_SCALE_KEEP_RATIO  = 6;
-var CANTK_IMAGE_DISPLAY_TILE_V = 7;
-var CANTK_IMAGE_DISPLAY_TILE_H = 8;
-
-var CANTK_IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)", "vtile", "htile"];
-
-var C_X_FIX_LEFT = 0;
-var C_X_FIX_RIGHT = 1;
-var C_X_SCALE = 2;
-var C_X_CENTER_IN_PARENT = 3;
-var C_X_LEFT_IN_PARENT	 = 4;
-var C_X_RIGHT_IN_PARENT  = 5;
-var C_X_AFTER_PREV       = 6;
-var C_X_LAYOUT_NAMES = ["fix_left", "fix_right", "scale", "center_in_parent", "left_in_parent", "right_in_parent", "after_prev"];
-
-var C_Y_FIX_TOP = 0;
-var C_Y_FIX_BOTTOM = 1;
-var C_Y_SCALE = 2;
-var C_Y_MIDDLE_IN_PARENT = 3;
-var C_Y_TOP_IN_PARENT	 = 4;
-var C_Y_BOTTOM_IN_PARENT = 5;
-var C_Y_AFTER_PREV       = 6;
-var C_Y_LAYOUT_NAMES = ["fix_top", "fix_bottom", "scale", "middle_in_parent", "top_in_parent", "bottom_in_parent", "after_prev"];
-
-var C_WIDTH_FIX = 0;
-var C_WIDTH_SCALE = 1;
-var C_WIDTH_FILL_PARENT = 2;
-var C_WIDTH_FILL_AVAILABLE = 3;
-
-var C_HEIGHT_FIX = 0;
-var C_HEIGHT_SCALE = 1;
-var C_HEIGHT_FILL_PARENT = 2;
-var C_HEIGHT_FILL_AVAILABLE = 3;
-var C_HEIGHT_KEEP_RATIO_WITH_WIDTH = 4;
-
-var C_WIDTH_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible"];
-var C_HEIGHT_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible", "keep_ratio_with_width"];
-
-var CANTK_IMAGE_DEFAULT		   = "default_bg";
-var CANTK_IMAGE_MASK		   = "mask_fg";
-var CANTK_IMAGE_NORMAL	   = "normal_bg";
-var CANTK_IMAGE_FOCUSED	   = "focused_bg";
-var CANTK_IMAGE_ACTIVE	   = "active_bg";
-var CANTK_IMAGE_POINTER_OVER = "pointer_over_bg";
-var CANTK_IMAGE_DISABLE	   = "disable_bg";
-var CANTK_IMAGE_DISABLE_FG    = "disable_fg";
-var CANTK_IMAGE_NORMAL_FG    = "normal_fg";
-var CANTK_IMAGE_ACTIVE_FG    = "active_fg";
-var CANTK_IMAGE_ON_FG		   = "on_fg";
-var CANTK_IMAGE_OFF_FG	   = "off_fg";
-var CANTK_IMAGE_CHECKED_FG		= "checked_fg";
-var CANTK_IMAGE_UNCHECK_FG	   = "uncheck_fg";
-var CANTK_IMAGE_ON_FOCUSED	   = "focused_on_bg";
-var CANTK_IMAGE_ON_ACTIVE		   = "active_on_bg";
-var CANTK_IMAGE_OFF_FOCUSED	   = "focused_off_bg";
-var CANTK_IMAGE_OFF_ACTIVE	   = "active_off_bg";
-var CANTK_IMAGE_IMAGE		   = "image";
-var CANTK_IMAGE_NORMAL_DRAG  = "normal_drag";
-var CANTK_IMAGE_DELETE_ITEM  = "delete_item";
-
-var CANTK_ITEM_BG_NORMAL  = "item_bg_normal";
-var CANTK_ITEM_BG_ACTIVE  = "item_bg_active";
-var CANTK_ITEM_BG_CURRENT_NORMAL = "item_bg_current_normal";
-var CANTK_ITEM_BG_CURRENT_ACTIVE = "item_bg_current_active";
-
-var C_TEXT_ALIGN_CENTER = 0;
-var C_TEXT_ALIGN_LEFT	= 0;
-var C_TEXT_ALIGN_RIGHT = 0;
-var C_TEXT_ALIGN_NAMES = ["center", "left", "right"];
-
 ///////////////////////////////////////////////////////////////////////////////////////
 
 function UIElementCreator(type) {
@@ -3078,7 +2903,7 @@ UIElement.prototype.sortChildren = function() {
 }
 
 UIElement.prototype.shouldShowContextMenu = function() {
-	return this.mode === C_MODE_EDITING;
+	return this.mode === Shape.MODE_EDITING;
 }
 
 UIElement.prototype.getValue = function() {
@@ -3088,7 +2913,7 @@ UIElement.prototype.getValue = function() {
 UIElement.prototype.setValue = function(value) {
 	this.setText(value);
 
-	return;
+	return this;
 }
 
 UIElement.prototype.getPositionInView = function() {
@@ -3105,6 +2930,10 @@ UIElement.prototype.getPositionInView = function() {
 		}
 		else if(iter.isUIHScrollView) {
 			x = x - iter.offset;
+		}
+		else if(iter.isUIScene) {
+			x = x - iter.xOffset;
+			y = y - iter.yOffset;
 		}
 		iter = iter.parentShape;
 	}
@@ -3137,33 +2966,30 @@ UIElement.prototype.getLocaleInputTips = function(text) {
 }
 
 UIElement.prototype.setBgImage = function(src) {
-	return this.setImage(CANTK_IMAGE_DEFAULT, src);
+	return this.setImage(UIElement.IMAGE_DEFAULT, src);
 }
 
 UIElement.prototype.setImage = function(type, src) {
-	type = type ? type : CANTK_IMAGE_DEFAULT;
+	type = type ? type : UIElement.IMAGE_DEFAULT;
 
 	var me = this;
 	var image = this.images[type];
-	if(image) {
-		image.setImageSrc(src);
+		
+	function onImageLoad(img) {
+		me.postRedraw();
+		if(me.images.display === UIElement.IMAGE_DISPLAY_DEFAULT && img && img.width) {
+			var rect = image.getImageRect();
+			me.w = rect ? rect.w : img.width;
+			me.h = rect.h ? rect.h : img.height;
+		}
+
+		return;
 	}
-	else {
+
+	if(!image) {
 		image = new CanTkImage();
-
-		image.setImageSrc(src, function(img) {
-			if(src && src.indexOf("#") >= 0) {
-				if(img) {
-					me.setImage("real-image", img.src);
-				}
-				else {
-					console.log("load failed src:" + src);
-				}
-			}
-
-			me.postRedraw();
-		});
 	}
+	image.setImageSrc(src, onImageLoad);
 
 	this.images[type] = image;
 
@@ -3232,6 +3058,7 @@ UIElement.prototype.getEventNames = function() {
 	return eventNames;
 }
 
+UIElement.uidStart = 10000 + Math.floor(Math.random() * 10000);
 UIElement.prototype.initUIElement= function(type) {
 	this.initContainerShape(type);
 
@@ -3240,15 +3067,16 @@ UIElement.prototype.initUIElement= function(type) {
 	this.opacity = 1;
 	this.vMargin = 0;
 	this.hMargin = 0;
-	this.xAttr		= C_X_FIX_LEFT;
-	this.yAttr		= C_Y_FIX_TOP;
-	this.widthAttr	= C_WIDTH_FIX;
-	this.heightAttr = C_HEIGHT_FIX;
+	this.xAttr		= UIElement.X_FIX_LEFT;
+	this.yAttr		= UIElement.Y_FIX_TOP;
+	this.widthAttr	= UIElement.WIDTH_FIX;
+	this.heightAttr = UIElement.HEIGHT_FIX;
 	this.name = type;
 	this.events = {};
+	this.uid = UIElement.uidStart++;
 
 	this.images  = {};
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 
 	this.addEventNames(["onClick"]);
 	this.regSerializer(this.elementToJson, this.elementFromJson);
@@ -3267,32 +3095,32 @@ UIElement.prototype.updateLayoutParams = function() {
 		return;
 	}
 
-	var wParent = p.getWidth(true);
-	var hParent = p.getHeight(true);
+	var wParent = p.getRelayoutWidth();
+	var hParent = p.getRelayoutHeight();
 	
-	if(this.xAttr === C_X_SCALE) {
+	if(this.xAttr === UIElement.X_SCALE) {
 		this.xParam = this.x/wParent;
 	}
-	else if(this.xAttr === C_X_FIX_RIGHT) {
+	else if(this.xAttr === UIElement.X_FIX_RIGHT) {
 		this.xParam = wParent - (this.x + this.w);
 	}
 	
-	if(this.yAttr === C_Y_SCALE) {
+	if(this.yAttr === UIElement.Y_SCALE) {
 		this.yParam = this.y/hParent;
 	}
-	else if(this.yAttr === C_Y_FIX_BOTTOM) {
+	else if(this.yAttr === UIElement.Y_FIX_BOTTOM) {
 		this.yParam = hParent - (this.y + this.h);
 	}
 
-	if(this.widthAttr === C_WIDTH_SCALE) {
+	if(this.widthAttr === UIElement.WIDTH_SCALE) {
 		this.widthParam = this.w/wParent;
 	}
 
-	if(this.heightAttr === C_HEIGHT_SCALE) {
+	if(this.heightAttr === UIElement.HEIGHT_SCALE) {
 		this.heightParam = this.h/hParent;
 	}
 
-	if(this.heightAttr === C_HEIGHT_KEEP_RATIO_WITH_WIDTH) {
+	if(this.heightAttr === UIElement.HEIGHT_KEEP_RATIO_WITH_WIDTH) {
 		this.heightParam = this.h/this.w;
 	}
 
@@ -3320,6 +3148,17 @@ UIElement.prototype.elementToJson = function(o) {
 
 			if(src) {
 				o.images[key] = src;
+
+				var sharpOffset = src.indexOf("#");
+				if(sharpOffset > 0) {
+					var realSrc = value.getRealImageSrc();
+					realSrc = this.getRelativePathOfURL(realSrc);
+				
+					var url = src.substr(0, sharpOffset);	
+					if(realSrc && realSrc.indexOf(src) < 0) {
+						o.images["real-image-"+url] = realSrc;	
+					}
+				}
 			}
 		}
 	}
@@ -3329,6 +3168,7 @@ UIElement.prototype.elementToJson = function(o) {
 
 UIElement.prototype.elementFromJson = function(js) {
 	if(js.events) {
+		delete js.events.onOnUpdateTransform;
 		for(var key in js.events) {
 			var value = js.events[key];
 			this.events[key] = value;
@@ -3337,7 +3177,7 @@ UIElement.prototype.elementFromJson = function(js) {
 
 	for(var key in this.images) {
 		var value = this.images[key];
-		if(key !== "display") {
+		if(key !== "display" && key.indexOf("real-image") !== 0) {
 			this.setImage(key, null);
 		}
 	}
@@ -3348,7 +3188,7 @@ UIElement.prototype.elementFromJson = function(js) {
 			if(key === "display") {
 				this.images[key] = value;
 			}
-			else {
+			else if(key.indexOf("real-image") !== 0) {
 				this.setImage(key, value);
 			}
 		}
@@ -3368,7 +3208,7 @@ UIElement.prototype.elementFromJson = function(js) {
 UIElement.prototype.setEnable = function(enable) {
 	this.enable = enable;
 
-	return;
+	return this;
 }
 
 UIElement.prototype.setOpacity = function(opacity) {
@@ -3381,7 +3221,7 @@ UIElement.prototype.setOpacity = function(opacity) {
 UIElement.prototype.setVisible = function(visible) {
 	this.visible = visible;
 
-	return;
+	return this;
 }
 
 UIElement.prototype.isFocused = function() {
@@ -3452,15 +3292,13 @@ UIElement.prototype.hideHTML = function() {
 }
 
 UIElement.prototype.show = function() {
-	this.setVisible(true);
+	return this.setVisible(true);
 
 	return;
 }
 
 UIElement.prototype.hide = function() {
-	this.setVisible(false);
-
-	return;
+	return this.setVisible(false);
 }
 
 UIElement.prototype.showEventDialog = function() {
@@ -3530,7 +3368,7 @@ UIElement.prototype.relayout = function() {
 
 	var p = getParentShapeOfShape(this);
 	if(!p || !p.isUIElement) {
-		if(this.mode === C_MODE_EDITING) {
+		if(this.mode === Shape.MODE_EDITING) {
 			this.setUserMovable(true);
 			this.setUserResizable(true);
 		}
@@ -3560,7 +3398,7 @@ UIElement.prototype.relayout = function() {
 	this.beforeRelayout();
 
 	switch(this.widthAttr) {
-		case C_WIDTH_SCALE: {
+		case UIElement.WIDTH_SCALE: {
 			w = wParent * this.widthParam;
 			if(this.widthScaleMin && w < this.widthScaleMin) {
 				if(this.pointerDown) {
@@ -3581,11 +3419,11 @@ UIElement.prototype.relayout = function() {
 
 			break;
 		}
-		case C_WIDTH_FILL_PARENT: {
+		case UIElement.WIDTH_FILL_PARENT: {
 			w = wParent;
 			break;
 		}
-		case C_WIDTH_FILL_AVAILABLE: {
+		case UIElement.WIDTH_FILL_AVAILABLE: {
 			break;
 		}
 		default: {
@@ -3595,7 +3433,7 @@ UIElement.prototype.relayout = function() {
 	}
 
 	switch(this.heightAttr) {
-		case C_HEIGHT_SCALE: {
+		case UIElement.HEIGHT_SCALE: {
 			h = hParent * this.heightParam;
 			if(this.heightScaleMin && h < this.heightScaleMin) {
 				if(this.pointerDown) {
@@ -3616,11 +3454,11 @@ UIElement.prototype.relayout = function() {
 
 			break;
 		}
-		case C_HEIGHT_FILL_PARENT: {
+		case UIElement.HEIGHT_FILL_PARENT: {
 			h = hParent;
 			break;
 		}
-		case C_HEIGHT_FILL_AVAILABLE: {
+		case UIElement.HEIGHT_FILL_AVAILABLE: {
 			break;
 		}
 		default: {
@@ -3630,27 +3468,27 @@ UIElement.prototype.relayout = function() {
 	}
 
 	switch(this.xAttr) {
-		case C_X_SCALE: {
+		case UIElement.X_SCALE: {
 			x = wParent * this.xParam;
 			break;
 		}
-		case C_X_FIX_RIGHT: {
+		case UIElement.X_FIX_RIGHT: {
 			x = wParent - this.xParam - this.w;
 			break;
 		}
-		case C_X_CENTER_IN_PARENT: {
+		case UIElement.X_CENTER_IN_PARENT: {
 			x = (wParent - w)/2 + hMargin;
 			break;
 		}
-		case C_X_LEFT_IN_PARENT: {
+		case UIElement.X_LEFT_IN_PARENT: {
 			x = hMargin;
 			break;
 		}
-		case C_X_RIGHT_IN_PARENT: {
+		case UIElement.X_RIGHT_IN_PARENT: {
 			x = wParent - w + hMargin;
 			break;
 		}
-		case C_X_AFTER_PREV: {
+		case UIElement.X_AFTER_PREV: {
 			var prev = this.getPrevSibling();
 			x = prev ? (prev.x + prev.w) : 0;
 			break;
@@ -3662,27 +3500,27 @@ UIElement.prototype.relayout = function() {
 	}
 		
 	switch(this.yAttr) {
-		case C_Y_SCALE: {
+		case UIElement.Y_SCALE: {
 			y = hParent * this.yParam;
 			break;
 		}
-		case C_Y_FIX_BOTTOM: {
+		case UIElement.Y_FIX_BOTTOM: {
 			y = hParent - this.yParam - this.h;
 			break;
 		}
-		case C_Y_MIDDLE_IN_PARENT: {
+		case UIElement.Y_MIDDLE_IN_PARENT: {
 			y = (hParent - h)/2 + vMargin;
 			break;
 		}
-		case C_Y_TOP_IN_PARENT: {
+		case UIElement.Y_TOP_IN_PARENT: {
 			y = vMargin;
 			break;
 		}
-		case C_Y_BOTTOM_IN_PARENT: {
+		case UIElement.Y_BOTTOM_IN_PARENT: {
 			y = hParent - h + vMargin;
 			break;
 		}
-		case C_Y_AFTER_PREV: {
+		case UIElement.Y_AFTER_PREV: {
 			var prev = this.getPrevSibling();
 			y = prev ? (prev.y + prev.h) : 0;
 			break;
@@ -3693,7 +3531,7 @@ UIElement.prototype.relayout = function() {
 		}
 	}
 	
-	if(this.widthAttr === C_WIDTH_FILL_AVAILABLE || this.heightAttr === C_HEIGHT_FILL_AVAILABLE) {
+	if(this.widthAttr === UIElement.WIDTH_FILL_AVAILABLE || this.heightAttr === UIElement.HEIGHT_FILL_AVAILABLE) {
 		var vNext = null;
 		var hNext = null;
 
@@ -3719,7 +3557,7 @@ UIElement.prototype.relayout = function() {
 			}
 		}
 
-		if(this.widthAttr === C_WIDTH_FILL_AVAILABLE) {
+		if(this.widthAttr === UIElement.WIDTH_FILL_AVAILABLE) {
 			if(hNext) {
 				w = hNext.x - x;
 			}
@@ -3733,7 +3571,7 @@ UIElement.prototype.relayout = function() {
 		}
 
 			
-		if(this.heightAttr === C_HEIGHT_FILL_AVAILABLE) {
+		if(this.heightAttr === UIElement.HEIGHT_FILL_AVAILABLE) {
 			if(vNext) {
 				h = vNext.y - y;
 			}
@@ -3746,7 +3584,7 @@ UIElement.prototype.relayout = function() {
 		}
 	}
 	
-	if(this.heightAttr === C_HEIGHT_KEEP_RATIO_WITH_WIDTH) {
+	if(this.heightAttr === UIElement.HEIGHT_KEEP_RATIO_WITH_WIDTH) {
 		h = w * this.heightParam;	
 	}
 
@@ -3761,6 +3599,10 @@ UIElement.prototype.relayout = function() {
 		p.fixChildSize(this);
 		p.fixChildPosition(this);
 	}
+	
+	this.setPosition(this.x, this.y);
+	this.setSize(this.w, this.h);
+	
 	this.autoScaleFontSize(w/oldW);
 	this.relayoutChildren();
 	this.afterRelayout();
@@ -3779,7 +3621,7 @@ UIElement.prototype.loadCustomProp = function(form) {
 }
 
 UIElement.prototype.onMoved = function() {
-	if(!this.parentShape || this.mode != C_MODE_EDITING) {
+	if(!this.parentShape || this.mode != Shape.MODE_EDITING) {
 		return;
 	}
 
@@ -3819,7 +3661,7 @@ UIElement.prototype.relayoutChildren = function() {
 
 	for(var i = 0; i < this.children.length; i++) {
 		var child = this.children[i];
-		if(child.widthAttr === C_WIDTH_FILL_AVAILABLE || child.heightAttr === C_HEIGHT_FILL_AVAILABLE) {
+		if(child.widthAttr === UIElement.WIDTH_FILL_AVAILABLE || child.heightAttr === UIElement.HEIGHT_FILL_AVAILABLE) {
 			continue;
 		}
 
@@ -3831,7 +3673,7 @@ UIElement.prototype.relayoutChildren = function() {
 	
 	for(var i = 0; i < this.children.length; i++) {
 		var child = this.children[i];
-		if(!(child.widthAttr === C_WIDTH_FILL_AVAILABLE || child.heightAttr === C_HEIGHT_FILL_AVAILABLE)) {
+		if(!(child.widthAttr === UIElement.WIDTH_FILL_AVAILABLE || child.heightAttr === UIElement.HEIGHT_FILL_AVAILABLE)) {
 			continue;
 		}
 
@@ -4008,11 +3850,11 @@ UIElement.prototype.scaleForDensity = function(sizeScale, lcdDensity, recuresive
 		return;
 	}
 
-	if(this.widthAttr === C_WIDTH_FIX || this.widthAttr === C_WIDTH_SCALE) {
+	if(this.widthAttr === UIElement.WIDTH_FIX || this.widthAttr === UIElement.WIDTH_SCALE) {
 		this.w = Math.floor(this.w * sizeScale);
 	}
 
-	if(this.heightAttr === C_HEIGHT_FIX || this.heightAttr === C_HEIGHT_SCALE) {
+	if(this.heightAttr === UIElement.HEIGHT_FIX || this.heightAttr === UIElement.HEIGHT_SCALE) {
 		this.h = this.h * sizeScale;
 		if(this.h < 36 && (this.isUIButton || this.isUIProgressBar || this.isUIColorTile || this.isUIColorButton
 			|| this.isUIEdit || this.isUIRadioBox || this.isUICheckBox || this.isUIWaitBar || this.isUISwitch)) {
@@ -4029,13 +3871,13 @@ UIElement.prototype.scaleForDensity = function(sizeScale, lcdDensity, recuresive
 	}
 
 	var isCreating = this.isCreatingElement();
-	if(this.yAttr === C_Y_SCALE || this.yAttr === C_Y_FIX_TOP) {
+	if(this.yAttr === UIElement.Y_SCALE || this.yAttr === UIElement.Y_FIX_TOP) {
 		if(!isCreating) {
 			this.y = Math.floor(this.y * sizeScale);
 		}
 	}
 
-	if(this.xAttr === C_X_SCALE || this.xAttr === C_X_FIX_LEFT) {
+	if(this.xAttr === UIElement.X_SCALE || this.xAttr === UIElement.X_FIX_LEFT) {
 		if(!isCreating) {
 			this.x = Math.floor(this.x * sizeScale);
 		}
@@ -4101,8 +3943,8 @@ UIElement.prototype.fixImagePath = function(oldConfig, newConfig) {
 		
 		var src = value.getImageSrc();
 		if(src) {
-			src = src.replaceAll("/" + oldVersion + "/", "/" + newVersion + "/");
-			src = src.replaceAll("/" + oldPlatform + "/", "/" + newPlatform + "/");
+//			src = src.replaceAll("/" + oldVersion + "/", "/" + newVersion + "/");
+//			src = src.replaceAll("/" + oldPlatform + "/", "/" + newPlatform + "/");
 			src = src.replaceAll("/" + oldDensity + "/", "/" + newDensity + "/");
 			value.setImageSrc(src);
 		}
@@ -4164,298 +4006,6 @@ UIElement.prototype.notifyDeviceConfigChanged = function(oldConfig, newConfig) {
 	return;
 }
 
-UIElement.prototype.callOnScrollDone = function() {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleOnScrollDone || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onScrollDone"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnScrollDone = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnScrollDone) {
-		try {
-			this.handleOnScrollDone();
-		}catch(e) {
-			console.log("this.handleOnScrollDone:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnRemoved = function() {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleOnRemoved || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onRemoved"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnRemoved = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnRemoved) {
-		try {
-			this.handleOnRemoved();
-		}catch(e) {
-			console.log("this.handleOnRemoved:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnChildDragging = function(sourceChildIndex, targetChildIndex) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleOnChildDragging || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onChildDragging"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnChildDragging = function(sourceChildIndex, targetChildIndex) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnChildDragging) {
-		try {
-			this.handleOnChildDragging(sourceChildIndex, targetChildIndex);
-		}catch(e) {
-			console.log("this.handleOnChildDragging:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnChildDragged = function(sourceChildIndex, targetChildIndex) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleOnChildDragged || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onChildDragged"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnChildDragged = function(sourceChildIndex, targetChildIndex) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnChildDragged) {
-		try {
-			this.handleOnChildDragged(sourceChildIndex, targetChildIndex);
-		}catch(e) {
-			console.log("this.handleOnChildDragged:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnChanging = function(value) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleOnChanging || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onChanging"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnChanging = function(value) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnChanging) {
-		try {
-			this.handleOnChanging(value);
-		}catch(e) {
-			console.log("this.handleOnChanging:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnChanged = function(value) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(this.onChanged) {
-		this.onChanged(value);
-
-		return;
-	}
-
-	if(!this.handleOnChanged || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onChanged"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnChanged = function(value) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnChanged) {
-		try {
-			this.handleOnChanged(value);
-		}catch(e) {
-			console.log("this.handleOnChanged:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnInit = function() {
-	if(!this.handleOnInit || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onInit"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnInit = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnInit) {
-		try {
-			this.handleOnInit();
-		}catch(e) {
-			console.log("this.handleOnInit:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnChanging = function(value) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleOnChanging || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onChanging"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnChanging = function(value) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnChanging) {
-		try {
-			this.handleOnChanging(value);
-		}catch(e) {
-			console.log("this.handleOnChanging:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnFocusIn = function() {
-	if(this.onFocusIn) {
-		try {
-			this.onFocusIn();
-		}
-		catch(e) {
-			console.log("onFocusIn:" + e.message);
-		}
-	}
-
-	if(!this.handleOnFocusIn || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onFocusIn"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnFocusIn = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnFocusIn) {
-		try {
-			this.handleOnFocusIn();
-		}catch(e) {
-			console.log("this.handleOnFocusIn:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnFocusOut = function() {
-	if(this.onFocusOut) {
-		try {
-			this.onFocusOut();
-		}
-		catch(e) {
-			console.log("onFocusOut: " + e.message);
-		}
-	}
-
-	if(!this.handleOnFocusOut || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onFocusOut"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnFocusOut = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnFocusOut) {
-		try {
-			this.handleOnFocusOut();
-		}catch(e) {
-			console.log("this.handleOnFocusOut:" + e.message);
-		}
-	}
-
-	return true;
-}
-
 UIElement.prototype.addMovementForVelocityTracker = function() {
 	if(this.velocityTracker) {
 		var p = {};
@@ -4490,37 +4040,37 @@ UIElement.prototype.animHide = function(animHint, onAnimDone) {
 }
 
 UIElement.prototype.atLeft = function() {
-	this.exec(new PositionSizeAttrCommand(this, C_X_LEFT_IN_PARENT, null, null, null));
+	this.exec(new PositionSizeAttrCommand(this, UIElement.X_LEFT_IN_PARENT, null, null, null));
 
 	return;
 }
 
 UIElement.prototype.atRight = function() {
-	this.exec(new PositionSizeAttrCommand(this, C_X_RIGHT_IN_PARENT, null, null, null));
+	this.exec(new PositionSizeAttrCommand(this, UIElement.X_RIGHT_IN_PARENT, null, null, null));
 
 	return;
 }
 
 UIElement.prototype.atTop = function() {
-	this.exec(new PositionSizeAttrCommand(this, null, C_Y_TOP_IN_PARENT, null, null));
+	this.exec(new PositionSizeAttrCommand(this, null, UIElement.Y_TOP_IN_PARENT, null, null));
 	
 	return;
 }
 
 UIElement.prototype.atBottom = function() {
-	this.exec(new PositionSizeAttrCommand(this, null, C_Y_BOTTOM_IN_PARENT, null, null));
+	this.exec(new PositionSizeAttrCommand(this, null, UIElement.Y_BOTTOM_IN_PARENT, null, null));
 	
 	return;
 }
 
 UIElement.prototype.atCenter = function() {
-	this.exec(new PositionSizeAttrCommand(this, C_X_CENTER_IN_PARENT, null, null, null));
+	this.exec(new PositionSizeAttrCommand(this, UIElement.X_CENTER_IN_PARENT, null, null, null));
 	
 	return;
 }
 
 UIElement.prototype.atMiddle = function() {
-	this.exec(new PositionSizeAttrCommand(this, null, C_Y_MIDDLE_IN_PARENT, null, null));
+	this.exec(new PositionSizeAttrCommand(this, null, UIElement.Y_MIDDLE_IN_PARENT, null, null));
 	
 	return;
 }
@@ -4536,24 +4086,25 @@ UIElement.prototype.saveState = function() {
 UIElement.prototype.restoreState = function() {
 	if(this.savedState && this.savedState.json) {
 		this.fromJson(this.savedState.json);
-		delete this.savedState.json;
+		Object.destroy(this.savedState.json);
+		this.savedState.json = null;
 	}
 
 	return;
 }
 
 UIElement.prototype.isUserMovable = function() {
-	if(this.widthAttr == C_WIDTH_FILL_PARENT 
-			&& (this.yAttr === C_Y_TOP_IN_PARENT || this.yAttr === C_Y_MIDDLE_IN_PARENT || this.yAttr === C_Y_BOTTOM_IN_PARENT)) {
+	if(this.widthAttr == UIElement.WIDTH_FILL_PARENT 
+			&& (this.yAttr === UIElement.Y_TOP_IN_PARENT || this.yAttr === UIElement.Y_MIDDLE_IN_PARENT || this.yAttr === UIElement.Y_BOTTOM_IN_PARENT)) {
 		return false;
 	}
 	
-	if(this.heightAttr === C_HEIGHT_FILL_PARENT 
-			&& (this.xAttr === C_X_LEFT_IN_PARENT || this.x === C_X_CENTER_IN_PARENT || this.xAttr === C_X_RIGHT_IN_PARENT)) {
+	if(this.heightAttr === UIElement.HEIGHT_FILL_PARENT 
+			&& (this.xAttr === UIElement.X_LEFT_IN_PARENT || this.x === UIElement.X_CENTER_IN_PARENT || this.xAttr === UIElement.X_RIGHT_IN_PARENT)) {
 		return false;
 	}
 	
-	if(this.widthAttr === C_WIDTH_FILL_PARENT && this.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(this.widthAttr === UIElement.WIDTH_FILL_PARENT && this.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		return false;
 	}
 
@@ -4561,7 +4112,7 @@ UIElement.prototype.isUserMovable = function() {
 }
 
 UIElement.prototype.isUserResizable = function() {
-	if(this.widthAttr === C_WIDTH_FILL_PARENT && this.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(this.widthAttr === UIElement.WIDTH_FILL_PARENT && this.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		return false;
 	}
 
@@ -4603,9 +4154,9 @@ UIGroup.prototype.initUIGroup = function(type, w, h, img) {
 
 	this.roundRadius = 5;
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, img);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, img);
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 	this.setCanRectSelectable(false, false);
 	this.addEventNames(["onInit"]);
 
@@ -4671,7 +4222,7 @@ UIGroup.prototype.onPointerUpEditing = function(point, beforeChild) {
 }
 
 UIGroup.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
 		canvas.beginPath();
@@ -4711,39 +4262,62 @@ function createUIGroupShape() {
 	var g = new UIGroup();
 	
 	g.initUIGroup("ui-group", 200, 200, null);
-	g.state = C_STAT_NORMAL;
+	g.state = Shape.STAT_NORMAL;
 
 	return g;
 }
 
 UIElement.funcs = [];
-UIElement.setAnimTimer = function(func) {
-	if(typeof func != "function") {
-		return;
-	}
 
+UIElement.setAnimTimer = function(func, deltaTime) {
+	return UIElement.setTimeout(func, deltaTime);	
+}
+
+UIElement.setTimeout = function(func, deltaTime) {
+	deltaTime = deltaTime ? Math.max(deltaTime, 16) : 16;
+
+	func.deltaTime = deltaTime;
+	func.time = Date.now() + deltaTime;
 	UIElement.funcs.push(func);
-	if(!UIElement.animTimerID) {
 
-		UIElement.animTimerID = setTimeout(function() {
+	if(!UIElement.animTimerID) {
+		function executeTimers() {
 			var funcs = UIElement.funcs;
 
+			var now = Date.now();
+			var n = funcs.length;
 			UIElement.funcs = [];
-			UIElement.animTimerID = 0;
 
-			for(var i = 0; i < funcs.length; i++) {
+			for(var i = 0; i < n; i++) {
 				var iter = funcs[i];
-				iter();
+				if(iter.time <= now) {
+					if(iter()) {
+						iter.time = now + iter.deltaTime;
+						UIElement.funcs.push(iter);
+					}
+				}
+				else {
+					UIElement.funcs.push(iter);
+				}
 			}
 
-		}, 16);
+			funcs = null;
+			if(UIElement.funcs.length) {
+				UIElement.animTimerID = requestAnimFrame(executeTimers);
+			}
+			else {
+				UIElement.animTimerID = 0;
+			}
+		}
+
+		UIElement.animTimerID = requestAnimFrame(executeTimers, 16);
 	}
 
 	return;
 }
 
-UIElement.getMainCanvasScale = function() {
-	if(!UIElement.canvasScale) {
+UIElement.getMainCanvasScale = function(force) {
+	if(!UIElement.canvasScale || force) {
 		var xScale = 1;
 		var yScale = 1;
 		UIElement.canvasScale = {};
@@ -4759,4 +4333,25 @@ UIElement.getMainCanvasScale = function() {
 	}
 
 	return UIElement.canvasScale;
+}
+
+UIElement.prototype.isFullscreenMode = function() {
+	return cantkIsFullscreen();
+}
+
+UIElement.prototype.requestFullscreen = function(onDone) {
+	if(!isMobile()) {
+		if(onDone) {
+			onDone(false);
+		}
+		console.log("UIElement.requestFullScreen Rejected(not mobile)");
+	}
+	else {
+		if(!cantkRequestFullscreen(onDone)) {
+			onDone(false);
+		}
+		console.log("UIElement.requestFullScreen");
+	}
+
+	return;
 }

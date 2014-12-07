@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Basic polygon for game. 
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -19,9 +19,9 @@ UIPolygon.prototype.initUIPolygon = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
 	this.density = 1;
 	this.friction = 0;
 	this.restitution = 0;
@@ -36,7 +36,7 @@ UIPolygon.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIPolygon.prototype.paintChildren = function(canvas) {
-	if(!this.runtimeVisible && this.mode != C_MODE_EDITING && !this.isIcon) {
+	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
 		return;
 	}
 
@@ -68,7 +68,7 @@ UIPolygon.prototype.paintChildren = function(canvas) {
 }
 
 UIPolygon.prototype.paintSelfOnly = function(canvas) {
-	if(this.mode === C_MODE_EDITING || this.isIcon) {
+	if(this.mode === Shape.MODE_EDITING || this.isIcon) {
 		canvas.fillStyle = this.style.fillColor;
 		canvas.strokeStyle = this.style.lineColor;
 		canvas.rect(0, 0, this.w, this.h);

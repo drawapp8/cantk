@@ -3,7 +3,7 @@
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: functions to wrap html5 canvas.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -342,7 +342,7 @@ function canvasAttachManager(canvas, manager, app) {
 			manager.onPointerDown(point);
 		}
 	
-		//console.log("onPointerDown.");
+		console.log("onPointerDown.");
 		return cancelDefaultAction(e);
 	}
 
@@ -388,7 +388,7 @@ function canvasAttachManager(canvas, manager, app) {
 			}
 		}
 		
-		//console.log("onPointerUp.");
+		console.log("onPointerUp.");
 		return cancelDefaultAction(e);
 	}
 
@@ -440,7 +440,7 @@ function canvasAttachManager(canvas, manager, app) {
 		return cancelDefaultAction(e);
 	}
 
-	if(app.type == C_APP_TYPE_WEBAPP || app.type == C_APP_TYPE_PREVIEW ) {
+	if(app.type == AppBase.TYPE_WEBAPP || app.type == AppBase.TYPE_PREVIEW ) {
 		document.oncontextmenu = function(e) {
 			var point = {};
 			point.x = e.x + getScrollLeft();

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Wait Bar
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -21,9 +21,9 @@ UIWaitBar.prototype.initUIWaitBar = function(type, w, h, image, imageDisplay) {
 	this.offset = 0;
 	this.running = false;
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	this.images.display = imageDisplay;
-	this.setImage(CANTK_IMAGE_DEFAULT, image);
+	this.setImage(UIElement.IMAGE_DEFAULT, image);
 
 	return this;
 }
@@ -49,7 +49,7 @@ UIWaitBar.prototype.stop = function() {
 }
 
 UIWaitBar.prototype.drawBgImage =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 	
 	if(!image) {
 		return;
@@ -81,7 +81,7 @@ UIWaitBar.prototype.drawBgImage =function(canvas) {
 	}
 	else {
 		switch(this.images.display) {
-			case CANTK_IMAGE_DISPLAY_CENTER: {
+			case UIElement.IMAGE_DISPLAY_CENTER: {
 				canvas.drawImage(image, sx, sy, w, tileHeight, dx, dy, w, tileHeight);
 				break;
 			}
@@ -100,7 +100,7 @@ UIWaitBar.prototype.needRedraw = function() {
 		return false;
 	}
 
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		return false;
 	}
 

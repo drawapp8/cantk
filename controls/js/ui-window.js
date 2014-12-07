@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Window
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -15,39 +15,9 @@ UIWindow.serialNo = 0;
 UIWindow.prototype = new UIElement();
 UIWindow.prototype.isUIWindow = true;
 
-UIWindow.prototype.callOnGesture = function(gesture) {
-	if(!this.enable) {
-		return false;
-	}
-
-	if(!this.handleOnGesture || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onGesture"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnGesture = function(gesture) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnGesture) {
-		try {
-			this.handleOnGesture(gesture);
-		}catch(e) {
-			console.log("this.callOnGesture:" + e.message);
-		}
-	}
-	
-	console.log("callOnGesture: scale=" + gesture.scale + " rotation=" + gesture.rotation);
-
-	return true;
-}
-
 UIWindow.prototype.onGesture = function(gesture) {
-	if(this.mode != C_MODE_EDITING) {
-		this.callOnGesture(gesture);
+	if(this.mode != Shape.MODE_EDITING) {
+		this.callOnGestureHandler(gesture);
 	}
 
 	return;
@@ -62,7 +32,7 @@ UIWindow.prototype.isMainWindow = function() {
 }
 
 UIWindow.prototype.resize = function(w, h) {
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		this.realResize(w, h);
 	}
 
@@ -74,8 +44,8 @@ UIWindow.prototype.initUIWindow = function(type, x, y, w, h, bg) {
 
 	this.move(x, y);
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setName("window-" + UIWindow.serialNo++);
 	
 	if(!bg) {
@@ -128,7 +98,7 @@ UIWindow.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIWindow.prototype.onModeChanged = function() {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.popupWindow = null;
 	}
 
@@ -192,14 +162,45 @@ UIWindow.prototype.dispatchPointerDownToChildren = function(p) {
 		return true;
 	}
 
+	return this.defaultDispatchPointerDownToChildren(p);
+}
+
+UIWindow.prototype.onPointerDownNormal = function(point) {
 	if(this.popupWindow) {
-		this.popupWindow.onPointerDown(p)
+		this.popupWindow.onPointerDownNormal(point)
 		this.setTarget(this.popupWindow);
+		this.pointerDown = false;
 
 		return true;
 	}
 
-	return this.defaultDispatchPointerDownToChildren(p);
+	return UIElement.prototype.onPointerDownNormal.call(this, point);
+}
+
+UIWindow.prototype.onPointerMoveNormal = function(point) {
+	if(this.popupWindow) {
+		return this.popupWindow.onPointerMoveNormal(point)
+	}
+
+	return UIElement.prototype.onPointerMoveNormal.call(this, point);
+}
+
+UIWindow.prototype.onPointerUpNormal = function(point) {
+	if(this.popupWindow) {
+		return this.popupWindow.onPointerUpNormal(point)
+	}
+
+	return UIElement.prototype.onPointerUpNormal.call(this, point);
+}
+
+UIWindow.prototype.paintSelf = function(canvas) {
+	UIElement.prototype.paintSelf.call(this, canvas);
+
+	if(this.popupWindow) {
+		this.popupWindow.paintSelf(canvas);
+	}
+
+	return;
 }
 
 UIWindow.prototype.paintChildren = function(canvas) {
@@ -211,10 +212,6 @@ UIWindow.prototype.paintChildren = function(canvas) {
 
 	this.defaultPaintChildren(canvas);
 
-	if(this.popupWindow) {
-		this.popupWindow.paintSelf(canvas);
-	}
-	
 	canvas.restore();
 
 	return;
@@ -235,207 +232,13 @@ UIWindow.prototype.hide = function() {
 	return;
 }
 
-UIWindow.prototype.callOnBeforeOpen = function(initData) {
-	if(!this.handleOnBeforeOpen || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onBeforeOpen"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnBeforeOpen = function(initData) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	this.show();
-	this.init();
-
-	if(this.handleOnBeforeOpen) {
-		this.handleOnBeforeOpen(initData);
-	}
-
-	return true;
-}
-
-UIWindow.prototype.callOnOpen = function(initData) {
-	delete this.openPending;
-
-	if(this.onOpen) {
-		try {
-			this.onOpen(initData);
-		}catch(e) {
-			console.log("onOpen" + e.message);
-		}
-	}
-
-	if(!this.handleOnOpen || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onOpen"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnOpen = function(initData) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnOpen) {
-		try {
-			this.handleOnOpen(initData);	
-		}catch(e) {
-			console.log("onOpen" + e.message);
-		}
-	}
-
-	if(this.isSplashWindow()) {
-		var win = this;
-		var duration = win.duration ? win.duration : 3000;
-
-		if(window.splashWinTimeID) {
-			clearTimeout(window.splashWinTimeID);
-			delete window.splashWinTimeID;
-		}
-
-		window.splashWinTimeID = setTimeout(function() {
-			if(win.visible) {
-				win.openWindow(null, null, true);
-			}
-		}, duration);
-	}
-
-	return true;
-}
-
-UIWindow.prototype.callOnClose = function(retInfo) {
-	if(this.onClose) {
-		try {
-			this.onClose(retInfo);
-		}
-		catch(e) {
-			console.log("onClose: " + e.message);
-		}
-	}
-			
-	if(!this.handleOnClose || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onClose"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnClose = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnClose) {
-		this.handleOnClose();
-	}
-
-	this.deinit();
-	this.hide();
-
-	return true;
-}
-
-UIWindow.prototype.callOnSwitchToBack =function() {
-	if(!this.handleOnSwitchToBack || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onSwitchToBack"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnSwitchToBack = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnSwitchToBack) {
-		this.handleOnSwitchToBack();
-	}
-
-	this.hide();
-
-	return true;
-}
-
-UIWindow.prototype.callOnSwitchToFront =function() {
-	if(this.isUINormalWindow && (this.w != this.parentShape.w || this.h != this.parentShape.h)) {
-		this.relayout();
-		console.log("WindowManager Size Changed, Relayout Current Window.");
-	}
-
-	this.show();
-
-	if(!this.handleOnSwitchToFront || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onSwitchToFront"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnSwitchToFront = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnSwitchToFront) {
-		this.handleOnSwitchToFront();
-	}
-
-	return true;
-}
-
-UIWindow.prototype.callOnLoad =function() {
-	if(!this.handleOnLoad || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onLoad"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnLoad = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnLoad) {
-		this.handleOnLoad();
-	}
-
-	return true;
-}
-
-UIWindow.prototype.callOnUnload =function() {
-	if(!this.handleOnUnload || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onUnload"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnUnload = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnUnload) {
-		this.handleOnUnload();
-	}
-
-	return true;
-}
-
 UIWindow.prototype.setCloseWhenPointerUpOutside = function(closeWhenPointerUpOutside) {
 	if(closeWhenPointerUpOutside) {
 		this.hitTest = function(point) {
 			var ret = this.oldHitTest(point);
 			if(!ret) {
-				if(this.mode != C_MODE_EDITING) {
-					ret = C_HIT_TEST_MM;
+				if(this.mode != Shape.MODE_EDITING) {
+					ret = Shape.HIT_TEST_MM;
 				}
 			}
 
@@ -508,9 +311,25 @@ UIWindow.prototype.getSupportedAnimations = function() {
 }
 
 UIWindow.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var display = this.images.display;
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
-	if(!image && this.style.fillColor != "rgba(0,0,0,0)") {
+	if(image) {
+		switch(display) {
+			case UIElement.IMAGE_DISPLAY_TILE:
+			case UIElement.IMAGE_DISPLAY_TILE_V:
+			case UIElement.IMAGE_DISPLAY_TILE_H:
+			case UIElement.IMAGE_DISPLAY_SCALE:
+			case UIElement.IMAGE_DISPLAY_9PATCH:
+			case UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO: return;
+			default:break;
+		}
+		if(image.width >= this.w && image.height >= this.h) {
+			return;
+		}
+	}
+
+	if(this.style.fillColor != "rgba(0,0,0,0)") {
 		canvas.beginPath();
 		canvas.fillRect(0, 0, this.w, this.h);
 	}
@@ -575,12 +394,100 @@ function UINormalWindowCreator(bg) {
 		var g = new UINormalWindow();
 		
 		g.initUIWindow(this.type, 0, 0, 100, 100, bg);
-		g.widthAttr = C_WIDTH_FILL_PARENT;
-		g.heightAttr = C_HEIGHT_FILL_PARENT;
+		g.widthAttr = UIElement.WIDTH_FILL_PARENT;
+		g.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 
 		return g;
 	}
 	
 	return;
+}
+
+UIWindow.prototype.callOnBeforeOpen = function(initData) {
+	this.show();
+	this.init();
+
+	return this.callOnBeforeOpenHandler(initData);
+}
+
+UIWindow.prototype.callOnOpen = function(initData) {
+	delete this.openPending;
+
+	if(this.onOpen) {
+		try {
+			this.onOpen(initData);
+		}catch(e) {
+			console.log("onOpen" + e.message);
+		}
+	}
+
+	this.callOnOpenHandler(initData);
+
+	if(this.isSplashWindow()) {
+		var win = this;
+		var duration = win.duration ? win.duration : 3000;
+
+		if(window.splashWinTimeID) {
+			clearTimeout(window.splashWinTimeID);
+			delete window.splashWinTimeID;
+		}
+
+		window.splashWinTimeID = setTimeout(function() {
+			if(win.visible) {
+				win.openWindow(null, null, true);
+			}
+		}, duration);
+	}
+
+	return true;
+}
+
+UIWindow.prototype.callOnClose = function(retInfo) {
+	if(this.onClose) {
+		try {
+			this.onClose(retInfo);
+		}
+		catch(e) {
+			console.log("onClose: " + e.message);
+		}
+	}
+			
+	this.callOnCloseHandler(retInfo);
+
+	this.deinit();
+	this.hide();
+
+	return true;
+}
+
+UIWindow.prototype.callOnSwitchToBack = function() {
+	this.callOnSwitchToBackHandler();
+	this.hide();
+
+	return true;
+}
+
+UIWindow.prototype.callOnSwitchToFront = function() {
+	if(this.isUINormalWindow && (this.w != this.parentShape.w || this.h != this.parentShape.h)) {
+		this.relayout();
+		console.log("WindowManager Size Changed, Relayout Current Window.");
+	}
+
+	this.show();
+	this.callOnSwitchToFrontHandler();
+
+	return true;
+}
+
+UIWindow.prototype.relayout = function() {
+	if(!this.getWindowManager().isDeviceDirectionOK()) {
+		console.log("UIWindow.prototype.relayout Reject Relayout");
+		return;
+	}
+	else {
+		console.log("UIWindow.prototype.relayout Accept Relayout");
+	}
+
+	return UIElement.prototype.relayout.call(this);
 }
 

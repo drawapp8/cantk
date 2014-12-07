@@ -7,49 +7,47 @@
  * 
  */
 
-var C_MODE_EDITING = 0;
-var C_MODE_RUNNING = 1;
-var C_MODE_PREVIEW = 2;
-
-var C_HIT_TEST_NONE = 0;
-var C_HIT_TEST_TL = 1;
-var C_HIT_TEST_TM = 2;
-var C_HIT_TEST_TR = 3;
-var C_HIT_TEST_ML = 4;
-var C_HIT_TEST_MR = 5;
-var C_HIT_TEST_BL = 6;
-var C_HIT_TEST_BM = 7;
-var C_HIT_TEST_BR = 8;
-var C_HIT_TEST_HANDLE = 9;
-var C_HIT_TEST_WORKAREA = 10;
-var C_HIT_TEST_MAX = 11
-var C_HIT_TEST_MM = -1;
-
-var C_ALIGN_LEFT = 1;
-var C_ALIGN_RIGHT = 2;
-var C_ALIGN_TOP = 3;
-var C_ALIGN_BOTTOM = 4;
-var C_ALIGN_CENTER = 5;
-var C_ALIGN_MIDDLE = 6;
-var C_ALIGN_TO_SAME_WIDTH = 7;
-var C_ALIGN_TO_SAME_HEIGHT = 8;
-var C_ALIGN_DIST_VER = 9;
-var C_ALIGN_DIST_HOR = 10;
-
-var C_STAT_CREATING_0 = 0;
-var C_STAT_CREATING_1 = 1;
-var C_STAT_CREATING_2 = 2;
-var C_STAT_NORMAL = 3;
-
-var C_SHAPE_TEXT_NONE=0;
-var C_SHAPE_TEXT_INPUT=1;
-var C_SHAPE_TEXT_TEXTAREA=2;
-
-
 function Shape() {
-	this.textTitle = "Text";
 	return;
 }
+
+Shape.MODE_EDITING = 0;
+Shape.MODE_RUNNING = 1;
+Shape.MODE_PREVIEW = 2;
+
+Shape.HIT_TEST_NONE = 0;
+Shape.HIT_TEST_TL = 1;
+Shape.HIT_TEST_TM = 2;
+Shape.HIT_TEST_TR = 3;
+Shape.HIT_TEST_ML = 4;
+Shape.HIT_TEST_MR = 5;
+Shape.HIT_TEST_BL = 6;
+Shape.HIT_TEST_BM = 7;
+Shape.HIT_TEST_BR = 8;
+Shape.HIT_TEST_HANDLE = 9;
+Shape.HIT_TEST_WORKAREA = 10;
+Shape.HIT_TEST_MAX = 11
+Shape.HIT_TEST_MM = -1;
+
+Shape.ALIGN_LEFT = 1;
+Shape.ALIGN_RIGHT = 2;
+Shape.ALIGN_TOP = 3;
+Shape.ALIGN_BOTTOM = 4;
+Shape.ALIGN_CENTER = 5;
+Shape.ALIGN_MIDDLE = 6;
+Shape.ALIGN_TO_SAME_WIDTH = 7;
+Shape.ALIGN_TO_SAME_HEIGHT = 8;
+Shape.ALIGN_DIST_VER = 9;
+Shape.ALIGN_DIST_HOR = 10;
+
+Shape.STAT_CREATING_0 = 0;
+Shape.STAT_CREATING_1 = 1;
+Shape.STAT_CREATING_2 = 2;
+Shape.STAT_NORMAL = 3;
+
+Shape.TEXT_NONE = 0;
+Shape.TEXT_INPUT = 1;
+Shape.TEXT_TEXTAREA = 2;
 
 Shape.prototype.canBindingData = function() {
 	return false;
@@ -62,7 +60,7 @@ Shape.prototype.afterCreated = function(point) {
 Shape.prototype.setNearRange = function(nearRange) {
 	this.nearRange = nearRange;
 
-	return;
+	return this;
 }
 
 Shape.prototype.getNearRange = function() {
@@ -81,22 +79,25 @@ Shape.prototype.getTextCookie = function(point) {
 	return 0;
 }
 
+Shape.isTransparentColor = function(color) {
+	return !color || color === "rgba(0,0,0,0)";
+}
+
 Shape.prototype.isFillColorTransparent = function() {
-	return !this.style.fillColor || this.style.fillColor === "rgba(0,0,0,0)";
+	return Shape.isTransparentColor(this.style.fillColor);
 }
 
 Shape.prototype.isStrokeColorTransparent = function() {
-	return !this.style.lineColor || this.style.lineColor === "rgba(0,0,0,0)";
+	return Shape.isTransparentColor(this.style.lineColor);
 }
 
 Shape.prototype.isTextColorTransparent = function() {
-	return !this.style.lineColor || this.style.lineColor === "rgba(0,0,0,0)";
+	return Shape.isTransparentColor(this.style.textColor);
 }
-
 
 Shape.prototype.setParent = function(parentShape) {
 	this.parentShape = parentShape;
-	return;
+	return this;
 }
 
 Shape.prototype.getParent = function(name) {
@@ -118,7 +119,7 @@ Shape.prototype.textEditable = function(point) {
 Shape.prototype.setInputType = function(inputType) {
 	this.inputType = inputType;
 
-	return;
+	return this;
 }
 
 Shape.prototype.editText = function(point) {
@@ -135,7 +136,7 @@ Shape.prototype.editText = function(point) {
 		var editor = null;
 		var inputType = this.inputType ? this.inputType : "text";
 
-		if(this.textType === C_SHAPE_TEXT_INPUT) {
+		if(this.textType === Shape.TEXT_INPUT) {
 			var y = p.y * scale + h/3 + oy;
 
 			if(w < 60) {
@@ -185,7 +186,7 @@ Shape.prototype.exec = function(cmd) {
 Shape.prototype.setTextTitle = function(textTitle) {
 	this.textTitle = textTitle;
 
-	return;
+	return this;
 }
 	
 Shape.prototype.initShape = function(x, y, w, h, type) {
@@ -200,18 +201,19 @@ Shape.prototype.initShape = function(x, y, w, h, type) {
 	this.rotation = 0;
 	this.saveDx = 0;
 	this.saveDy = 0;
-	this.scale = 1;
+	this.scaleX = 1;
+	this.scaleY = 1;
 	this.parentShape = null;
 	this.pointerDown = false;	
 	this.selected = false;
 	this.userMovable = true;
 	this.userResizable = true;
 	this.hignlighted = false;
-	this.state = C_STAT_NORMAL;
-	this.hitTestResult = C_HIT_TEST_NONE;
+	this.state = Shape.STAT_NORMAL;
+	this.hitTestResult = Shape.HIT_TEST_NONE;
 	this.lastPosition = new Point(0, 0);
 	this.selectMarkPoint = new Point(0, 0);
-	this.textType = C_SHAPE_TEXT_INPUT;
+	this.textType = Shape.TEXT_INPUT;
 	this.setDefaultStyle();
 	this.setTextAlignV("middle");
 	this.setTextAlignH("center");
@@ -223,19 +225,19 @@ Shape.prototype.setDefaultStyle = function() {
 	this.style = new ShapeStyle();
 	this.setStyle(DefaultShapeStyleGet());
 
-	return;
+	return this;
 }
 
 Shape.prototype.setState = function(state) {
 	this.state = state;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.setTextType= function(textType) {
 	this.textType = textType;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.isSelected = function() {
@@ -475,34 +477,49 @@ Shape.prototype.align = function(type, value) {
 Shape.prototype.setRotatable = function(rotatable) {
 	this.rotatable = rotatable;
 	
-	return;
+	return this;
 }
 
-Shape.prototype.setScale = function(scale) {
-	this.scale = scale;
-	
-	if(scale < 0.1) {
-		this.scale = 0.1;
-	}
+Shape.prototype.setScaleX = function(scaleX) {
+	this.scaleX = scaleX;
 
-	if(scale > 4) {
-		this.scale = 4;
-	}
+	return this;
+}
 
-	return;
+Shape.prototype.setScaleY = function(scaleY) {
+	this.scaleY = scaleY;
+
+	return this;
+}
+
+Shape.prototype.getScaleX = function() {
+	return this.scaleX ? this.scaleX : this.scale;
+}
+
+Shape.prototype.getScaleY = function() {
+	return this.scaleY ? this.scaleY : this.scale;
+}
+
+Shape.prototype.setScale = function(scaleX, scaleY) {
+	scaleY = scaleY ? scaleY : scaleX;
+
+	if(scaleX) this.scaleX = scaleX;
+	if(scaleY) this.scaleY = scaleY;
+
+	return this;
 }
 
 Shape.prototype.setRotation = function(rotation) {
 	this.rotation = rotation;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.setStyle = function(style) {
 	this.style.copy(style);
 	this.textNeedRelayout = true;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.getStyle = function() {
@@ -512,7 +529,7 @@ Shape.prototype.getStyle = function() {
 Shape.prototype.setName = function(name) {
 	this.name = name;
 
-	return;
+	return this;
 }
 
 Shape.prototype.getName = function() {
@@ -530,19 +547,19 @@ Shape.prototype.getLocaleInputTips = function(text) {
 Shape.prototype.setNeedRelayoutText = function() {
 	this.textNeedRelayout = true;
 
-	return;
+	return this;
 }	
 
 Shape.prototype.setTextAlignH = function(hTextAlign) {
 	this.hTextAlign = hTextAlign;
 
-	return;
+	return this;
 }
 
 Shape.prototype.setTextAlignV = function(vTextAlign) {
 	this.vTextAlign = vTextAlign;
 
-	return;
+	return this;
 }
 
 Shape.prototype.getTextAlignH = function() {
@@ -585,19 +602,19 @@ Shape.prototype.setText = function(text, cookie) {
 	}
 	this.textNeedRelayout = true;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.setText2 = function(text) {
 	this.text2 = text;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.setText3 = function(text) {
 	this.text3 = text;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.getText = function(cookie) {
@@ -627,13 +644,13 @@ Shape.prototype.getView = function() {
 Shape.prototype.setApp = function(app) {
 	this.app = app;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.setView = function(view) {
 	this.view = view;
 	
-	return;
+	return this;
 }
 
 Shape.prototype.redrawSelf = function() {
@@ -714,11 +731,11 @@ Shape.prototype.paint = function(canvas) {
 	return;
 }
 
-Shape.prototype.paintSelf=function(canvas) {
+Shape.prototype.paintSelf = function(canvas) {
 	return;
 }
 
-Shape.prototype.setSelected=function(selected) {
+Shape.prototype.setSelected = function(selected) {
 	if(this.selected === selected) {
 		return;
 	}
@@ -762,14 +779,14 @@ Shape.prototype.dup = function() {
 	var g = ShapeFactoryGet().createShape(this.type, C_CREATE_FOR_PROGRAM);
 
 	g.fromJson(this.toJson());
-	g.state = C_STAT_NORMAL;
+	g.state = Shape.STAT_NORMAL;
 
 	return g;
 }
 
 
 Shape.prototype.hitTest = function(point) {
-	return C_HIT_TEST_NONE;
+	return Shape.HIT_TEST_NONE;
 }
 
 Shape.prototype.showProperty = function() {
@@ -784,7 +801,7 @@ Shape.prototype.onGesture = function(gesture) {
 }
 
 Shape.prototype.onDoubleClick = function(point) {
-	if(this.textType != C_SHAPE_TEXT_NONE) {
+	if(this.textType != Shape.TEXT_NONE) {
 		this.editText(point);
 	}
 	else {
@@ -826,7 +843,7 @@ Shape.prototype.onPointerMove = function(point) {
 Shape.prototype.onPointerUp = function(point) {
 	if(this.hitTestResult) {
 		this.handlePointerEvent(point, C_EVT_POINTER_UP);
-		this.hitTestResult = C_HIT_TEST_NONE;
+		this.hitTestResult = Shape.HIT_TEST_NONE;
 		
 		return true;
 	}
@@ -963,13 +980,13 @@ Shape.prototype.applyFormat = function(js) {
 Shape.prototype.setUserMovable = function(value) {
 	this.userMovable = value;
 
-	return;
+	return this;
 }
 
 Shape.prototype.setUserResizable = function(value) {
 	this.userResizable = value;
 
-	return;
+	return this;
 }
 
 Shape.prototype.isUserMovable = function() {
@@ -1305,7 +1322,7 @@ Shape.prototype.getTextLineHeight = function() {
 Shape.prototype.setTextShadow = function(textShadow) {
 	this.textShadow = textShadow;
 
-	return;
+	return this;
 }
 
 Shape.prototype.isValid = function() {
@@ -1330,11 +1347,25 @@ Shape.prototype.destroy = function() {
 
 	if(this.children) {
 		this.children.clear();
+		this.children = null;
+	}
+
+	if(this.images) {
+		this.images = null;
+	}
+
+	if(this.events) {
+		this.events = null;
+	}
+
+	if(this.style) {
+		this.style = null;
 	}
 
 	this.onDestroy();
 
+	Object.destroy(this);
+
 	return;
 }
-
 

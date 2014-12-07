@@ -4556,6 +4556,7 @@ Box2D.postDefs = [];
     }
     b2Body.prototype.SetLinearVelocity = function (v) {
         if (this.m_type == b2Body.b2_staticBody) {
+        	alert("Static body not support SetLinearVelocity");
             return;
         }
         this.m_linearVelocity.SetV(v);
@@ -4566,6 +4567,7 @@ Box2D.postDefs = [];
     b2Body.prototype.SetAngularVelocity = function (omega) {
         if (omega === undefined) omega = 0;
         if (this.m_type == b2Body.b2_staticBody) {
+        	alert("Static body not support SetAngularVelocity");
             return;
         }
         this.m_angularVelocity = omega;

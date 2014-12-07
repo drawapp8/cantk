@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Loading Window
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -136,8 +136,8 @@ function UILoadingWindowCreator(bg) {
 		var g = new UILoadingWindow();
 		
 		g.initUIWindow(this.type, 0, 0, 100, 100, bg);
-		g.widthAttr = C_WIDTH_FILL_PARENT;
-		g.heightAttr = C_HEIGHT_FILL_PARENT;
+		g.widthAttr = UIElement.WIDTH_FILL_PARENT;
+		g.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 		g.windowType = "splash";
 		g.animHint = "none";
 		g.duration = 30000;

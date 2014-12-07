@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Label
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -20,9 +20,9 @@ UILabel.prototype.initUILabel = function(type, initText, bg) {
 	this.setText(initText);
 	this.setDefSize(200, 200);
 	this.setMargin(5, 5);
-	this.setTextType(C_SHAPE_TEXT_TEXTAREA);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
-	this.addEventNames(["onChanged", "onOnUpdateTransform"]);
+	this.setTextType(Shape.TEXT_TEXTAREA);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
+	this.addEventNames(["onChanged", "onUpdateTransform"]);
 
 
 	return this;
@@ -37,9 +37,9 @@ UILabel.prototype.setText = function(text) {
 	this.text = this.toText(text);
 	this.textNeedRelayout = true;
 
-	this.callOnChanged(text);
+	this.callOnChangedHandler(text);
 
-	return;
+	return this;
 }
 
 UILabel.prototype.drawText = function(canvas) {

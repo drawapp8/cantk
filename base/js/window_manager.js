@@ -3,7 +3,7 @@
  * Author:	Li XianJing <xianjimli@hotmail.com>
  * Brief: window manager
  * 
- * Copyright (c) 2011 - 2014	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
  * 
  */
   
@@ -17,7 +17,9 @@ function WindowManager(app, canvas) {
 	this.last_point = 0;
 	this.pointerDown = 0;
 	this.target = null;
+	this.drawCount = 0;
 	this.requestCount = 0;
+	this.startTime = Date.now();
 	this.windows = new Array();
 	this.grabWindows = new Array();
 	this.eventLogging = false;
@@ -351,11 +353,11 @@ WindowManager.prototype.isClicked = function() {
 }
 
 WindowManager.prototype.isCtrlDown = function() {
-	return this.currentEvent && (this.currentEvent.ctrlKey || this.ctrlDown);
+	return this.currentEvent && this.currentEvent.ctrlKey;
 }
 
 WindowManager.prototype.isAltDown = function() {
-	return this.currentEvent && (this.currentEvent.altKey || this.altDown);
+	return this.currentEvent && this.currentEvent.altKey;
 }
 
 WindowManager.prototype.onContextMenu = function(point) {
@@ -377,48 +379,16 @@ WindowManager.prototype.onKeyDown = function(code) {
 		console.log("onKeyDown: findTargetWin=" + this.target);
 	}
 
-	switch(code) {
-		case KeyEvent.DOM_VK_SHIFT: {
-			this.shitfDown = true; 
-			break;
-		}
-		case KeyEvent.DOM_VK_CONTROL:  {
-			this.ctrlDown = true;
-			break;
-		}
-		case KeyEvent.DOM_VK_ALT: {
-			this.altDown = true;
-			break;
-		}
-		default: {
-			if(this.target !== null) {
-				 this.target.onKeyDown(code);
-			}
-		}
+	if(this.target !== null) {
+		 this.target.onKeyDown(code);
 	}
 			
 	return;
 }
 
 WindowManager.prototype.onKeyUp = function(code) {
-	switch(code) {
-		case KeyEvent.DOM_VK_SHIFT: {
-			this.shitfDown = false; 
-			break;
-		}
-		case KeyEvent.DOM_VK_CONTROL:  {
-			this.ctrlDown = false;
-			break;
-		}
-		case KeyEvent.DOM_VK_ALT: {
-			this.altDown = false;
-			break;
-		}
-		default: {
-			if(this.target !== null) {
-		 		this.target.onKeyUp(code);
-			}
-		}
+	if(this.target !== null) {
+		this.target.onKeyUp(code);
 	}
 	
 	return;
@@ -438,11 +408,27 @@ WindowManager.prototype.removeWindow = function(win) {
 	return;
 }
 
+WindowManager.prototype.getFrameRate = function() {
+	var duration = Date.now() - this.startTime;
+
+	return Math.round(1000  * this.drawCount / duration);
+}
+
+WindowManager.prototype.showFPS = function(maxFpsMode) {
+	this.shouldShowFPS = true;
+	this.drawCount = 0;
+	this.startTime = Date.now();
+	this.maxFpsMode = maxFpsMode;
+
+	return this;
+}
+
 WindowManager.prototype.postRedraw = function(rect) {
 	this.requestCount++;
 
 	var manager = this;
 	function redrawAll() {
+		manager.drawCount++;
 		manager.requestCount = 0;
 		manager.draw();
 	}
@@ -484,6 +470,21 @@ WindowManager.prototype.draw = function() {
 	canvas.save();
 	this.drawWindows(canvas);
 	canvas.restore();
+
+	if(this.shouldShowFPS) {
+		var str = "fps:" + this.getFrameRate();
+		canvas.save();
+		canvas.textAlign = "left";
+		canvas.textBaseline = "top";
+		canvas.font = "20px Sans";
+		canvas.fillStyle = "Green";
+		canvas.fillText(str, 10, 10);
+		canvas.restore();
+
+		if(this.maxFpsMode) {
+			this.postRedraw();
+		}
+	}
 	
 	return;
 }

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Vedio 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -78,7 +78,7 @@ UIVideo.prototype.isAutoPlay = function() {
 UIVideo.prototype.initUIVideo = function(type) {
 	this.initUIHtml(type, 400, 300);
 	this.setValue("http://www.w3school.com.cn/i/movie.ogg");
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 
 	return this;
 }

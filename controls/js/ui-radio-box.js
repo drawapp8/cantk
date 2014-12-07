@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Radio Box
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -25,7 +25,7 @@ UIRadioBox.prototype.setParent = function(parentShape) {
 		this.setChecked();
 	}
 
-	return;
+	return this;
 }
 
 UIRadioBox.prototype.setChecked = function() {
@@ -42,7 +42,7 @@ UIRadioBox.prototype.setChecked = function() {
 
 	this.setValue(true);
 
-	return;
+	return this;
 }
 
 UIRadioBox.prototype.onClick = function(point, beforeChild) {
@@ -52,7 +52,7 @@ UIRadioBox.prototype.onClick = function(point, beforeChild) {
 	
 	this.setChecked();
 	
-	return this.callClickHandler(point, beforeChild);
+	return this.callOnClickHandler(point);
 }
 
 function UIRadioBoxCreator(w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg) {

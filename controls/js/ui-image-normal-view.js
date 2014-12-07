@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Normal Image View 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -20,7 +20,7 @@ UIImageNormalView.prototype.initUIImageNormalView = function(type, w, h) {
 
 	this.initUIElement(type);
 	this.initUIImageView(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	this.current = 0;
 	this.offsetX = 0;
 	this.offsetY = 0;
@@ -170,7 +170,7 @@ UIImageNormalView.prototype.setCurrentImage = function(index) {
 
 UIImageNormalView.prototype.onDoubleClick = function(point, beforeChild) {
 	this.calcImageDefaultOffset();
-	return this.callDoubleClickHandler(point);
+	return this.callOnDoubleClickHandler(point);
 }
 
 UIImageNormalView.prototype.paintSelfOnly = function(canvas) {

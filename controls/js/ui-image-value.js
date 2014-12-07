@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Use image to present a value, such as sound volume/battery status.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -36,7 +36,7 @@ UIImageValue.prototype.setValue = function(value) {
 
 	if(src) {
 		this.value = value;
-		this.setImage(CANTK_IMAGE_DEFAULT, src);
+		this.setImage(UIElement.IMAGE_DEFAULT, src);
 	}
 
 	return this.value;

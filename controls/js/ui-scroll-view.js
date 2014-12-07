@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  ScrollView
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -32,10 +32,10 @@ UIScrollView.prototype.initUIScrollView = function(type, border, bg) {
 	this.velocityTracker = new VelocityTracker();
 	this.interpolator =  new DecelerateInterpolator(2);
 
-	this.widthAttr = C_WIDTH_FILL_PARENT; 
-	this.heightAttr = C_HEIGHT_FILL_PARENT;
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
+	this.heightAttr = UIElement.HEIGHT_FILL_PARENT;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setScrollable("always");
 
 	if(!bg) {
@@ -53,15 +53,15 @@ UIScrollView.prototype.setScrollable = function(scrollable) {
 }
 
 UIScrollView.prototype.fixChildSize = function(child) {
-	if(child.widthAttr === C_WIDTH_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT) {
 		child.w = this.getWidth(true);
 	}
 
-	if(child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		child.h = this.getHeight(true);
 	}
 
-	if(child.widthAttr === C_WIDTH_FILL_PARENT && child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT && child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		child.setUserMovable(false);
 		child.setUserResizable(false);
 	}
@@ -185,7 +185,7 @@ UIScrollView.prototype.animScrollTo = function(distance, duration) {
 		distance = startOffset;
 	}
 
-	if(this.mode != C_MODE_EDITING) {
+	if(this.mode != Shape.MODE_EDITING) {
 		if(endOffset > (range - pageSize)) {
 			distance = startOffset - (range - pageSize);
 		}
@@ -285,7 +285,7 @@ UIScrollView.prototype.onPointerUpRunning = function(point, beforeChild) {
 }
 
 UIScrollView.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
 //		canvas.beginPath();

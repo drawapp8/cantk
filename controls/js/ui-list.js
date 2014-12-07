@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  List
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -23,9 +23,9 @@ UIList.prototype.initUIList = function(type, border, itemHeight, bg) {
 	this.setDefSize(400, itemHeight * 3 + 2 * border);
 
 	this.itemHeight = itemHeight;
-	this.widthAttr = C_WIDTH_FILL_PARENT; 
-	this.setTextType(C_SHAPE_TEXT_INPUT);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
+	this.setTextType(Shape.TEXT_INPUT);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.rectSelectable = false;
 	this.itemHeightVariable = false;
 	this.addEventNames(["onInit"]);
@@ -159,7 +159,7 @@ UIList.prototype.relayoutChildren = function(animHint) {
 		}
 
 		
-		animatable =  (y < this.h) && (animHint || this.mode === C_MODE_EDITING);
+		animatable =  (y < this.h) && (animHint || this.mode === Shape.MODE_EDITING);
 		if(animatable) {
 			config.xStart = child.x;
 			config.yStart = child.y;
@@ -187,9 +187,9 @@ UIList.prototype.relayoutChildren = function(animHint) {
 
 		child.setUserMovable(true);
 	
-		child.widthAttr = C_WIDTH_FILL_PARENT;
-		if(child.heightAttr === C_HEIGHT_FILL_PARENT) {
-			child.heightAttr = C_HEIGHT_FIX;
+		child.widthAttr = UIElement.WIDTH_FILL_PARENT;
+		if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
+			child.heightAttr = UIElement.HEIGHT_FIX;
 		}
 		child.setUserResizable(itemHeightVariable || child.isHeightVariable());
 		if(!this.isUIScrollView) {
@@ -216,7 +216,7 @@ UIList.prototype.afterPaintChildren = function(canvas) {
 }
 
 UIList.prototype.afterChildAppended = function(shape) {
-	if(shape.view && this.mode === C_MODE_EDITING && shape.isCreatingElement()) {
+	if(shape.view && this.mode === Shape.MODE_EDITING && shape.isCreatingElement()) {
 		this.sortChildren();
 	}
 	this.moveMustBeLastItemToLast();
@@ -232,7 +232,7 @@ UIList.prototype.afterChildAppended = function(shape) {
 UIList.prototype.sortChildren = function() {
 	this.children.sort(function(a, b) {
 		var bb = b.y;
-		var aa = (b.pointerDown && b.hitTestResult === C_HIT_TEST_MM) ? (a.y + a.h*0.8) : a.y;
+		var aa = (b.pointerDown && b.hitTestResult === Shape.HIT_TEST_MM) ? (a.y + a.h*0.8) : a.y;
 
 		return aa - bb;
 	});

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Single Line Editor
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -22,9 +22,9 @@ UIEdit.prototype.initUIEdit = function(type, w, h, leftMargin, rightMargin, init
 	this.leftMargin = leftMargin;
 	this.rightMargin = rightMargin;
 	this.setSizeLimit(60, 30, 1000, 80);
-	this.setTextType(C_SHAPE_TEXT_INPUT);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
-	this.setImage(CANTK_IMAGE_FOCUSED, focusedBg);
+	this.setTextType(Shape.TEXT_INPUT);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
+	this.setImage(UIElement.IMAGE_FOCUSED, focusedBg);
 	this.setMargin(5, 5);
 	this.setInputType("text");
 	this.addEventNames(["onChanged", "onChanging", "onFocusIn", "onFocusOut"]);
@@ -114,7 +114,7 @@ UIEdit.prototype.onClick = function(point, beforeChild) {
 	if(beforeChild) {
 		return;
 	}
-	if(this.mode !== C_MODE_EDITING) {
+	if(this.mode !== Shape.MODE_EDITING) {
 		this.editText();
 	}
 
@@ -134,7 +134,7 @@ UIEdit.prototype.setText = function(text, notTriggerChanged) {
 	if(this.text != text) {
 		this.text = this.toText(text);
 		if(!notTriggerChanged) {
-			this.callOnChanged(text);
+			this.callOnChangedHandler(text);
 		}
 
 		this.textNeedRelayout = true;
@@ -193,7 +193,7 @@ UIEdit.prototype.editText = function(point) {
 			if(text !== this.value) {
 				shape.setText(this.value);
 
-				shape.callOnChanged(shape.text);
+				shape.callOnChangedHandler(shape.text);
 				shape.postRedraw();
 			}
 			else {
@@ -203,15 +203,15 @@ UIEdit.prototype.editText = function(point) {
 			editor.element.onchange = null;
 			editor.hide();
 
-			shape.callOnFocusOut();
+			shape.callOnFocusOutHandler();
 			return;
 		}
 
 		editor.element.onkeyup = function(e) {
-			shape.callOnChanging(this.value);
+			shape.callOnChangingHandler(this.value);
 		}
 
-		this.callOnFocusIn();
+		this.callOnFocusInHandler();
 	}
 
 	return;

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Tips
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -20,8 +20,8 @@ UITips.prototype.initUITips = function(type, bg) {
 	this.roundRadius = 8;
 	this.setDefSize(200, 200);
 	this.setClickable(true);
-	this.setTextType(C_SHAPE_TEXT_TEXTAREA);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.setTextType(Shape.TEXT_TEXTAREA);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.pointerDirection = UITips.BOTTOM;
 	this.pointerOffset = 1;
 	this.pointer = {x:0, y:0};
@@ -70,7 +70,7 @@ UITips.prototype.getPointer = function() {
 }
 
 UITips.prototype.getMoreSelectMark = function(type, point) {
-	if(type === C_HIT_TEST_HANDLE) {
+	if(type === Shape.HIT_TEST_HANDLE) {
 		point.x = this.pointer.x;
 		point.y = this.pointer.y;
 
@@ -253,7 +253,7 @@ UITips.prototype.paintSelfOnly =function(canvas) {
 		this.h = textHeight + this.vMargin * 2 + this.style.fontSize;
 	}
 
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
 		if(isAndroid()) {

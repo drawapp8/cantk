@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Fan Menu
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 function UIFanMenu() {
@@ -17,7 +17,7 @@ UIFanMenu.prototype.isUIFanMenu = true;
 UIFanMenu.prototype.initUIFanMenu = function(type, w, h) {
 	this.initUIElement(type);
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 
 	return this;
 }
@@ -38,7 +38,7 @@ UIFanMenu.prototype.getOriginElement = function() {
 }
 
 UIFanMenu.prototype.onModeChanged = function() {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.restoreState();
 	}
 	else {
@@ -256,7 +256,7 @@ UIFanMenu.prototype.onPointerUpRunning = function(point, beforeChild) {
 UIFanMenu.prototype.beforePaintChildren = function(canvas) {
 	canvas.save();
 	canvas.rect(0, 0, this.w, this.h);
-	if(this.mode == C_MODE_EDITING) {
+	if(this.mode == Shape.MODE_EDITING) {
 		canvas.fillStyle = this.style.lineColor;
 		canvas.stroke();
 	}
@@ -280,7 +280,7 @@ UIFanMenu.prototype.beforePaintChildren = function(canvas) {
 					maxR = r;
 				}
 
-				if(this.mode === C_MODE_EDITING) {
+				if(this.mode === Shape.MODE_EDITING) {
 					canvas.beginPath();
 					canvas.arc(ox, oy,r,0,2*Math.PI);
 					canvas.stroke();
@@ -288,7 +288,7 @@ UIFanMenu.prototype.beforePaintChildren = function(canvas) {
 			}
 		}
 		
-		if(this.mode != C_MODE_EDITING) {
+		if(this.mode != Shape.MODE_EDITING) {
 			canvas.beginPath();
 			canvas.globalAlpha = 0.2;
 			canvas.arc(ox, oy,maxR,0,2*Math.PI);

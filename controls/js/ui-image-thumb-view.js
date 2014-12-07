@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Thumb Image View 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -156,7 +156,7 @@ UIImageThumbViewTape.prototype.initUIImageThumbViewTape = function(type, w, h) {
 	this.initUIHScrollView(type, 10, null);	
 	this.initUIImageThumbView (w, h);
 
-	this.heightAttr = C_HEIGHT_FIX;
+	this.heightAttr = UIElement.HEIGHT_FIX;
 
 	return this;
 }
@@ -235,7 +235,7 @@ UIImageThumbViewTape.prototype.onClick = function(point, beforeChild) {
 		}
 	}
 	
-	this.callClickHandler(point, beforeChild);
+	this.callOnClickHandler(point);
 
 	return;
 }
@@ -451,7 +451,7 @@ UIImageThumbViewGrid.prototype.onClick = function(point, beforeChild) {
 		this.currentImageProxy = this.imageProxies[i];
 	}
 
-	return this.callClickHandler(point, beforeChild);
+	return this.callOnClickHandler(point);
 }
 
 UIImageThumbViewGrid.prototype.paintSelfOnly = function(canvas) {

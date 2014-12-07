@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  foot print
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,15 +18,15 @@ UIFootprint.prototype.initUIFootprint = function(type, w, h, bg) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 
 	return this;
 }
 
 UIFootprint.prototype.paintSelfOnly = function(canvas) {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		var x = this.w >> 1;
 		var y = this.h >> 1;
 		

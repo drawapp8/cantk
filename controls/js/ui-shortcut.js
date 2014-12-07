@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  ShortCut 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -20,8 +20,8 @@ UIShortcut.prototype.initUIShortcut = function(type) {
 	this.setText("#ABCDEFGHIJKLMNOPQRSTUVYWXYZ");
 	this.setDefSize(200, 200);
 	this.setMargin(5, 5);
-	this.setTextType(C_SHAPE_TEXT_INPUT);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setTextType(Shape.TEXT_INPUT);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.addEventNames(["onChanged"]);
 
 	return this;
@@ -90,7 +90,7 @@ UIShortcut.prototype.changeItemByPoint = function(point) {
 		var value = text[index];
 
 		if(this.currentItem != index) {
-			this.callOnChanged(value);
+			this.callOnChangedHandler(value);
 			this.currentItem = index;
 		}
 	}
@@ -103,7 +103,7 @@ UIShortcut.prototype.setValue = function(value) {
 	if(index >= 0) {
 		if(this.currentItem != index) {
 			this.currentItem = index;
-			this.callOnChanged(value);
+			this.callOnChangedHandler(value);
 		}
 	}
 

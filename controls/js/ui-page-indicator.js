@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Page Indicator
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 function UIPageIndicator() {
@@ -56,10 +56,10 @@ UIPageIndicator.prototype.initUIPageIndicator = function(type, w, h) {
 	this.initUIHScrollView(type, 10, null);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.setCanRectSelectable(false, false);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 
 	return this;
 }
@@ -255,7 +255,7 @@ UIPageIndicator.prototype.onClick = function(point, beforeChild) {
 		this.onClickItem(index);
 	}
 
-	this.callClickHandler(point, index);
+	this.callOnClickHandler(point);
 
 	return;
 }
@@ -423,10 +423,10 @@ UIPageIndicatorNormal.prototype.initUIPageIndicatorNormal = function(type, w, h)
 
 	this.setMargin(5, 5);
 	this.setAlwaysOnTop(false);
-	this.setImage(CANTK_ITEM_BG_NORMAL, null);
-	this.setImage(CANTK_ITEM_BG_ACTIVE, null);
-	this.setImage(CANTK_ITEM_BG_CURRENT_NORMAL, null);
-	this.setImage(CANTK_ITEM_BG_CURRENT_ACTIVE, null);
+	this.setImage(UIElement.ITEM_BG_NORMAL, null);
+	this.setImage(UIElement.ITEM_BG_ACTIVE, null);
+	this.setImage(UIElement.ITEM_BG_CURRENT_NORMAL, null);
+	this.setImage(UIElement.ITEM_BG_CURRENT_ACTIVE, null);
 
 	return this;
 }
@@ -562,10 +562,10 @@ UIPageIndicatorNormal.prototype.getBackgroundImage = function(index, isCurrent) 
 	var type = "";
 	var active = this.pointerDown && this.pointerOnItem === index;
 	if(isCurrent) {
-		type = active ? CANTK_ITEM_BG_CURRENT_ACTIVE : CANTK_ITEM_BG_CURRENT_NORMAL;
+		type = active ? UIElement.ITEM_BG_CURRENT_ACTIVE : UIElement.ITEM_BG_CURRENT_NORMAL;
 	}
 	else {
-		type = active ? CANTK_ITEM_BG_ACTIVE : CANTK_ITEM_BG_NORMAL;
+		type = active ? UIElement.ITEM_BG_ACTIVE : UIElement.ITEM_BG_NORMAL;
 	}
 
 	return this.getImageByType(type);
@@ -598,7 +598,7 @@ UIPageIndicatorNormal.prototype.getItemTextColorOfCurrent = function() {
 }
 
 UIPageIndicatorNormal.prototype.paintBackground = function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_NORMAL);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_NORMAL);
 
 	if(!image) {
 		canvas.fillStyle = this.style.fillColor;
@@ -659,7 +659,7 @@ UIPageIndicatorNormal.prototype.paintOneIndicator = function(canvas, isCurrent, 
 				canvas.fillText(str, dx, dy, textW);
 			}
 			else if(this.imagePosition === "middle") {
-				this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_9PATCH, x, y, w, h);
+				this.drawImageAt(canvas, image, UIElement.IMAGE_DISPLAY_9PATCH, x, y, w, h);
 
 				var dy = Math.floor(y + h/2);
 				var dx = Math.floor(x + w/2);

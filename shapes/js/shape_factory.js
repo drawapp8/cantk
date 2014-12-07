@@ -60,11 +60,11 @@ function ShapeCreator(type, name, icon, visible) {
 
 function ShapeFactory() {
 	this.defaultCategory = null;
-	this.recentUsed = new Array();
-	this.creators = new Array();
-	this.categories = new Object();
-	this.categoryNames = new Array();
-	this.diagramTypes = new Array();
+	this.recentUsed = [];
+	this.creators = [];
+	this.categories = {};
+	this.categoryNames = [];
+	this.diagramTypes = [];
 	this.OnCategoryChangeListeners = {};
 
 	this.setOnCategoryChangeListener = function(category, listener) {
@@ -170,7 +170,7 @@ function ShapeFactory() {
 			}
 
 			if(!this.categories[category]) {
-				this.categories[category] = new Array();
+				this.categories[category] = [];
 
 				if(category == C_CATE_RECENT_USED) {
 					this.categoryNames.unshift(category);

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Layout
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,9 +18,9 @@ UILayout.prototype.initUILayout = function(type, w, h, img) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, img);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, img);
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 	this.setCanRectSelectable(false, false);
 	this.vLayout = (this.type === "ui-v-layout");
 	this.addEventNames(["onInit"]);
@@ -31,9 +31,9 @@ UILayout.prototype.initUILayout = function(type, w, h, img) {
 UILayout.prototype.shapeCanBeChild = UIGroup.prototype.shapeCanBeChild;
 
 UILayout.prototype.paintSelfOnly = function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
-	if(!image && this.mode === C_MODE_EDITING) {
+	if(!image && this.mode === Shape.MODE_EDITING) {
 		var x = this.vMargin;
 		var y = this.hMargin;
 		var w = this.getWidth(true);
@@ -111,8 +111,8 @@ UILayout.prototype.relayoutChildren = function() {
 		}
 
 		if(vLayout) {
-			if(iter.heightAttr !== C_HEIGHT_FIX && iter.heightAttr !== C_HEIGHT_SCALE) {
-				iter.heightAttr = C_HEIGHT_SCALE;
+			if(iter.heightAttr !== UIElement.HEIGHT_FIX && iter.heightAttr !== UIElement.HEIGHT_SCALE) {
+				iter.heightAttr = UIElement.HEIGHT_SCALE;
 				iter.updateLayoutParams();
 			}
 			
@@ -123,8 +123,8 @@ UILayout.prototype.relayoutChildren = function() {
 			y = y + iter.h + spacer;
 		}
 		else {
-			if(iter.widthAttr !== C_WIDTH_FIX && iter.widthAttr !== C_WIDTH_SCALE) {
-				iter.widthAttr = C_WIDTH_SCALE;
+			if(iter.widthAttr !== UIElement.WIDTH_FIX && iter.widthAttr !== UIElement.WIDTH_SCALE) {
+				iter.widthAttr = UIElement.WIDTH_SCALE;
 				iter.updateLayoutParams();
 			}
 
@@ -142,19 +142,19 @@ UILayout.prototype.relayoutChildren = function() {
 UILayout.prototype.afterChildAppended = function(shape) {
 	var vLayout = this.vLayout;
 	if(vLayout) {
-		shape.yAttr = C_Y_FIX_TOP;
-		if(shape.heightAttr === C_HEIGHT_FILL_PARENT) {
-			shape.heightAttr = C_HEIGHT_SCALE; 
+		shape.yAttr = UIElement.Y_FIX_TOP;
+		if(shape.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
+			shape.heightAttr = UIElement.HEIGHT_SCALE; 
 		}
 	}
 	else {
-		shape.xAttr = C_X_FIX_LEFT;
-		if(shape.widthAttr === C_WIDTH_FILL_PARENT) {
-			shape.widthAttr = C_WIDTH_SCALE;
+		shape.xAttr = UIElement.X_FIX_LEFT;
+		if(shape.widthAttr === UIElement.WIDTH_FILL_PARENT) {
+			shape.widthAttr = UIElement.WIDTH_SCALE;
 		}
 	}
 
-	if(this.mode === C_MODE_EDITING && shape.isCreatingElement()) {
+	if(this.mode === Shape.MODE_EDITING && shape.isCreatingElement()) {
 		this.sortChildren();
 	}
 

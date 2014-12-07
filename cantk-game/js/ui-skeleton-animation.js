@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  SkelentonAnimation
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -19,16 +19,16 @@ UISkeletonAnimation.prototype.initUISkeletonAnimation = function(type, w, h) {
 
 	this.setDefSize(w, h);
 	this.setSizeLimit(50, 50);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	this.setCanRectSelectable(false, true);
-	this.addEventNames(["onOnUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
+	this.addEventNames(["onUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
 
 	return this;
 }
 
 UISkeletonAnimation.prototype.afterChildAppended = function(shape) {
-	shape.xAttr = C_X_CENTER_IN_PARENT;
-	shape.yAttr = C_Y_MIDDLE_IN_PARENT;
+	shape.xAttr = UIElement.X_CENTER_IN_PARENT;
+	shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
 
 	return;
 }
@@ -47,13 +47,15 @@ UISkeletonAnimation.prototype.gotoAndPlay = function(animationName) {
 		}
 	}
 
-	return;
+	return this;
 }
+
+UISkeletonAnimation.prototype.play = UISkeletonAnimation.prototype.gotoAndPlay;
 
 UISkeletonAnimation.prototype.setAnimationName = function(animationName) {
 	this.animationName = animationName;
 
-	return;
+	return this;
 }
 
 UISkeletonAnimation.prototype.getAnimationNames = function() {
@@ -162,7 +164,7 @@ UISkeletonAnimation.prototype.getTextureURL = function() {
 }
 
 UISkeletonAnimation.prototype.shapeCanBeChild = function(shape) {
-	return shape.isUIPhysicsShape || shape.isUIMouseJoint;
+	return shape.isUIPhysicsShape || shape.isUIMouseJoint || shape.isUIStatus;
 }
 
 UISkeletonAnimation.prototype.beforePaintChildren = UISprite.prototype.beforePaintChildren;
@@ -182,6 +184,7 @@ UISkeletonAnimation.prototype.paintSelfOnly =function(canvas) {
 		var me = this;
 		UIElement.setAnimTimer(function() {
 			me.postRedraw();
+			return false;
 		});
 	}
 

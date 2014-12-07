@@ -3,14 +3,14 @@
  * Author:	Li XianJing <xianjimli@hotmail.com>
  * Brief: web app.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
 function webappInit(type) {
 	cantkRegisterUIElements();
 
-	if(type === C_APP_TYPE_PREVIEW) {
+	if(type === AppBase.TYPE_PREVIEW) {
 		document.body.style.overflow = "scroll";
 	}
 	else {
@@ -25,6 +25,13 @@ function WebApp(type) {
 	AppBase.apply(this, args);
 
 	webappInit(type);
+
+	this.onCanvasSized = function(w, h) {
+		this.win.resize(w, h);
+		this.view.resize(w, h);
+
+		return;
+	}
 
 	this.onSizeChanged = function() {
 		var viewPort = cantkGetViewPort();
@@ -97,7 +104,7 @@ WebApp.prototype.createWindow = function() {
 	this.win.theme[0].bg = "White";
 	
 	this.view = new AppView(this.win, x, y, w, h, this);
-	this.view.forPreview = this.type === C_APP_TYPE_PREVIEW;
+	this.view.forPreview = this.type === AppBase.TYPE_PREVIEW;
 	
 	var view = this.view;
 
@@ -169,7 +176,7 @@ WebApp.prototype.runWithDeviceData = function(deviceJson) {
 }
 
 function webappRunWithData(jsonStr) {
-	var app = new WebApp(C_APP_TYPE_WEBAPP);
+	var app = new WebApp(AppBase.TYPE_WEBAPP);
 	
 	app.runWithData(jsonStr);
 
@@ -177,7 +184,7 @@ function webappRunWithData(jsonStr) {
 }
 
 function webappRunWithDeviceData(deviceJson) {
-	var app = new WebApp(C_APP_TYPE_WEBAPP);
+	var app = new WebApp(AppBase.TYPE_WEBAPP);
 	
 	app.runWithDeviceData(deviceJson);
 
@@ -185,7 +192,7 @@ function webappRunWithDeviceData(deviceJson) {
 }
 
 function webappPreviewWithDeviceData(deviceJson) {
-	var app = new WebApp(C_APP_TYPE_PREVIEW);
+	var app = new WebApp(AppBase.TYPE_PREVIEW);
 	
 	app.previewWithDeviceData(deviceJson);
 
@@ -193,7 +200,7 @@ function webappPreviewWithDeviceData(deviceJson) {
 }
 
 function webappPreviewWithData(jsonStr) {
-	var app = new WebApp(C_APP_TYPE_PREVIEW);
+	var app = new WebApp(AppBase.TYPE_PREVIEW);
 	
 	app.runWithData(jsonStr);
 
@@ -201,7 +208,7 @@ function webappPreviewWithData(jsonStr) {
 }
 
 function webappRunWithURL(dataURL) {
-	var app = new WebApp(C_APP_TYPE_WEBAPP);
+	var app = new WebApp(AppBase.TYPE_WEBAPP);
 	
 	app.runWithURL(dataURL);
 
@@ -209,7 +216,7 @@ function webappRunWithURL(dataURL) {
 }
 
 function webappPreviewWithURL(dataURL) {
-	var app = new WebApp(C_APP_TYPE_PREVIEW);
+	var app = new WebApp(AppBase.TYPE_PREVIEW);
 	
 	app.runWithURL(dataURL);
 
@@ -251,15 +258,8 @@ function shapeFixImagePath(shape, oldConfig, newConfig) {
 function AppView(parent, x, y, w, h, app) {
 	ViewBase.apply(this, arguments);
 
-	this.allUserAppScriptsLoaded = false;
-
 	this.forPreview = false;
-
 	this.postRedraw =	 function(rect) {
-		if(!this.allUserAppScriptsLoaded) {
-			return;
-		}
-
 		var p = this.getAbsPosition();
 		
 		if(!rect) {
@@ -270,6 +270,12 @@ function AppView(parent, x, y, w, h, app) {
 		rect.y = p.y + rect.y;
 		
 		this.getManager().postRedraw(rect);
+	}
+	
+	this.clearBg = function(canvas, color) {
+		var r = this.rect;
+		canvas.fillStyle = color;
+		canvas.fillRect(r.x, r.y, r.w, r.h);
 	}
 
 	this.init = function() {
@@ -555,7 +561,7 @@ function AppView(parent, x, y, w, h, app) {
 
 		x = (w - device.w)/2;
 		device.move(x, y);
-		device.setMode(C_MODE_RUNNING, true);
+		device.setMode(Shape.MODE_RUNNING, true);
 		this.addShape(device);
 
 		var wm = this.getWindowManager();
@@ -606,7 +612,7 @@ function AppView(parent, x, y, w, h, app) {
 		var oldConfig = device.config;
 		var newConfig = this.detectDeviceConfig();
 		
-		if(app.type === C_APP_TYPE_PREVIEW) {
+		if(app.type === AppBase.TYPE_PREVIEW) {
 			newConfig.lcdDensity = oldConfig.lcdDensity;
 			console.log("run in preview mode.");
 		}
@@ -620,39 +626,25 @@ function AppView(parent, x, y, w, h, app) {
 		return;
 	}
 
-	this.getUserAppScripts = function() {
+	this.loadUserScripts = function() {
 		if(this.meta) {
-			return this.meta.extlibs;
+			var scripts = this.meta.extlibs;
+			var force = window.location.href.indexOf("appid=preview") > 0;
+			if(scripts) {
+				for(var i = 0; i < scripts.length; i++) {
+					ResLoader.loadScript(scripts[i], force);
+				}
+			}
 		}
-		return null;
+
+		return;
 	}
 
 	this.runApp = function(wm) {
-		var view = this;
-		var scripts = this.getUserAppScripts();
-	
-		if(!scripts || !scripts.length) {
-			view.allUserAppScriptsLoaded = true;
+		this.loadUserScripts();
 
-			wm.systemInit();
-			wm.showInitWindow();
-			wm.postRedraw();
-
-			return;
-		}
-
-		for(var i = 0; i < scripts.length; i++) {
-			addUserAppScript(scripts[i]);
-		}
-
-		loadUserAppScripts(function() {
-			console.log("All User App Scripts Loaded");
-			view.allUserAppScriptsLoaded = true;
-
-			wm.systemInit();
-			wm.showInitWindow();
-			wm.postRedraw();
-		});
+		wm.systemInit();
+		wm.postRedraw();
 
 		return;
 	}
@@ -666,14 +658,28 @@ function AppView(parent, x, y, w, h, app) {
 		wm = this.createWindowManager();
 		wm.deviceConfig = this.getDeviceConfig();
 
-		if(app.type === C_APP_TYPE_PREVIEW) {
+		if(app.type === AppBase.TYPE_PREVIEW) {
 			newConfig.lcdDensity = wm.deviceConfig.lcdDensity;
+		}
+
+		if(this.meta && this.meta.general) {
+			var general = this.meta.general;
+			var orientation = general.orientation;
+			wm.forcePortrait = false;
+			wm.forceLandscape = false;
+			if(orientation === "landscape" && wm.w > wm.h) {
+				wm.forceLandscape = true;
+			}
+			else if(orientation === "portrait" && wm.h > wm.w) {
+				wm.forcePortrait = true;
+			}
+			wm.screenScaleMode = general.screenscale; 
 		}
 
 		this.addShape(wm);
 		
 		wm.setDeviceConfig(newConfig);
-		wm.setMode(C_MODE_RUNNING, true);
+		wm.setMode(Shape.MODE_RUNNING, true);
 		wm.move(0, 0);
 		wm.resize(w, h);
 

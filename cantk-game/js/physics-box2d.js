@@ -79,10 +79,11 @@ Physics.createFixtureDef = function(world, element) {
 
 Physics.createBody = function(world, element) {
 	var body = null;
+	var pos = element.getPositionInWindow();
 	var hw = element.getWidth() >> 1;
 	var hh = element.getHeight() >> 1;
-	var x  = element.getX() + hw;
-	var y  = element.getY() + hh;
+	var x  = pos.x + hw;
+	var y  = pos.y + hh;
 	var bodyDef = new b2BodyDef();
 	var fixtureDef = Physics.createFixtureDef(world, element);
 
@@ -108,6 +109,9 @@ Physics.createBody = function(world, element) {
 		bodyDef.awake = true;
 		bodyDef.allowSleep = true;
 	}
+	else {
+		bodyDef.allowSleep = false;
+	}
 					
 	if(element.linearDamping !== undefined) {
 		bodyDef.linearDamping = element.linearDamping;
@@ -131,80 +135,86 @@ Physics.createBody = function(world, element) {
 		body.SetAngle(element.rotation);
 	}
 
+	if(!element.enable) {
+		body.SetActive(false);
+	}
+
+	return body;
+}
+
+Physics.createEmbedBody = function(world, parentElement, childElement) {
+	var bodyDef = null;
+	var fixtureDef = Physics.createFixtureDef(world, childElement);
+
+	if(!bodyDef) {
+		var pos = parentElement.getPositionInWindow();
+		var hw = parentElement.w >> 1;
+		var hh = parentElement.h >> 1;
+		var x  = pos.x + hw;
+		var y  = pos.y + hh;
+		
+		bodyDef = new b2BodyDef();
+		if(fixtureDef.density < 0) {
+			delete fixtureDef.density;
+			b2BodyDef.type = b2Body.b2_kinematicBody;
+		}
+		else {
+			bodyDef.type = fixtureDef.density ? b2Body.b2_dynamicBody : b2Body.b2_staticBody;
+		}
+		bodyDef.position.Set(Physics.toMeter(x), Physics.toMeter(y));
+	
+		if(parentElement.fixedRotation || childElement.fixedRotation) {
+			bodyDef.fixedRotation = true;
+		}
+
+		if(parentElement.isBullet || childElement.isBullet) {
+			bodyDef.bullet = true;
+		}
+
+		if(parentElement.allowSleep || childElement.allowSleep) {
+			bodyDef.awake = true;
+			bodyDef.allowSleep = true;
+		}
+		else {
+			bodyDef.allowSleep = false;
+		}
+		
+		if(childElement.linearDamping !== undefined) {
+			bodyDef.linearDamping = childElement.linearDamping;
+		}
+		
+		if(childElement.angularDamping !== undefined) {
+			bodyDef.angularDamping = childElement.angularDamping;
+		}
+
+		var body = world.CreateBody(bodyDef);
+		body.element = parentElement;
+		parentElement.body = body;
+		
+		if(!parentElement.enable || !childElement.enable) {
+			body.SetActive(false);
+		}
+	}
+
+	body.CreateFixture(fixtureDef);
+
 	return body;
 }
 
 Physics.createBodyForElement = function(world, parentElement, childElement) {
-	var bodyDef = null;
-
 	if(childElement.physicsShape) {
 		Physics.createBody(world, childElement);	
-
-		return;
 	}
 	else if(childElement.isUIPhysicsShape) {
 		if(parentElement.isUIWindow) {
 			Physics.createBody(world, childElement);
-
-			return;
+		}
+		else if(parentElement.isUISprite || parentElement.isUISkeletonAnimation 
+			|| parentElement.isUITransformAnimation || parentElement.isUIFrameAnimation){
+			Physics.createEmbedBody(world, parentElement, childElement);
 		}
 		else {
-			var fixtureDef = Physics.createFixtureDef(world, childElement);
-			if(childElement.isUICircle) {
-				var p = {};
-				p.x = Physics.toMeter(childElement.x + (childElement.w >> 1) - (parentElement.w >> 1));
-				p.y = Physics.toMeter(childElement.y + (childElement.h >> 1) - (parentElement.h >> 1));
-				/*TODO*/
-			//	fixtureDef.shape.SetLocalPosition(p);
-			}
-
-			if(!bodyDef) {
-				var hw = parentElement.w >> 1;
-				var hh = parentElement.h >> 1;
-				var x  = parentElement.x + hw;
-				var y  = parentElement.y + hh;
-				
-				bodyDef = new b2BodyDef();
-				if(fixtureDef.density < 0) {
-					delete fixtureDef.density;
-					b2BodyDef.type = b2Body.b2_kinematicBody;
-				}
-				else {
-					bodyDef.type = fixtureDef.density ? b2Body.b2_dynamicBody : b2Body.b2_staticBody;
-				}
-				bodyDef.position.Set(Physics.toMeter(x), Physics.toMeter(y));
-			
-				if(parentElement.fixedRotation || childElement.fixedRotation) {
-					bodyDef.fixedRotation = true;
-				}
-
-				if(parentElement.isBullet || childElement.isBullet) {
-					bodyDef.bullet = true;
-				}
-
-				if(parentElement.allowSleep || childElement.allowSleep) {
-					bodyDef.awake = true;
-					bodyDef.allowSleep = true;
-				}
-				
-				if(childElement.linearDamping !== undefined) {
-					bodyDef.linearDamping = childElement.linearDamping;
-				}
-				
-				if(childElement.angularDamping !== undefined) {
-					bodyDef.angularDamping = childElement.angularDamping;
-				}
-
-//					if(childElement.gravityScale !== undefined) {
-//						bodyDef.gravityScale = childElement.gravityScale;
-//					}
-
-				var body = world.CreateBody(bodyDef);
-				body.element = parentElement;
-				parentElement.body = body;
-			}
-
-			body.CreateFixture(fixtureDef);
+			Physics.createBody(world, childElement);
 		}
 	} else {
 		Physics.createWorldShapes(world, childElement);
@@ -228,11 +238,9 @@ Physics.destroyBodyForElement = function(world, element) {
 			world.DestroyBody(body);
 		}, 5);
 
+		body.element = null;
 		element.body = null;
 	}
-
-	return;
-
 
 	return;
 }
@@ -404,13 +412,19 @@ Physics.updateBodyElementsPosition = function(world) {
 		}
 
 		if(element) {
-			var p = b.GetWorldCenter();
 			var a = b.GetAngle();
-
+			var p = b.GetWorldCenter();
 			if(p.x !== undefined && p.y !== undefined) {
 				var x = Physics.toPixel(p.x) - (element.w >> 1);
 				var y = Physics.toPixel(p.y) - (element.h >> 1);
 				element.setRotation(a);
+
+				var parent = element.getParent();
+				if(!parent.isUIWindow) {
+					var pos = parent.getPositionInWindow();
+					x = x - pos.x;
+					y = y - pos.y;
+				}
 
 				var ox = element.x;
 				var oy = element.y;
@@ -472,21 +486,66 @@ Physics.updateBodyElementsPosition = function(world) {
 	return;
 }
 
-Physics.clearAllBodyAndJoints = function(world) {
-	for (var b = world.m_bodyList; b; b = b.m_next) {
+Physics.destroyWorld = function(world) {
+	var b = world.m_bodyList;
+	do {
+		if(!b) break;
+
+		var next = b.m_next;
 		if(b.element) {
 			b.element.body = null;
 			b.element = null;
+		}
+		
+		world.DestroyBody(b);
+		Object.destroy(b);
 
-			world.DestroyBody(b);
+		b = next;
+	}while(true);
+
+	var joint = world.m_jointList;
+	do {
+		if(!joint) break;
+		var next = joint.m_next;
+
+		if(joint.element) {
+			joint.element = null;
+		}
+			
+		world.DestroyJoint(joint);
+		Object.destroy(joint);
+
+		joint = next;
+	}while(true);
+
+	Object.destroy(world);
+
+	return;
+}
+Physics.reparentPhysicsToScene = function(scene) {
+	var arr = [];
+
+	function onVisit(el) {
+		var parentShape = el.getParent();
+		if(el.isUISkeletonAnimation || el.isUISprite || el.isUIFrameAnimation || el.isUITransformAnimation) {
+			if(!parentShape.isUIWindow) {
+				arr.push(el);
+			}
+		}
+		else if(el.isUIPhysicsShape) {
+			if(!parentShape.isUISkeletonAnimation && !parentShape.isUISprite 
+				&& !parentShape.isUIFrameAnimation && !parentShape.isUITransformAnimation
+				&& !parentShape.isUIWindow) {
+					arr.push(el);
+			}
 		}
 	}
 
-	for (var joint = world.m_jointList; joint; joint = joint.m_next) {
-		if(joint.element) {
-			joint.element = null;
-			world.DestroyJoint(joint);
-		}
+	scene.forEach(onVisit);
+
+	for(var i = 0; i < arr.length; i++) {
+		var iter = arr[i];
+		iter.reparent(scene, true);
 	}
 
 	return;
@@ -502,14 +561,13 @@ Physics.createWorld = function(scene) {
 	var maxY = scene.h >> 1;
 	var minX = -scene.w >> 1;
 	var minY = -scene.h >> 1;
-	var fps = scene.fps ? scene.fps : 60;
+	var fps = scene.fps ? scene.fps : 30;
 	var doSleep = scene.doSleep ? scene.doSleep : true;
 	var gravityX = scene.gravityX ? scene.gravityX : 0;
 	var gravityY = scene.gravityY ? scene.gravityY : 0;
 	var pixelsPerMeter = scene.pixelsPerMeter ? scene.pixelsPerMeter : 10; 
 	var gravity = new b2Vec2(gravityX, gravityY);
 	var worldAABB = new b2AABB();
-	var timeStep = 1.0/fps;
 	var stepSize = 1;
 
 	Physics.pixelsPerMeter = pixelsPerMeter;
@@ -528,10 +586,22 @@ Physics.createWorld = function(scene) {
 		var body2 = contact.GetFixtureB().GetBody();
 
 		if(body1.element && body2.element) {
+			var element1 = body1.element;
+			if(element1.handleBeginContactSync) {
+				element1.handleBeginContactSync(body2);
+			}
+			var element2 = body2.element;
+			if(element2.handleBeginContactSync) {
+				element2.handleBeginContactSync(body1);
+			}
 			setTimeout(function() {
-				body1.element.callOnBeginContact(body2);
-				body2.element.callOnBeginContact(body1);
-			}, 10);
+				if(body1.element) {
+					body1.element.callOnBeginContact(body2);
+				}
+				if(body2.element) {
+					body2.element.callOnBeginContact(body1);
+				}
+			}, 5);
 		}
 	}
 	
@@ -540,30 +610,70 @@ Physics.createWorld = function(scene) {
 		var body2 = contact.GetFixtureB().GetBody();
 
 		if(body1.element && body2.element) {
+			var element1 = body1.element;
+			if(element1.handleEndContactSync) {
+				element1.handleEndContactSync(body2);
+			}
+			var element2 = body2.element;
+			if(element2.handleEndContactSync) {
+				element2.handleEndContactSync(body1);
+			}
+
 			setTimeout(function() {
-				body1.element.callOnEndContact(body2);
-				body2.element.callOnEndContact(body1);
-			}, 10);
+				if(body1.element) {
+					body1.element.callOnEndContact(body2);
+				}
+				if(body2.element) {
+					body2.element.callOnEndContact(body1);
+				}
+			}, 5);
 		}
 	}
 	
 	listener.PreSolve = function (contact, oldManifold) {
-		/*TODO*/
+		var body1 = contact.GetFixtureA().GetBody();
+		var body2 = contact.GetFixtureB().GetBody();
+
+		if(body1.element && body2.element) {
+			var element1 = body1.element;
+			if(element1.handlePreSolve) {
+				element1.handlePreSolve(body2, oldManifold);
+			}
+			var element2 = body2.element;
+			if(element2.handlePreSolve) {
+				element2.handlePreSolve(body1, oldManifold);
+			}
+		}
 	}
 
 	listener.PostSolve = function (contact, impulse) {
-		/*TODO*/
+		var body1 = contact.GetFixtureA().GetBody();
+		var body2 = contact.GetFixtureB().GetBody();
+
+		if(body1.element && body2.element) {
+			var element1 = body1.element;
+			if(element1.handlePostSolve) {
+				element1.handlePostSolve(body2, impulse);
+			}
+			var element2 = body2.element;
+			if(element2.handlePostSolve) {
+				element2.handlePostSolve(body1, impulse);
+			}
+		}
 	}
 
 	world.SetContactListener(listener);
 
 	var velocityIterations = scene.velocityIterations ? scene.velocityIterations : 8;
-	var positionIterations = scene.positionIterations ? scene.positionIterations : 3;
+	var positionIterations = scene.positionIterations ? scene.positionIterations : 5;
 
+	var timeStep = 1/25;
+	var intervalID = 0;
 	function stepIt() {
 		if(scene.world != world) {
+			clearInterval(intervalID);
 			console.log("World is recreated.");
-			return;
+			return false;
 		}
 
 		if(scene.isVisible() && scene.isTopWindow() && scene.isPlaying()) {
@@ -573,12 +683,12 @@ Physics.createWorld = function(scene) {
 			world.ClearForces();
 			Physics.updateBodyElementsPosition(world);
 		}
-	
-		UIElement.setAnimTimer(stepIt);
+
+		return true;
 	}
 
 	scene.world = world;
-	stepIt();
+	intervalID = setInterval(stepIt, timeStep * 1000);
 
 	return;
 }

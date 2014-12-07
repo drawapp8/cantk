@@ -107,7 +107,7 @@ function RectShapeCreator() {
 		var g = new RectShape();
 		
 		g.initRectShape(this.type, 200, 60);
-		g.setTextType(C_SHAPE_TEXT_TEXTAREA);
+		g.setTextType(Shape.TEXT_TEXTAREA);
 
 		return g;
 	}
@@ -841,7 +841,7 @@ function RoundRectShapeCreator(type) {
 		var g = new RoundRectShape();
 
 		g.initRectShape(this.type, 200, 60);
-		g.setTextType(C_SHAPE_TEXT_TEXTAREA);
+		g.setTextType(Shape.TEXT_TEXTAREA);
 
 		return g;
 	}
@@ -916,42 +916,42 @@ ParallRectShape.prototype = new RectShape();
 ParallRectShape.prototype.getSelectMark = function(type, point) {
 	var ret = true;
 	switch(type) {
-		case C_HIT_TEST_TL: {
+		case Shape.HIT_TEST_TL: {
 			point.x = this.h;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_TM: {
+		case Shape.HIT_TEST_TM: {
 			point.x = (this.w)/2;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_TR: {
+		case Shape.HIT_TEST_TR: {
 			point.x = this.w;
 			point.y = 0;
 			break;
 		}
-		case C_HIT_TEST_ML: {
+		case Shape.HIT_TEST_ML: {
 			point.x = this.h/2;
 			point.y = this.h/2;
 			break;
 		}
-		case C_HIT_TEST_MR: {
+		case Shape.HIT_TEST_MR: {
 			point.x = this.w-this.h/2;
 			point.y = this.h/2;
 			break;
 		}
-		case C_HIT_TEST_BL: {
+		case Shape.HIT_TEST_BL: {
 			point.x = 0;
 			point.y = this.h;
 			break;
 		}
-		case C_HIT_TEST_BM: {
+		case Shape.HIT_TEST_BM: {
 			point.x = (this.w)/2;
 			point.y = this.h;
 			break;
 		}
-		case C_HIT_TEST_BR: {
+		case Shape.HIT_TEST_BR: {
 			point.x = this.w-this.h;
 			point.y = this.h;
 			break;
@@ -1043,7 +1043,7 @@ function ArcRectShapeCreator(type) {
 	this.createShape = function(createReason) {
 		var g = new ArcRectShape();
 		g.initRectShape(this.type, 200, 60);
-		g.setTextType(C_SHAPE_TEXT_TEXTAREA);
+		g.setTextType(Shape.TEXT_TEXTAREA);
 
 		return g;
 	}
@@ -1115,7 +1115,7 @@ LineShape.prototype.initDefault = function() {
 	this.points_nr = 0;
 	this.points.push(new Point(0, 0));
 	this.points.push(new Point(50, 50));
-	this.state = C_STAT_CREATING_0;
+	this.state = Shape.STAT_CREATING_0;
 
 	return;
 }
@@ -1174,7 +1174,7 @@ LineShape.prototype.isPointIn = function(canvas, point) {
 }
 
 LineShape.prototype.handlePointerEvent = function(point, evt) {
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		return true;
 	}
 
@@ -1200,7 +1200,7 @@ LineShape.prototype.handlePointerEvent = function(point, evt) {
 	}
 	else if(evt === C_EVT_POINTER_UP) {
 		this.setSelected(true);
-		this.state = C_STAT_NORMAL;
+		this.state = Shape.STAT_NORMAL;
 		if(this.isClicked()) {
 			var p = new Point(this.points[0].x + 100, this.points[0].y + 100);
 			this.updatePoint(1, p);
@@ -1322,7 +1322,7 @@ VLineShape.prototype.initDefault = function() {
 	this.points_nr = 0;
 	this.points.push(new Point(0, 0));
 	this.points.push(new Point(0, 50));
-	this.state = C_STAT_CREATING_0;
+	this.state = Shape.STAT_CREATING_0;
 
 	return;
 }
@@ -1380,7 +1380,7 @@ HLineShape.prototype.initDefault = function() {
 	this.points_nr = 0;
 	this.points.push(new Point(0, 0));
 	this.points.push(new Point(50, 0));
-	this.state = C_STAT_CREATING_0;
+	this.state = Shape.STAT_CREATING_0;
 
 	return;
 }
@@ -1444,7 +1444,7 @@ SegmentsShape.prototype.initDefault = function() {
 	this.points.push(new Point(60, 0));
 	this.points.push(new Point(60, 60));
 	this.points.push(new Point(0, 60));
-	this.state = C_STAT_CREATING_0;
+	this.state = Shape.STAT_CREATING_0;
 
 	return;
 }
@@ -1456,7 +1456,7 @@ SegmentsShape.prototype.updatePoint = function(index, point) {
 		this.points[index].copy(point);
 	}
 
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		var prev = (index === 0) ? 1 : (index - 1);
 
 		dx = Math.abs(this.points[index].x - this.points[prev].x);
@@ -1523,7 +1523,7 @@ SegmentsShape.prototype.isPointIn = function(canvas, point) {
 }
 
 SegmentsShape.prototype.handlePointerEvent = function(point, evt) {
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		return true;
 	}
 
@@ -1557,7 +1557,7 @@ SegmentsShape.prototype.handlePointerEvent = function(point, evt) {
 	}
 	else if(evt === C_EVT_POINTER_UP) {
 		this.setSelected(true);
-		this.state = C_STAT_NORMAL;
+		this.state = Shape.STAT_NORMAL;
 		this.attachToNearPoint(this.near, 3);
 	}
 
@@ -1661,7 +1661,7 @@ CurveShape.prototype.initDefault = function() {
 	this.points.push(new Point(0, 0));
 	this.points.push(new Point(0, 60));
 	this.points.push(new Point(60, 30));
-	this.state = C_STAT_CREATING_0;
+	this.state = Shape.STAT_CREATING_0;
 
 	return;
 }
@@ -1692,7 +1692,7 @@ CurveShape.prototype.isPointIn = function(canvas, point) {
 }
 
 CurveShape.prototype.handlePointerEvent = function(point, evt) {
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		return true;
 	}
 
@@ -1737,7 +1737,7 @@ CurveShape.prototype.handlePointerEvent = function(point, evt) {
 	}
 	else if(evt === C_EVT_POINTER_UP) {
 		this.setSelected(true);
-		this.state = C_STAT_NORMAL;
+		this.state = Shape.STAT_NORMAL;
 		
 		this.attachToNearPoint(this.near, 1);
 	}

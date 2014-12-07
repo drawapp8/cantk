@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Status Bar 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,10 +18,10 @@ UIStatusBar.prototype.initUIStatusBar = function(type, w, h, bg) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
-	this.images.display = CANTK_IMAGE_DISPLAY_SCALE;
-	this.widthAttr = C_WIDTH_FILL_PARENT;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
+	this.images.display = UIElement.IMAGE_DISPLAY_SCALE;
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT;
 
 	return this;
 }
@@ -35,10 +35,10 @@ UIStatusBar.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIStatusBar.prototype.afterChildAppended = function(shape) {
-	shape.yAttr = C_Y_MIDDLE_IN_PARENT;
+	shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
 	if(this.type === "ui-menu-bar") {
 		shape.hideSelectMark = true;
-		shape.textType = C_SHAPE_TEXT_NONE;
+		shape.textType = Shape.TEXT_NONE;
 		this.hideSelectMark = true;
 	}
 
@@ -46,7 +46,7 @@ UIStatusBar.prototype.afterChildAppended = function(shape) {
 }
 
 UIStatusBar.prototype.beforeRelayoutChild = function(shape) {
-	shape.yAttr = C_Y_MIDDLE_IN_PARENT;
+	shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
 
 	return true;
 }

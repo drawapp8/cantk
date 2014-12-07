@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  HTML 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,7 +18,7 @@ UIHtml.prototype.initUIHtml = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 
 	return this;
 }
@@ -37,7 +37,7 @@ UIHtml.prototype.paintSelfOnly =function(canvas) {
 }
 
 UIHtml.prototype.drawImage =function(canvas) {
-	if(this.mode === C_MODE_EDITING || this.isIcon) {
+	if(this.mode === Shape.MODE_EDITING || this.isIcon) {
 		this.drawBgImage(canvas);
 	}
 
@@ -55,7 +55,7 @@ UIHtml.prototype.setVisible = function(visible) {
 		this.visible = visible;
 	}
 
-	return;
+	return this;
 }
 
 UIHtml.prototype.showHTMLElement = function() {
@@ -123,7 +123,7 @@ UIHtml.prototype.onShowHTML = function() {
 
 	this.onSetElementStyle();
 
-	if(this.mode != C_MODE_EDITING) {
+	if(this.mode != Shape.MODE_EDITING) {
 		this.beforeShowHTML();
 		this.showHTMLElement();
 	}

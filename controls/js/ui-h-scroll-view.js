@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Horizonal ScrollView
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -25,7 +25,7 @@ UIHScrollView.prototype.needScroll = function(point) {
 	var dx = Math.abs(this.getMoveAbsDeltaX());
 	var dy = Math.abs(this.getMoveAbsDeltaY());
 	
-	return (dx > 20 && dx > dy)  || (dx > 20 && this.mode != C_MODE_EDITING);
+	return (dx > 20 && dx > dy)  || (dx > 20 && this.mode != Shape.MODE_EDITING);
 }
 
 UIHScrollView.prototype.getScrolledSize = function() {
@@ -88,16 +88,16 @@ UIHScrollView.prototype.getScrollRange = function() {
 }
 
 UIHScrollView.prototype.fixChildPosition = function(child) {
-	if(child.widthAttr === C_WIDTH_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT) {
 		child.x = this.offset + this.hMargin;	
-		child.widthAttr = C_WIDTH_SCALE;
+		child.widthAttr = UIElement.WIDTH_SCALE;
 	}
 
-	if(child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		child.y = this.vMargin;
 	}
 
-	if(child.widthAttr === C_WIDTH_FILL_PARENT && child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT && child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		child.setUserMovable(false);
 	}
 

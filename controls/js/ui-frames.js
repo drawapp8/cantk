@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Frames
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -19,8 +19,8 @@ UIFrames.prototype.initUIFrames = function(type) {
 
 	this.current = 0;
 	this.setDefSize(200, 200);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.widthAttr = C_WIDTH_FILL_PARENT;
+	this.setTextType(Shape.TEXT_NONE);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT;
 	this.addEventNames(["onChanged"]);
 
 	return this;
@@ -66,12 +66,12 @@ UIFrames.prototype.setCurrent = function(current) {
 	if(this.current !== current) {
 		this.current = current;
 		
-		if(this.mode != C_MODE_EDITING) {
-			this.callOnChanged(current);
+		if(this.mode != Shape.MODE_EDITING) {
+			this.callOnChangedHandler(current);
 		}
 	}
 
-	return;
+	return this;
 }
 
 UIFrames.prototype.getCurrentFrame = function() {
@@ -104,12 +104,12 @@ UIFrames.prototype.fixChildPosition = function(child) {
 		return;
 	}
 	
-	if(child.widthAttr === C_WIDTH_FILL_PARENT) {
+	if(child.widthAttr === UIElement.WIDTH_FILL_PARENT) {
 		x = this.getHMargin();
 		w = this.getWidth(true);
 	}
 
-	if(child.heightAttr === C_HEIGHT_FILL_PARENT) {
+	if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
 		y = this.getVMargin();
 		h = this.getHeight(true);
 	}
@@ -246,8 +246,8 @@ UIFrames.prototype.relayoutChildren = function() {
 		iter.y = 0;
 		iter.w = this.w;
 		iter.h = this.h;
-		iter.widthAttr = C_WIDTH_FILL_PARENT;
-		iter.heightAttr = C_HEIGHT_FILL_PARENT;
+		iter.widthAttr = UIElement.WIDTH_FILL_PARENT;
+		iter.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 		iter.relayoutChildren();
 	}
 

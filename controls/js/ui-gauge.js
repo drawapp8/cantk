@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Gauge
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 function UIGauge() {
@@ -12,13 +12,14 @@ function UIGauge() {
 
 UIGauge.prototype = new UIElement();
 UIGauge.prototype.isUIGauge = true;
+UIGauge.IMAGE_POINTER = "pointer-image";
 
 UIGauge.prototype.initUIGauge = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.addEventNames(["onInit"]);
 
 	return this;
@@ -33,8 +34,8 @@ UIGauge.prototype.afterChildAppended = function(shape) {
 	var pointerNr = 0;
 
 	if(shape.isUIGaugePointer) {
-		shape.xAttr = C_X_CENTER_IN_PARENT;
-		shape.yAttr = C_Y_MIDDLE_IN_PARENT;
+		shape.xAttr = UIElement.X_CENTER_IN_PARENT;
+		shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
 	}
 
 	for(var i = 0; i < this.children.length; i++) {
@@ -98,8 +99,8 @@ UIGaugePointer.prototype.initUIGaugePointer = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_IMAGE, null);
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIGauge.IMAGE_POINTER, null);
 	
 	this.value = 0;
 	this.minAngle = 0;
@@ -122,7 +123,7 @@ UIGaugePointer.prototype.setText = function(text) {
 		console.log("UIGaugePointer.prototype.setText:" + e.message);
 	}
 
-	return;
+	return this;
 }
 
 UIGaugePointer.prototype.getText = function() {
@@ -137,7 +138,7 @@ UIGaugePointer.prototype.setValue = function(value) {
 		console.log("UIGaugePointer.prototype.setValue: Out Of Range.");
 	}
 
-	return;
+	return this;
 }
 
 UIGaugePointer.prototype.getValue = function() {
@@ -213,7 +214,7 @@ UIGaugePointer.prototype.paintSelfOnly = function(canvas) {
 	var h = this.h;
 	var angle = this.getAngle();
 
-	var image = this.getHtmlImageByType(CANTK_IMAGE_IMAGE);
+	var image = this.getHtmlImageByType(UIGauge.IMAGE_POINTER);
 	if(image && image.width) {
 		var imageW = image.width;
 		var imageH = image.height;

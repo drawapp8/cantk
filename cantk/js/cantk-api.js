@@ -11,6 +11,8 @@ CanTK.isRightMouseEvent = isRightMouseEvent;
 CanTK.delayLoadScripts = delayLoadScripts;
 CanTK.initViewPort = cantkInitViewPort;
 CanTK.restoreViewPort = cantkRestoreViewPort;
+CanTK.httpGetURL = httpGetURL;	
+CanTK.httpGetJSON = httpGetJSON;	
 CanTK.httpDoRequest = httpDoRequest;	
 
 CanTK.LinearInterpolator = LinearInterpolator;
@@ -25,7 +27,9 @@ window.isTizen = isTizen;
 window.isMobile = isMobile;
 window.isAndroid = isAndroid;
 window.isFirefoxOS = isFirefoxOS;
-window.httpDoRequest = httpDoRequest;
+window.httpGetURL = httpGetURL;	
+window.httpGetJSON = httpGetJSON;	
+window.httpDoRequest = httpDoRequest;	
 window.cantkGetLocale = cantkGetLocale;
 window.cantkInitViewPort = cantkInitViewPort;
 window.cantkRestoreViewPort = cantkRestoreViewPort;
@@ -37,7 +41,9 @@ CanTK.getEffectsPlayer = getEffectsPlayer;
 CanTK.getMusicPlayer = getMusicPlayer;
 CanTK.Physics = Physics;
 
+CanTK.Shape = Shape;
 CanTK.UIElement = UIElement;
+
 CanTK.init = function () {
 	return cantkRegisterUIElements();
 }
@@ -52,14 +58,14 @@ CanTK.createElementWithJson = function(data) {
 
 	if(el) {
 		el.fromJson(data);
-		el.setMode(C_MODE_RUNNING, true);
+		el.setMode(Shape.MODE_RUNNING, true);
 	}
 
 	return el;
 }
 
-CanTK.UIElement.RUNNING = C_MODE_RUNNING;
-CanTK.UIElement.DEFAULT_IMAGE = CANTK_IMAGE_DEFAULT;
+CanTK.UIElement.RUNNING = Shape.MODE_RUNNING;
+CanTK.UIElement.DEFAULT_IMAGE = UIElement.IMAGE_DEFAULT;
 
 CanTK.setResRoot = function(resRoot) {
 	return ResLoader.setResRoot(resRoot);

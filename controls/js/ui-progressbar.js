@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Slider/ProgressBar
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -20,11 +20,11 @@ UIProgressBar.prototype.initUIProgressBar = function(type, w, h, interactive, bg
 	this.setPercent(50);
 	this.setDefSize(w, h);
 	this.setInteractive(interactive);
-	this.setTextType(C_SHAPE_TEXT_INPUT);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
+	this.setTextType(Shape.TEXT_INPUT);
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 	this.setSizeLimit(120, 40, null, 80);
-	this.setImage(CANTK_IMAGE_DEFAULT, bgImg);
-	this.setImage(CANTK_IMAGE_NORMAL_FG, fgImg);
+	this.setImage(UIElement.IMAGE_DEFAULT, bgImg);
+	this.setImage(UIElement.IMAGE_NORMAL_FG, fgImg);
 
 	this.drawSize = h;
 	this.dragImg = dragImg;
@@ -62,10 +62,10 @@ UIProgressBar.prototype.afterChildAppended =function(shape) {
 	var bar = this;
 	var size = this.drawSize ? this.drawSize : this.h;
 
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 
-	shape.yAttr = C_Y_MIDDLE_IN_PARENT;
-	shape.setTextType(C_SHAPE_TEXT_NONE);
+	shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
+	shape.setTextType(Shape.TEXT_NONE);
 
 	var w = size;
 	var h = size;
@@ -142,7 +142,7 @@ UIProgressBar.prototype.afterChildAppended =function(shape) {
 UIProgressBar.prototype.setInteractive = function(value) {
 	this.interactive = value;
 
-	return;
+	return this;
 }
 
 UIProgressBar.prototype.setPercentOnly = function(value, notNotify) {
@@ -151,22 +151,22 @@ UIProgressBar.prototype.setPercentOnly = function(value, notNotify) {
 		this.value = newValue;
 	}
 
-	if(this.mode === C_MODE_EDITING || !this.isVisible()) {
-		return;
+	if(this.mode === Shape.MODE_EDITING || !this.isVisible()) {
+		return this;
 	}
 
 	if(notNotify) {
-		return;
+		return this;
 	}
 
 	if(this.isChanging) {
-		this.callOnChanging(this.getValue());
+		this.callOnChangingHandler(this.getValue());
 	}
 	else {
-		this.callOnChanged(this.getValue());
+		this.callOnChangedHandler(this.getValue());
 	}
 
-	return;
+	return this;
 }
 
 UIProgressBar.prototype.setPercent = function(value, notNotify) {
@@ -179,8 +179,7 @@ UIProgressBar.prototype.setPercent = function(value, notNotify) {
 		this.drag.x = Math.floor(dx > 0 ? dx : 0);
 	}
 
-
-	return;
+	return this;
 }
 
 UIProgressBar.prototype.onClick = function(point, beforeChild) {
@@ -207,7 +206,7 @@ UIProgressBar.prototype.getValue = function() {
 UIProgressBar.prototype.setValue = function(value, notNotify) {
 	this.setPercent(value, notNotify);
 
-	return;
+	return this;
 }
 
 UIProgressBar.prototype.paintSelfOnly = function(canvas) {
@@ -216,8 +215,8 @@ UIProgressBar.prototype.paintSelfOnly = function(canvas) {
 	var y = this.h >> 2;
 	var r = this.h >> 3;
 
-	var bg = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
-	var fg = this.getHtmlImageByType(CANTK_IMAGE_NORMAL_FG);
+	var bg = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
+	var fg = this.getHtmlImageByType(UIElement.IMAGE_NORMAL_FG);
 
 	if(bg && fg) {
 		return;
@@ -252,14 +251,14 @@ UIProgressBar.prototype.drawImage = function(canvas) {
 	var y = 0;
 	var h = this.h;	
 	
-	image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 	if(image) {
 		h = image.height;
 		y = (this.h - h)>>1;
 		drawNinePatchEx(canvas, image, 0, 0, image.width, image.height, 0, y, this.w, h);
 	}
 	
-	image = this.getHtmlImageByType(CANTK_IMAGE_NORMAL_FG);
+	image = this.getHtmlImageByType(UIElement.IMAGE_NORMAL_FG);
 	if(image) {
 		var w = this.w * this.value;
 		

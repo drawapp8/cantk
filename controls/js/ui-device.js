@@ -3,7 +3,7 @@
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: Device 
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -33,7 +33,7 @@ UIDevice.prototype.deviceFromJson = function(js) {
 }
 
 UIDevice.prototype.resize = function(w, h) {
-	if(this.state === C_STAT_NORMAL) {
+	if(this.state === Shape.STAT_NORMAL) {
 		this.realResize(w, h);
 	}
 
@@ -135,8 +135,8 @@ UIDevice.prototype.initUIDevice = function(type, w, h, name, bg) {
 	this.setDefSize(w, h);
 	this.setName(name);
 	this.loadConfig();
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setUserResizable(false);
 	this.rectSelectable = false;
 	this.regSerializer(this.deviceToJson, this.deviceFromJson);
@@ -145,7 +145,7 @@ UIDevice.prototype.initUIDevice = function(type, w, h, name, bg) {
 }
 
 UIDevice.prototype.drawBgImage = function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 	if(image) {
 		var hw = this.h/this.w;
 		var ihw = image.height/image.width;
@@ -185,7 +185,7 @@ UIDevice.prototype.enterPreview = function() {
 		return;
 	}
 
-	if(windowManager.mode != C_MODE_EDITING) {
+	if(windowManager.mode != Shape.MODE_EDITING) {
 		return;
 	}
 	
@@ -199,10 +199,12 @@ UIDevice.prototype.enterPreview = function() {
 	}
 
 	windowManager.saveState();
-	this.setMode(C_MODE_PREVIEW);
-	screen.setMode(C_MODE_PREVIEW, true);
+	this.setMode(Shape.MODE_PREVIEW);
+	screen.setMode(Shape.MODE_PREVIEW, true);
+
+	ResLoader.reset();
+	this.getApp().loadUserScripts();
 	windowManager.systemInit();
-	windowManager.showInitWindow();
 
 	return;
 }
@@ -214,7 +216,7 @@ UIDevice.prototype.exitPreview = function() {
 		return;
 	}
 
-	if(windowManager.mode != C_MODE_PREVIEW) {
+	if(windowManager.mode != Shape.MODE_PREVIEW) {
 		return;
 	}
 
@@ -228,9 +230,10 @@ UIDevice.prototype.exitPreview = function() {
 	}
 
 	windowManager.systemExit();
-	this.setMode(C_MODE_EDITING);
-	screen.setMode(C_MODE_EDITING, true);
+	this.setMode(Shape.MODE_EDITING);
+	screen.setMode(Shape.MODE_EDITING, true);
 	windowManager.restoreState();
+	this.setSelected(true);
 
 	return;
 }
@@ -278,8 +281,8 @@ UIDevice.prototype.relayoutChildren = function() {
 			w = this.config.screenW;
 			h = this.config.screenH;
 			
-			shape.widthAttr = C_WIDTH_FIX;
-			shape.heightAttr = C_HEIGHT_FIX;
+			shape.widthAttr = UIElement.WIDTH_FIX;
+			shape.heightAttr = UIElement.HEIGHT_FIX;
 
 			shape.setPosition(x, y);
 			shape.setSize(w, h);
@@ -287,7 +290,7 @@ UIDevice.prototype.relayoutChildren = function() {
 		}
 
 		if(shape.isUIButton) {
-			shape.setMode(C_MODE_RUNNING);
+			shape.setMode(Shape.MODE_RUNNING);
 			if(this.config.screenW > 400) {
 				shape.x = this.config.screenX;
 				shape.w = this.config.screenW / 4;
@@ -301,7 +304,7 @@ UIDevice.prototype.relayoutChildren = function() {
 			y = this.config.screenY - shape.h - 5;
 
 			if(y < 0) {
-				y = 0;
+				y += 10;
 			}
 
 			if(shape.name === "button-prev") {
@@ -312,6 +315,9 @@ UIDevice.prototype.relayoutChildren = function() {
 						return;
 					}
 					var windowManager = device.getWindowManager();
+					if(windowManager.mode === Shape.MODE_PREVIEW) {
+						device.exitPreview();	
+					}
 					if(windowManager) {
 						windowManager.showPrevFrame();
 					}
@@ -328,6 +334,9 @@ UIDevice.prototype.relayoutChildren = function() {
 						return;
 					}
 					var windowManager = device.getWindowManager();
+					if(windowManager.mode === Shape.MODE_PREVIEW) {
+						device.exitPreview();	
+					}
 					if(windowManager) {
 						windowManager.showNextFrame();
 					}
@@ -348,6 +357,11 @@ UIDevice.prototype.relayoutChildren = function() {
 						return;
 					}
 					
+					var windowManager = device.getWindowManager();
+					if(windowManager.mode === Shape.MODE_PREVIEW) {
+						device.exitPreview();	
+					}
+					
 					var direction = device.getDirection();
 					if(direction === UIDevice.PORTRAIT) {
 						buttonText = "Portrait";
@@ -364,7 +378,7 @@ UIDevice.prototype.relayoutChildren = function() {
 			}
 		
 			if(shape.name === "button-preview") {
-				shape.isPreview = false;
+				shape.isInPreviewMode = false;
 				x = shape.x + shape.w * 3;
 
 				shape.setText(dappGetText("Preview"));
@@ -373,9 +387,10 @@ UIDevice.prototype.relayoutChildren = function() {
 						return;
 					}
 
-					this.isPreview = !this.isPreview;
+					this.isInPreviewMode = !this.isInPreviewMode;
+					this.getApp().setPreviewMode(this.isInPreviewMode);
 
-					if(this.isPreview) {
+					if(this.isInPreviewMode) {
 						device.enterPreview();						
 					}
 					else {
@@ -393,14 +408,14 @@ UIDevice.prototype.relayoutChildren = function() {
 				y = this.config.screenY - 2 * shape.h - 10;
 				x = this.config.screenX + (this.config.screenW - shape.w)/2;
 				this.statusButton = shape;
-				var windowManager = device.getWindowManager();
 				this.statusButton.getLocaleText = function() {
+					var windowManager = device.getWindowManager();
 					return windowManager ? windowManager.getStatusString() : "";
 				}
 			}
 
 			shape.setMode = function(mode, recursive) {
-				this.mode = C_MODE_RUNNING;
+				this.mode = Shape.MODE_RUNNING;
 			}
 		}
 
@@ -425,7 +440,7 @@ UIDevice.prototype.getWindowManager = function() {
 }
 
 UIDevice.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
 		canvas.beginPath();

@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Image Button
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -17,9 +17,9 @@ UIImageButton.prototype.isUIImageButton = true;
 UIImageButton.prototype.initUIImageButton = function(type, w, h) {
 	this.initUIButton(type, w, h);
 	this.noTextAlignment = true;
-	this.setImage(CANTK_IMAGE_NORMAL_FG, null);
-	this.setImage(CANTK_IMAGE_ACTIVE_FG, null);
-	this.setImage(CANTK_IMAGE_DISABLE_FG, null);
+	this.setImage(UIElement.IMAGE_NORMAL_FG, null);
+	this.setImage(UIElement.IMAGE_ACTIVE_FG, null);
+	this.setImage(UIElement.IMAGE_DISABLE_FG, null);
 
 	return this;
 }
@@ -35,9 +35,9 @@ UIImageButton.prototype.shapeCanBeChild = function(shape) {
 UIImageButton.prototype.drawFgImage = function(canvas) {
 	var bgImage = this.getBgImage();
 	var gapBetweenTextImage = 2;
-	var imageActive = this.getHtmlImageByType(CANTK_IMAGE_ACTIVE_FG);
-	var imageNormal = this.getHtmlImageByType(CANTK_IMAGE_NORMAL_FG);
-	var imageDisable = this.getHtmlImageByType(CANTK_IMAGE_DISABLE_FG);
+	var imageActive = this.getHtmlImageByType(UIElement.IMAGE_ACTIVE_FG);
+	var imageNormal = this.getHtmlImageByType(UIElement.IMAGE_NORMAL_FG);
+	var imageDisable = this.getHtmlImageByType(UIElement.IMAGE_DISABLE_FG);
 	var str = this.getLocaleText(this.text);
 	var fontSize = this.style.fontSize;
 
@@ -102,7 +102,7 @@ UIImageButton.prototype.drawFgImage = function(canvas) {
 					dy = 0;
 				}
 
-				this.drawImageAt(canvas, image, CANTK_IMAGE_DISPLAY_CENTER, dx, dy, dw, dh, rect);
+				this.drawImageAt(canvas, image, UIElement.IMAGE_DISPLAY_CENTER, dx, dy, dw, dh, rect);
 
 				dx = Math.floor(x + w/2);
 				dy = dy + dh + gapBetweenTextImage;

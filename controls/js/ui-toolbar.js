@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Toolbar
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -17,13 +17,13 @@ UIToolBar.prototype.isUIToolBar = true;
 UIToolBar.prototype.initUIToolBar = function(type, atTop, h, bg) {
 	this.initUIElement(type);	
 
-	this.xAttr = C_X_LEFT_IN_PARENT;
-	this.widthAttr = C_WIDTH_FILL_PARENT;
-	this.yAttr = atTop ? C_Y_TOP_IN_PARENT : C_Y_BOTTOM_IN_PARENT;
+	this.xAttr = UIElement.X_LEFT_IN_PARENT;
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT;
+	this.yAttr = atTop ? UIElement.Y_TOP_IN_PARENT : UIElement.Y_BOTTOM_IN_PARENT;
 
 	this.setDefSize(200, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setSizeLimit(100, 50, 2000, 200);
 
 	return this;
@@ -40,7 +40,7 @@ UIToolBar.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIToolBar.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
 		canvas.beginPath();

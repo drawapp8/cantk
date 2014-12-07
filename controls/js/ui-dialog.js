@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Dialog
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -24,9 +24,9 @@ function UIDialogCreator(w, h, bg) {
 		g.initUIWindow(this.type, 0, 0, w, h, bg);
 		
 		g.setMargin(8, 8);
-		g.xAttr = C_X_CENTER_IN_PARENT;
-		g.yAttr = C_Y_MIDDLE_IN_PARENT;
-		g.images.display = CANTK_IMAGE_DISPLAY_SCALE;
+		g.xAttr = UIElement.X_CENTER_IN_PARENT;
+		g.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
+		g.images.display = UIElement.IMAGE_DISPLAY_SCALE;
 		g.setAnimHint("scale");
 
 		return g;

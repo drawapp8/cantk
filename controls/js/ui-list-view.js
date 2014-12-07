@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  List View (Scrollable)
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -92,28 +92,9 @@ UIListView.prototype.updateDone = function() {
 }
 
 UIListView.prototype.callOnUpdateData = function() {
-	if(!this.handleOnUpdateData || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onUpdateData"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnUpdateData = function(value) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnUpdateData) {
-		try {
-			this.handleOnUpdateData();
-		}catch(e) {
-			console.log("this..handleOnUpdateData:" + e.message);
-		}
-	}
+	this.callOnUpdateDataHandler();
 
 	this.beginUpdate();
-
 	var listView = this;
 	setTimeout(function() {
 		listView.updateDone();
@@ -244,7 +225,7 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 		}
 
 		if(child.name === "ui-list-item-update-tips") {
-			if(this.mode !== C_MODE_EDITING) {
+			if(this.mode !== Shape.MODE_EDITING) {
 				child.move(x, -h);
 				child.x = x;
 				child.y = -h;
@@ -262,7 +243,7 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 			isBuiltin = true;
 		}
 		else if(child.name === "ui-list-item-update-status") {
-			if(this.mode !== C_MODE_EDITING) {
+			if(this.mode !== Shape.MODE_EDITING) {
 				if(this.updateStatus !== UIListView.UPDATE_STATUS_SYNC) {
 					child.setVisible(false);
 				}else {
@@ -279,7 +260,7 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 			continue;
 		}
 
-		animatable =  child.isVisible() && !isBuiltin && (y < this.h) && (animHint || this.mode === C_MODE_EDITING);
+		animatable =  child.isVisible() && !isBuiltin && (y < this.h) && (animHint || this.mode === Shape.MODE_EDITING);
 		if(animatable && (x != child.x || y != child.y || w != child.w || h != child.h)) {
 			config.xStart = child.x;
 			config.yStart = child.y;
@@ -304,9 +285,9 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 			child.relayoutChildren();
 		}
 
-		child.widthAttr = C_WIDTH_FILL_PARENT;
-		if(child.heightAttr === C_HEIGHT_FILL_PARENT) {
-			child.heightAttr = C_HEIGHT_FIX;
+		child.widthAttr = UIElement.WIDTH_FILL_PARENT;
+		if(child.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
+			child.heightAttr = UIElement.HEIGHT_FIX;
 		}
 		child.setUserMovable(userMovable);
 		child.setUserResizable(itemHeightVariable || child.isHeightVariable());
@@ -328,7 +309,7 @@ UIListView.prototype.drawText = function(canvas) {
 UIListView.prototype.afterPaintChildren = function(canvas) {
 	this.drawScrollBar(canvas);
 	
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.drawPageDownUp(canvas);
 	}
 

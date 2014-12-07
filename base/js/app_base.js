@@ -3,16 +3,9 @@
  * Author:	Li XianJing <xianjimli@hotmail.com>
  * Brief: the base application.
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
-
-var C_APP_TYPE_WEBAPP = 1;
-var C_APP_TYPE_PREVIEW = 2;
-var C_APP_TYPE_PC_VIEWER = 3;
-var C_APP_TYPE_PC_EDITOR = 4;
-var C_APP_TYPE_MOBILE_EDITOR = 5;
-var C_APP_TYPE_INLINE_EDITOR = 6;
 
 function AppBase(canvasID, type) {
 	this.win  = null;
@@ -38,7 +31,7 @@ function AppBase(canvasID, type) {
 	}
 
 	this.init = function() {
-		if(this.type === C_APP_TYPE_INLINE_EDITOR) {
+		if(this.type === AppBase.TYPE_INLINE_EDITOR) {
 			this.isInlineEdit = true;
 		}
 		else {
@@ -69,14 +62,14 @@ function AppBase(canvasID, type) {
 		var view = cantkGetViewPort();
 		
 		switch(this.type) {
-			case C_APP_TYPE_WEBAPP: 
-			case C_APP_TYPE_INLINE_EDITOR: 
-			case C_APP_TYPE_MOBILE_EDITOR: {
+			case AppBase.TYPE_WEBAPP: 
+			case AppBase.TYPE_INLINE_EDITOR: 
+			case AppBase.TYPE_MOBILE_EDITOR: {
 				w = view.width;
 				h = view.height;
 				break;
 			}
-			case C_APP_TYPE_PREVIEW: {
+			case AppBase.TYPE_PREVIEW: {
 				w = view.width;
 				h = view.height;
 				this.setMinHeight(1500);
@@ -126,3 +119,9 @@ function AppBase(canvasID, type) {
 	return this;
 }
 
+AppBase.TYPE_WEBAPP = 1;
+AppBase.TYPE_PREVIEW = 2;
+AppBase.TYPE_PC_VIEWER = 3;
+AppBase.TYPE_PC_EDITOR = 4;
+AppBase.TYPE_MOBILE_EDITOR = 5;
+AppBase.TYPE_INLINE_EDITOR = 6;

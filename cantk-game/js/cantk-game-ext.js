@@ -2,6 +2,15 @@ UIElement.prototype.getScence= function() {
 	return this.getWindow();
 }
 
+UIElement.prototype.setEnable = function(enable) {
+	this.enable = enable;
+	if(this.body) {
+		this.body.SetActive(enable);
+	}
+
+	return this;
+}
+
 UIElement.prototype.getFootprints = function(name) {
 	var x = 0;
 	var y = 0;
@@ -28,23 +37,28 @@ UIElement.prototype.getFootprints = function(name) {
 }
 
 UIElement.prototype.moveAlongPath = function(name, duration, enableRotation, onDone) {
+	var footPrints = this.getFootprints(name);
+
+	return this.moveAlongPoints(footPrints, duration, enableRotation, onDone);
+}
+
+UIElement.prototype.moveAlongPoints = function(points, duration, enableRotation, onDone) {
 	var d = 0;
 	var dx = 0;
 	var dy = 0;
 	var moveInfo = {};
 	var distances = [];
 	var totalDistance = 0;
-	var footPrints = this.getFootprints(name);
 
-	if(!footPrints.length) {
+	if(!points.length) {
 		console.log("no footprint found.");
 	}
 
-	for(var i = 0; i < footPrints.length; i++) {
-		var iter = footPrints[i];
+	for(var i = 0; i < points.length; i++) {
+		var iter = points[i];
 		if(i) {
-			dx = footPrints[i].x - footPrints[i-1].x;
-			dy = footPrints[i].y - footPrints[i-1].y;
+			dx = points[i].x - points[i-1].x;
+			dy = points[i].y - points[i-1].y;
 
 			d = Math.sqrt(dx*dx+dy*dy);
 			distances.push(d);
@@ -55,7 +69,7 @@ UIElement.prototype.moveAlongPath = function(name, duration, enableRotation, onD
 	moveInfo.onDone = onDone;
 	moveInfo.duration = duration;
 	moveInfo.distances = distances;
-	moveInfo.footPrints = footPrints;
+	moveInfo.points = points;
 	moveInfo.totalDistance = totalDistance;
 	moveInfo.enableRotation = enableRotation;
 
@@ -74,12 +88,12 @@ UIElement.prototype.startMove = function(moveInfo) {
 
 	var duration = moveInfo.duration;
 	var distances = moveInfo.distances;
-	var footPrints = moveInfo.footPrints;
+	var points = moveInfo.points;
 	var totalDistance = moveInfo.totalDistance;
 	var enableRotation = moveInfo.enableRotation;
 
 	function moveToNext() {
-		if((index+1) >= moveInfo.footPrints.length) {
+		if((index+1) >= points.length) {
 			if(moveInfo.onDone) {
 				moveInfo.onDone();
 			}
@@ -88,8 +102,8 @@ UIElement.prototype.startMove = function(moveInfo) {
 		}
 
 		var start = Date.now();
-		var endPoint = footPrints[index+1];
-		var startPoint = footPrints[index];
+		var endPoint = points[index+1];
+		var startPoint = points[index];
 		var dt = duration * (distances[index]/totalDistance);
 		var dx = endPoint.x - startPoint.x;
 		var dy = endPoint.y - startPoint.y;
@@ -120,8 +134,8 @@ UIElement.prototype.startMove = function(moveInfo) {
 					me.setRotation(angle);
 				}
 				me.postRedraw();
-
-				UIElement.setAnimTimer(step);
+				
+				return true;
 			}
 			else {
 				index++;
@@ -131,99 +145,17 @@ UIElement.prototype.startMove = function(moveInfo) {
 				me.setPosition(x, y);
 				me.postRedraw();
 				moveToNext();
+
+				return false;
 			}
 		}
 
-		step();
+		UIElement.setAnimTimer(step);
 	}
 
 	moveToNext();
 
 	return;
-}
-
-UIElement.prototype.callOnMoved = function() {
-	if(!this.handleOnMoved || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onMoved"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnMoved = function() {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnMoved) {
-		try {
-			this.handleOnMoved();
-		}catch(e) {
-			console.log("this.handleOnMoved:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnBeginContact = function(body) {
-	if(this.onBeginContact) {
-		this.onBeginContact(body);
-
-		return;
-	}
-
-	if(!this.handleOnBeginContact || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onBeginContact"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnBeginContact = function(body) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnBeginContact) {
-		try {
-			this.handleOnBeginContact(body);
-		}catch(e) {
-			console.log("this.handleOnBeginContact:" + e.message);
-		}
-	}
-
-	return true;
-}
-
-UIElement.prototype.callOnEndContact = function(body) {
-	if(this.onEndContact) {
-		this.onEndContact(body);
-
-		return;
-	}
-
-	if(!this.handleOnEndContact || this.mode === C_MODE_PREVIEW) {
-		var sourceCode = this.events["onEndContact"];
-		if(sourceCode) {
-			sourceCode = "this.handleOnEndContact = function(body) {\n" + sourceCode + "\n}\n";
-			try {
-				eval(sourceCode);
-			}catch(e) {
-				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
-			}
-		}
-	}
-
-	if(this.handleOnEndContact) {
-		try {
-			this.handleOnEndContact(body);
-		}catch(e) {
-			console.log("this.handleOnEndContact:" + e.message);
-		}
-	}
-
-	return true;
 }
 
 UIElement.prototype.setPosition = function(x, y) {
@@ -232,14 +164,29 @@ UIElement.prototype.setPosition = function(x, y) {
 
 	if(this.body) {
 		var p = {};
+		var pos = this.getParent().getPositionInWindow();
+
+		x += pos.x;
+		y += pos.y;
 
 		p.x = Physics.toMeter(x + (this.w >> 1)); 
 		p.y = Physics.toMeter(y + (this.h >> 1)); 
 		this.body.SetPosition(p);
 	}
 
-	return;
+	return this;
 }
+
+UIElement.prototype.setRotation = function(rotation) {
+	this.rotation = rotation;
+
+	if(this.body) {
+		this.body.SetAngle(rotation);
+	}
+
+	return this;
+}
+UIElement.prototype.setAngle = UIElement.prototype.setRotation;
 
 UIElement.prototype.setPositionByBody = function(x, y) {
 	this.x = x;
@@ -247,5 +194,43 @@ UIElement.prototype.setPositionByBody = function(x, y) {
 
 	this.callOnMoved();
 
-	return;
+	return this;
+}
+
+UIElement.prototype.setV = function(x, y) {
+	var body = this.body;
+	if(body) {
+		if(!body.IsActive()) {
+			body.SetActive(true);
+		}
+
+		if(!body.IsAwake()) {
+			body.SetAwake(true);
+		}
+
+		var v = body.GetLinearVelocity();
+		if(x !== null && x !== undefined) {
+			v.x = x;
+		}
+
+		if(y !== null && y !== undefined) {
+			v.y = y;
+		}
+
+		body.SetLinearVelocity(v);
+	}
+
+	return this;
+}
+
+UIElement.prototype.setVOf = function(name, x, y) {
+	var el = this.getWindow().findChildByName(name, true);
+	if(el) {
+		el.setV(x, y);
+	}
+	else {
+		console.log("not found " + name);
+	}
+
+	return this;
 }

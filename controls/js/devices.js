@@ -263,16 +263,16 @@ function cantkLoadDefaultDeviceConfigs() {
 	
 	var pcPortrait = {
 		name : "PC-Portrait",
-		bg: "/drawapp8/images/pc-460x740.png",
+		bg: "/drawapp8/images/pc-480x720.png",
 		platform: "android",
 		version: "4",
 		lcdDensity:"hdpi",
-		width:520,
+		width:600,
 		height:840,
-		screenX: 31,
-		screenY: 68,
-		screenW: 460,
-		screenH: 740,
+		screenX: 60,
+		screenY: 70,
+		screenW: 480,
+		screenH: 720,
 		hasMenuBar:false
 	};
 

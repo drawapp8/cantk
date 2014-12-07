@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Scrollable Select
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -22,10 +22,10 @@ UISelect.prototype.initUISelect = function(type, w, h) {
 	this.visibleItems = 5;	
 	this.setDefSize(w, h);
 	this.addEventNames(["onInit", "onChanged"]);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	this.setCanRectSelectable(false, true);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 
 	return this;
 }
@@ -103,7 +103,7 @@ UISelect.prototype.setOffset = function(offset, triggerOnChanged) {
 
 	if(triggerOnChanged) {
 		var value = this.getValue();
-		this.callOnChanged(value);
+		this.callOnChangedHandler(value);
 	}
 
 	return;
@@ -229,7 +229,7 @@ UISelect.prototype.setText =function(text) {
 
 	this.text = text;
 
-	return;
+	return this;
 }
 
 UISelect.prototype.drawImage = function(canvas) {
@@ -340,7 +340,7 @@ UISelect.prototype.setValueByIndex = function(index, animate) {
 		}
 	}
 
-	return;
+	return this;
 }
 
 UISelect.prototype.setValue = function(value, animate) {
@@ -348,7 +348,7 @@ UISelect.prototype.setValue = function(value, animate) {
 
 	this.setValueByIndex(i, animate);
 
-	return;
+	return this;
 }
 
 function UISelectCreator(w, h) {

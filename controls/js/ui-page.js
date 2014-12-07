@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  TabPage
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,10 +18,10 @@ UIPage.prototype.initUIPage = function(type, bg) {
 	this.initUIElement(type);	
 
 	this.setDefSize(200, 200);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, bg);
-	this.widthAttr = C_WIDTH_FILL_PARENT;
-	this.heightAttr = C_HEIGHT_FILL_PARENT;
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, bg);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT;
+	this.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 
 	if(!bg) {
 		this.style.setFillColor("Gold");
@@ -55,7 +55,7 @@ UIPage.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIPage.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
 		canvas.beginPath();

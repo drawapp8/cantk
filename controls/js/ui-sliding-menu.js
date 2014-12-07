@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Sliding Menu
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -18,10 +18,10 @@ UISlidingMenu.prototype.initUISlidingMenu = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.offset = 0;
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.setImage(CANTK_IMAGE_DEFAULT, null);
+	this.setTextType(Shape.TEXT_NONE);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.setCanRectSelectable(false, false);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 
 	return this;
 }
@@ -50,7 +50,7 @@ UISlidingMenu.prototype.shapeCanBeChild = function(shape) {
 UISlidingMenu.prototype.afterChildAppended = function(shape) {
 	shape.setUserMovable(false);
 
-	if(this.children.length > 1 && this.mode == C_MODE_EDITING) {
+	if(this.children.length > 1 && this.mode == Shape.MODE_EDITING) {
 		var menu = this.getMenu();
 		this.setOffset(menu.w);
 	}
@@ -59,7 +59,7 @@ UISlidingMenu.prototype.afterChildAppended = function(shape) {
 }
 
 UISlidingMenu.prototype.onDoubleClick = function(point, beforeChild) {
-	if(beforeChild || this.mode != C_MODE_EDITING) {
+	if(beforeChild || this.mode != Shape.MODE_EDITING) {
 		return;
 	}
 
@@ -125,10 +125,10 @@ UISlidingMenu.prototype.relayoutChildren = function() {
 		menu.y = 0;
 		menu.x = 0;
 		menu.h = this.h;
-		menu.xAttr = C_X_FIX_LEFT;
-		menu.yAttr = C_Y_FIX_TOP;
-		menu.widthAttr = C_WIDTH_SCALE;
-		menu.heightAttr = C_HEIGHT_FILL_PARENT;
+		menu.xAttr = UIElement.X_FIX_LEFT;
+		menu.yAttr = UIElement.Y_FIX_TOP;
+		menu.widthAttr = UIElement.WIDTH_SCALE;
+		menu.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 		menu.relayout();
 		
 		return;
@@ -141,10 +141,10 @@ UISlidingMenu.prototype.relayoutChildren = function() {
 
 		menu.y = 0;
 		menu.h = this.h;
-		menu.xAttr = C_X_FIX_LEFT;
-		menu.yAttr = C_Y_FIX_TOP;
-		menu.widthAttr = C_WIDTH_SCALE;
-		menu.heightAttr = C_HEIGHT_FILL_PARENT;
+		menu.xAttr = UIElement.X_FIX_LEFT;
+		menu.yAttr = UIElement.Y_FIX_TOP;
+		menu.widthAttr = UIElement.WIDTH_SCALE;
+		menu.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 		menu.relayout();
 		
 		if(oldMenuW === this.offset) {
@@ -158,9 +158,9 @@ UISlidingMenu.prototype.relayoutChildren = function() {
 		content.x = this.offset;
 		content.h = this.h;
 		content.w = this.w;
-		content.xAttr = C_X_FIX_LEFT;
-		content.widthAttr = C_WIDTH_FIX;
-		content.heightAttr = C_HEIGHT_FILL_PARENT;
+		content.xAttr = UIElement.X_FIX_LEFT;
+		content.widthAttr = UIElement.WIDTH_FIX;
+		content.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 
 		menu.relayoutChildren();
 		content.relayoutChildren();

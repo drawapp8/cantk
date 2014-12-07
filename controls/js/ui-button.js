@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Button
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -21,14 +21,14 @@ UIButton.prototype.initUIButton = function(type, w, h) {
 	this.setDefSize(w, h);
 	this.setSizeLimit(50, 50);
 	this.setAutoScaleFontSize(true);
-	this.setTextType(C_SHAPE_TEXT_INPUT);
-	this.images.display = CANTK_IMAGE_DISPLAY_9PATCH;
-	this.setImage(CANTK_IMAGE_FOCUSED, null);
-	this.setImage(CANTK_IMAGE_ACTIVE, null);
-	this.setImage(CANTK_IMAGE_NORMAL, null);
-	this.setImage(CANTK_IMAGE_DISABLE, null);
-	this.setImage(CANTK_IMAGE_POINTER_OVER, null);
-	this.addEventNames(["onOnUpdateTransform"]); 
+	this.setTextType(Shape.TEXT_INPUT);
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
+	this.setImage(UIElement.IMAGE_FOCUSED, null);
+	this.setImage(UIElement.IMAGE_ACTIVE, null);
+	this.setImage(UIElement.IMAGE_NORMAL, null);
+	this.setImage(UIElement.IMAGE_DISABLE, null);
+	this.setImage(UIElement.IMAGE_POINTER_OVER, null);
+	this.addEventNames(["onUpdateTransform"]); 
 
 	return this;
 }
@@ -43,7 +43,7 @@ UIButton.prototype.shapeCanBeChild = function(shape) {
 
 UIButton.prototype.paintSelfOnly =function(canvas) {
 	if(this.pointerDown) {
-		var image = this.getHtmlImageByType(CANTK_IMAGE_ACTIVE);
+		var image = this.getHtmlImageByType(UIElement.IMAGE_ACTIVE);
 
 		if(!image) {
 			canvas.fillRect(0, 0, this.w, this.h);

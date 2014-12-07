@@ -3,13 +3,13 @@
  * Author:	Li XianJing <xianjimli@hotmail.com>
  * Brief: window
  * 
- * Copyright (c) 2011 - 2014	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
  * 
  */
  
 function Window(manager, x, y, w, h) {
 	var args = [null, x, y, w, h];
-	this.type  = C_WIDGET_TYPE_WINDOW;
+	this.type  = Widget.TYPE_WINDOW;
 
 	Widget.apply(this, args);
 	

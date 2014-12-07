@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Context Menu
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -21,14 +21,14 @@ UIContextMenu.prototype.initUIContextMenu = function(type) {
 	this.setMargin(5, 5);
 	this.setDefSize(300, 80);
 	this.setAlwaysOnTop(true);
-	this.setTextType(C_SHAPE_TEXT_NONE);
+	this.setTextType(Shape.TEXT_NONE);
 	this.setHideWhenPointerUp(true);
 
 	return this;
 }
 
 UIContextMenu.prototype.onModeChanged = function() {
-	if(this.mode === C_MODE_EDITING) {
+	if(this.mode === Shape.MODE_EDITING) {
 		this.setVisible(true);
 	}
 	else {
@@ -121,7 +121,7 @@ UIContextMenu.prototype.onPointerUpRunning = function(point, beforeChild) {
 }
 
 UIContextMenu.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(CANTK_IMAGE_DEFAULT);
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
 		canvas.fillRect(0, 0, this.w, this.h);

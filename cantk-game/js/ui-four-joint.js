@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  four anchor joint 
  * 
- * Copyright (c) 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -19,8 +19,8 @@ UIFourJoint.prototype.initUIFourJoint = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(C_SHAPE_TEXT_NONE);
-	this.images.display = CANTK_IMAGE_DISPLAY_CENTER;
+	this.setTextType(Shape.TEXT_NONE);
+	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
 
 	this.points = [{x:0, y:80}, {x:0, y:0}, {x:80, y:0},{x:80, y:80}];
 	this.regSerializer(this.fourJointToJson, this.fourJointFromJson);
@@ -60,7 +60,7 @@ UIFourJoint.prototype.asIcon = function() {
 }
 
 UIFourJoint.prototype.relayout = function() {
-	if(this.disableRelayout || this.mode === C_MODE_EDITING) {
+	if(this.disableRelayout || this.mode === Shape.MODE_EDITING) {
 		return;
 	}
 
@@ -68,14 +68,14 @@ UIFourJoint.prototype.relayout = function() {
 	var wParent = p.getWidth(true);
 	var hParent = p.getHeight(true);
 
-	if(this.xAttr === C_X_SCALE) {
+	if(this.xAttr === UIElement.X_SCALE) {
 		this.points[0].x = wParent * this.x0Param;
 		this.points[1].x = wParent * this.x1Param;
 		this.points[2].x = wParent * this.x2Param;
 		this.points[3].x = wParent * this.x3Param;
 	}
 	
-	if(this.yAttr === C_Y_SCALE) {
+	if(this.yAttr === UIElement.Y_SCALE) {
 		this.points[0].y = hParent * this.y0Param;
 		this.points[1].y = hParent * this.y1Param;
 		this.points[2].y = hParent * this.y2Param;
@@ -97,14 +97,14 @@ UIFourJoint.prototype.updateLayoutParams = function() {
 	var wParent = p.getWidth(true);
 	var hParent = p.getHeight(true);
 	
-	if(this.xAttr === C_X_SCALE) {
+	if(this.xAttr === UIElement.X_SCALE) {
 		this.x0Param = this.points[0].x / wParent;
 		this.x1Param = this.points[1].x / wParent;
 		this.x2Param = this.points[2].x / wParent;
 		this.x3Param = this.points[3].x / wParent;
 	}
 
-	if(this.yAttr === C_Y_SCALE) {
+	if(this.yAttr === UIElement.Y_SCALE) {
 		this.y0Param = this.points[0].y / hParent;
 		this.y1Param = this.points[1].y / hParent;
 		this.y2Param = this.points[2].y / hParent;
@@ -131,7 +131,7 @@ UIFourJoint.prototype.hitTest = function(point) {
 		return 4;
 	}
 
-	return C_HIT_TEST_NONE;
+	return Shape.HIT_TEST_NONE;
 }
 
 UIFourJoint.prototype.getSelectMark = function(type, point) {
@@ -226,7 +226,7 @@ UIFourJoint.prototype.getHeight = function() {
 }
 
 UIFourJoint.prototype.paintSelf = function(canvas) {
-	if(!this.runtimeVisible && this.mode != C_MODE_EDITING && !this.isIcon) {
+	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
 		return;
 	}
 
@@ -239,6 +239,13 @@ UIFourJoint.prototype.paintSelf = function(canvas) {
 	canvas.lineWidth = this.style.lineWidth;
 	canvas.fillStyle = this.style.fillColor;
 	canvas.strokeStyle = this.style.lineColor;
+	
+	canvas.beginPath();
+	canvas.moveTo(this.points[0].x, this.points[0].y);
+	canvas.lineTo(this.points[1].x, this.points[1].y);
+	canvas.lineTo(this.points[2].x, this.points[2].y);
+	canvas.lineTo(this.points[3].x, this.points[3].y);
+	canvas.stroke();
 	
 	canvas.beginPath();
 	canvas.arc(this.points[0].x, this.points[0].y, r, 0, Math.PI * 2);
@@ -254,12 +261,6 @@ UIFourJoint.prototype.paintSelf = function(canvas) {
 	canvas.fill();
 
 	canvas.beginPath();
-	canvas.moveTo(this.points[0].x, this.points[0].y);
-	canvas.lineTo(this.points[1].x, this.points[1].y);
-	canvas.lineTo(this.points[2].x, this.points[2].y);
-	canvas.lineTo(this.points[3].x, this.points[3].y);
-	canvas.stroke();
-	canvas.beginPath();
 
 	canvas.restore();
 	
@@ -274,13 +275,13 @@ UIFourJoint.prototype.shapeCanBeChild = function(shape) {
 
 UIFourJoint.prototype.onPointerDownNormal = function(point) {
 	this.hitTestResult = this.hitTest(point);
-	this.selected = this.hitTestResult != C_HIT_TEST_NONE;
+	this.selected = this.hitTestResult != Shape.HIT_TEST_NONE;
 
 	return this.hitTestResult;
 }
 
 UIFourJoint.prototype.onPointerMoveNormal = function(point) {
-	 if(this.hitTestResult > 0) {
+	 if(this.mode === Shape.MODE_EDITING && this.hitTestResult > 0) {
 	 	var index = this.hitTestResult - 1;
 	 	this.points[index].x = point.x;
 	 	this.points[index].y = point.y;
@@ -288,15 +289,15 @@ UIFourJoint.prototype.onPointerMoveNormal = function(point) {
 }
 
 UIFourJoint.prototype.onPointerUpNormal = function(point) {
-	this.hitTestResult = C_HIT_TEST_NONE;
+	this.hitTestResult = Shape.HIT_TEST_NONE;
 
 	return;
 }
 
 UIFourJoint.prototype.onPointerDownCreating = function(point) {
 	switch(this.state) {
-		case C_STAT_CREATING_0: {
-			this.state = C_STAT_NORMAL;
+		case Shape.STAT_CREATING_0: {
+			this.state = Shape.STAT_NORMAL;
 		}
 		default: {
 			return false;
@@ -306,7 +307,7 @@ UIFourJoint.prototype.onPointerDownCreating = function(point) {
 
 UIFourJoint.prototype.onPointerMoveCreating = function(point) {
 	switch(this.state) {
-		case C_STAT_CREATING_0: {
+		case Shape.STAT_CREATING_0: {
 			this.points[0].x = point.x;
 			this.points[0].y = point.y + 80;
 			this.points[1].x = point.x + 20;

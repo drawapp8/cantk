@@ -3,7 +3,7 @@
  * Author: Li XianJing <xianjimli@hotmail.com>
  * Brief:  Collapsable
  * 
- * Copyright (c) 2011 - 2014  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
@@ -191,8 +191,8 @@ UICollapsable.prototype.relayoutChildren = function() {
 		}
 
 		if(vLayout) {
-			iter.heightAttr = C_HEIGHT_FIX;
-			iter.widthAttr =  C_WIDTH_FILL_PARENT;
+			iter.heightAttr = UIElement.HEIGHT_FIX;
+			iter.widthAttr =  UIElement.WIDTH_FILL_PARENT;
 			iter.relayout();
 			iter.y = y;
 
@@ -202,8 +202,8 @@ UICollapsable.prototype.relayoutChildren = function() {
 			}
 		}
 		else {
-			iter.widthAttr = C_WIDTH_FIX;
-			iter.heightAttr = C_HEIGHT_FILL_PARENT;
+			iter.widthAttr = UIElement.WIDTH_FIX;
+			iter.heightAttr = UIElement.HEIGHT_FILL_PARENT;
 			iter.relayout();
 			iter.x = x;
 			
