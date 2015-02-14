@@ -50,12 +50,13 @@ Online Design Tools
 Documentation
 ==============================================
 
-[Application Programming Interface](https://github.com/drawapp8/cantk/wiki/English-API)
+* 1.[Application Programming Interface](https://github.com/drawapp8/cantk/wiki/English-API)
 
-[Chinese Introduction](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
+* 2.[Chinese Introduction](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
 
-* 1.QQ HTML游戏群: 223466431
-* 2.作者微信号： xianjim
+* 3.QQ HTML游戏群: 223466431
+
+* 4.作者微信号： xianjim
 
 
 Screenshots
