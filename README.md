@@ -54,7 +54,8 @@ Documentation
 
 [Chinese Introduction](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
 
-QQ Groups: html5apps
+* 1.QQ HTML游戏群: 223466431
+* 2.作者微信号： xianjim
 
 
 Screenshots
