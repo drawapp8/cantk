@@ -25,6 +25,7 @@ UIWindowManager.prototype.initUIWindowManager = function(type) {
 	this.loadingBgColor = "Black";
 	this.setImage("force-landscape-tips", null);
 	this.setImage("force-portrait-tips", null);
+	this.setImage("loading-bg", null);
 
 	return this;
 }
@@ -86,6 +87,12 @@ UIWindowManager.prototype.getWindowNames = function() {
 	return names;
 }
 
+UIWindowManager.prototype.setInitWindow = function(initWindowIndex) {
+	this.initWindowIndex = Math.max(0, Math.min(initWindowIndex, this.children.length-1));
+
+	return this;
+}
+
 UIWindowManager.prototype.showInitWindow = function() {
 	var initWin = null;
 	if(this.children.length === 0) {
@@ -99,6 +106,10 @@ UIWindowManager.prototype.showInitWindow = function() {
 		initWin = this.findBestFitWindowByName(startWinName);
 	}
 	
+	if(this.initWindowIndex || this.initWindowIndex === 0) {
+		initWin = this.children[this.initWindowIndex];	
+	}
+
 	if(!initWin) {
 		initWin = this.getSplashWindow();
 		if(!initWin) {
@@ -151,7 +162,11 @@ UIWindowManager.prototype.onResLoadDone = function() {
 }
 
 UIWindowManager.prototype.systemInit = function() {
+	this.loadSoundEffects();
+	this.loadSoundMusic();
 	this.resLoadDone = false;
+	UIElement.animTimerID = null;
+
 	console.log("systemInit");
 
 	return;
@@ -159,12 +174,15 @@ UIWindowManager.prototype.systemInit = function() {
 
 UIWindowManager.prototype.systemExit = function() {
 	console.log("systemExit: ");
-	while(this.history.length > 0) {
-		var topIndex = this.history.length - 1;
-		console.log("CloseWindow: " + topIndex);
+	var n = this.history.length;
+	
+	for(var i = 0; i < n; i++) {
 		this.closeCurrentWindow(0, true);
 	}
 
+	this.history.length = 0;
+
+	this.stopSoundMusic();
 	this.callOnUnload();
 
 	return;
@@ -316,7 +334,7 @@ UIWindowManager.prototype.openPopupWindow = function(newWin, closeCurrent) {
 		curWin.callOnSwitchToBack();
 		if(newWin.isAnimationEnabled()) {
 			var p = this.getPositionInScreen();
-			var animation = AnimationFactory.create(newWin.getAnimationName(true)); 
+			var animation = AnimationFactory.create(newWin.getAnimationName(true), newWin.getAnimationDuration(true)); 
 			var backendCanvas = UIFrames.preparseBackendCanvas(curWin, newWin);
 			animation.setScale(this.getRealScale());
 			animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, openPopupWindow);
@@ -357,7 +375,7 @@ UIWindowManager.prototype.openNormalWindow = function(newWin, closeCurrent) {
 		curWin.callOnSwitchToBack();
 		if(newWin.isAnimationEnabled()) {
 			var p = this.getPositionInScreen();
-			var animation = AnimationFactory.create(newWin.getAnimationName(true)); 
+			var animation = AnimationFactory.create(newWin.getAnimationName(true), newWin.getAnimationDuration(true)); 
 			var backendCanvas = UIFrames.preparseBackendCanvas(curWin, newWin);
 			animation.setScale(this.getRealScale());
 			animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, closeAndOpenWindow);
@@ -411,7 +429,7 @@ UIWindowManager.prototype.backToHomeWin = function() {
 	
 	if(curWin.isAnimationEnabled()) {
 		var p = this.getPositionInScreen();
-		var animation = AnimationFactory.create(curWin.getAnimationName(false)); 
+		var animation = AnimationFactory.create(curWin.getAnimationName(false), curWin.getAnimationDuration(false)); 
 		var backendCanvas = UIFrames.preparseBackendCanvas(lastWin, curWin);
 		animation.setScale(this.getRealScale());
 		animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, function() {});
@@ -455,7 +473,7 @@ UIWindowManager.prototype.closeCurrentPopupWindow = function(popupWin, retInfo, 
 
 		if(popupWin.isAnimationEnabled() && !syncClose) {
 			var p = this.getPositionInScreen();
-			var animation = AnimationFactory.create(popupWin.getAnimationName(false)); 
+			var animation = AnimationFactory.create(popupWin.getAnimationName(false), popupWin.getAnimationDuration(false)); 
 
 			curWin.removePopupWindow(popupWin);
 			var backendCanvas = UIFrames.preparseBackendCanvas(curWin, popupWin);
@@ -506,7 +524,7 @@ UIWindowManager.prototype.closeCurrentNormalWindow = function(curWin, retInfo, s
 	}
 	else if(curWin.isAnimationEnabled()) {
 		var p = this.getPositionInScreen();
-		var animation = AnimationFactory.create(curWin.getAnimationName(false)); 
+		var animation = AnimationFactory.create(curWin.getAnimationName(false), curWin.getAnimationDuration(false)); 
 		var backendCanvas = UIFrames.preparseBackendCanvas(lastWin, curWin);
 		animation.setScale(this.getRealScale());
 		animation.prepare(p.x, p.y, this.w, this.h, backendCanvas, showLastWindow);
@@ -630,22 +648,33 @@ UIWindowManager.prototype.resize = function(w, h) {
 				var scaleW = designWidth/screenWidth;
 				var scaleH = designHeight/screenHeight;
 				var scale = Math.max(scaleW, scaleH);
-				canvas.width = screenWidth * scale;
-				canvas.height = screenHeight * scale;
-				
-				x = (canvas.width - designWidth)>>1; 
-				y = (canvas.height - designHeight)>>1;
-				w = designWidth;
-				h = designHeight;
+				if(Math.abs(scaleW - scaleH) < 0.10) {
+					canvas.width = designWidth;
+					canvas.height = designHeight;
+					
+					x = 0;
+					y = 0;
+					w = canvas.width;
+					h = canvas.height;
+				}
+				else {
+					canvas.width = screenWidth * scale;
+					canvas.height = screenHeight * scale;
+					
+					x = (canvas.width - designWidth)>>1; 
+					y = (canvas.height - designHeight)>>1;
+					w = designWidth;
+					h = designHeight;
+				}
 			}
 			var xInputScale = canvas.width/screenWidth;
 			var yInputScale = canvas.height/screenHeight;
-			WindowManager.setInputScale(xInputScale, yInputScale);
+			WWindowManager.setInputScale(xInputScale, yInputScale);
 		}
 		else {
 			canvas.width = screenWidth;
 			canvas.height = screenHeight;
-			WindowManager.setInputScale(1, 1);
+			WWindowManager.setInputScale(1, 1);
 			w = canvas.width;
 			h = canvas.height;
 		}
@@ -707,30 +736,38 @@ UIWindowManager.prototype.getDeviceConfig = function() {
 }
 
 UIWindowManager.prototype.paintLoadingStatus = function(canvas, percent, text) {
-	var text = "Loading...";
 	var percent = ResLoader.getPercent();
-	
+	var image = this.getImageByType("loading-bg");
+
 	var w = this.w;
 	var h = this.h;
 	var barW = w * 0.8;
-	var barH = 60;
+	var barH = 40;
 	var fillBarW = percent * barW/100;
 
 	var x = (w - barW) >> 1;
 	var y = (h - barH) >> 1;
+	
 	canvas.fillStyle = this.loadingBgColor;
 	canvas.fillRect(0, 0, w, h);
+	if(image && image.getImage()) {
+		var rect = image.getImageRect();
+		var htmlImage = image.getImage();
+		this.drawImageAt(canvas, htmlImage, this.images.display, 0, 0, this.w, this.h, rect);
+	}
 
 	canvas.lineWidth = 4;
 	canvas.strokeStyle = this.progressBarBorderColor;
 	canvas.rect(x, y, barW, barH);
 	canvas.stroke();
 
-	canvas.fillStyle = this.progressBarFillColor;
-	canvas.fillRect(x+4, y+4, fillBarW-8, barH-8);
+	if(fillBarW > 8) {
+		canvas.fillStyle = this.progressBarFillColor;
+		canvas.fillRect(x+4, y+4, fillBarW-8, barH-8);
+	}
 
 	canvas.fillStyle = this.loadingTextColor;
-	canvas.font = "32px serif";
+	canvas.font = "24px serif";
 	canvas.textBaseline = "middle";
 	canvas.textAlign = "center";
 	canvas.fillText(text, w >> 1, (h >> 1) - barH);
@@ -771,7 +808,8 @@ UIWindowManager.prototype.paintChildren = function(canvas) {
 			if(percent < 100) {
 				if(this.showLoadingProgress) {
 					setTimeout(function() { me.postRedraw();}, 100);
-					this.paintLoadingStatus(canvas, percent, webappGetText("Loading..."));
+					var loadingText = this.loadingText ? this.loadingText : webappGetText("Loading...");
+					this.paintLoadingStatus(canvas, percent, loadingText);
 				}
 			}
 			else {
@@ -856,7 +894,24 @@ UIWindowManager.prototype.isDeviceDirectionOK = function() {
 	return true;
 }
 
+UIWindowManager.prototype.relayout = function() {
+	if(this.isDeviceDirectionOK()) {
+		UIElement.prototype.relayout.call(this);
+	}
+	else {
+		console.log("isDeviceDirectionNotOK ignore relayout");
+	}
+
+	return this;
+}
+
 UIWindowManager.prototype.relayoutChildren = function() {
+	if(!this.isDeviceDirectionOK()) {
+		console.log("isDeviceDirectionNotOK ignore relayout");
+
+		return;
+	}
+
 	var curWin = this.getCurrentFrame();
 
 	if(this.mode === Shape.MODE_EDITING) {
@@ -889,6 +944,248 @@ UIWindowManager.prototype.onKeyUp= function(code) {
 	var win = this.getCurrentWindow();
 
 	return win.onKeyUp(code);
+}
+
+UIWindowManager.prototype.setSoundEffectURLs = function(soundEffectURLs) {
+	this.soundEffectURLs = soundEffectURLs;
+
+	return this;
+}
+
+UIWindowManager.prototype.getSoundEffectURLs = function() {
+	return this.soundEffectURLs;
+}
+
+UIWindowManager.prototype.getSoundEffectNames = function() {
+	if(!this.soundEffectURLs) {
+		return [];
+	}
+
+	var names = this.soundEffectURLs.split("\n");
+	for(var i = 0; i < names.length; i++) {
+		names[i] = decodeURI(basename(names[i]));
+	}
+
+	return names;
+}
+
+UIWindowManager.soundEffectEnalbe = true;
+UIWindowManager.prototype.setSoundEffectsEnable = function(enable) {
+	UIWindowManager.soundEffectEnalbe = enable;
+
+	return this;
+}
+
+UIWindowManager.prototype.loadSoundEffects = function() {
+	if(!this.soundEffectURLs) {
+		return;
+	}
+
+	UIWindowManager.soundEffects = {};
+	
+	var urlArr = this.soundEffectURLs.split("\n");
+	for(var i = 0; i < urlArr.length; i++) {
+		var iter = urlArr[i];
+		var config = {urls: [iter], autoplay: false, loop: false, volume: 0.8};
+		var name = decodeURI(basename(iter));
+		var info = {audio:new Howl(config), playing: false};
+
+		UIWindowManager.soundEffects[name] = info;
+/*		
+		ResLoader.loadAudio(iter, function(audio) {
+			var config = {urls: [audio.src], autoplay: false, loop: false, volume: 0.8};
+			var name = decodeURI(basename(audio.src));
+			var info = {audio:new Howl(config), playing: false};
+
+			UIWindowManager.soundEffects[name] = info;
+        });
+*/
+	}
+
+	return this;
+}
+
+UIWindowManager.prototype.playSoundEffect = function(name) {
+	if(!UIWindowManager.soundEffectEnalbe) {
+		console.log("UIWindowManager.soundEffectEnalbe disable ");
+		return this;
+	}
+
+	var info = UIWindowManager.soundEffects[name];
+	if(!info || !info.audio) {
+		console.log("not found: " + name);
+		return this;
+	}
+
+	info.audio.play();
+
+	return this;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+UIWindowManager.prototype.onPointerDownRunning = function(point, beforeChild) {
+	if(this.autoPlayPending) {
+		this.playSoundMusic();
+		this.autoPlayPending = false;
+	}
+
+	if(!beforeChild || this.popupWindow || !this.pointerDown) {
+		return;
+	}
+
+	return this.callOnPointerDownHandler(point);
+}
+
+UIWindowManager.prototype.setSoundMusicURLs = function(soundMusicURLs) {
+	this.soundMusicURLs = soundMusicURLs;
+
+	return this;
+}
+
+UIWindowManager.prototype.getSoundMusicURLs = function() {
+	return this.soundMusicURLs;
+}
+
+UIWindowManager.prototype.loadSoundMusic = function() {
+	if(!this.soundMusicURLs) {
+		return;
+	}
+
+	UIWindowManager.soundMusic = {};
+
+	var me = this;
+	var loop = this.soundMusicLoop;
+	var autoPlay = this.soundMusicAutoPlay;
+
+	var urlArr = this.soundMusicURLs.split("\n");
+	for(var i = 0; i < urlArr.length; i++) {
+		var iter = urlArr[i];
+		ResLoader.loadAudio(iter, function(audio) {
+			var name = decodeURI(basename(audio.src));
+			var info = {audio:audio};
+
+			audio.volume = 0.8;
+			if(autoPlay) {
+				audio.addEventListener('canplaythrough', function (e) {
+					console.log("canplaythrough:" + audio.src);
+					audio.play();
+				});
+
+				audio.addEventListener('canplay', function (e) {
+					console.log("canplay:" + audio.src);
+					audio.play();
+				});
+
+				audio.play();
+				autoPlay = false;
+				me.autoPlayPending = true;
+				console.log("load start:" + audio.src);
+			}
+
+			UIWindowManager.soundMusic[name] = info;
+        });
+	}
+
+	return this;
+}
+
+UIWindowManager.prototype.loadSoundMusicOld = function() {
+	if(!this.soundMusicURLs) {
+		return;
+	}
+
+	UIWindowManager.soundMusic = {};
+
+	var loop = this.soundMusicLoop;
+	var autoPlay = this.soundMusicAutoPlay;
+
+	var urlArr = this.soundMusicURLs.split("\n");
+	for(var i = 0; i < urlArr.length; i++) {
+		var iter = urlArr[i];
+		var config = {urls: [iter], autoplay: autoPlay, loop: loop, volume: 0.8};
+		var name = decodeURI(basename(iter));
+		var info = {audio:new Howl(config), playing: autoPlay};
+
+		UIWindowManager.soundMusic[name] = info;
+/*		
+		ResLoader.loadAudio(iter, function(audio) {
+			var config = {urls: [audio.src], autoplay: autoPlay, loop: loop, volume: 0.8};
+			var name = decodeURI(basename(audio.src));
+			var info = {audio:new Howl(config), playing: autoPlay};
+
+			UIWindowManager.soundMusic[name] = info;
+			autoPlay = false;
+        });
+*/        
+	}
+
+	return this;
+}
+
+UIWindowManager.prototype.isSoundMusicPlaying = function(name) {
+	var playing = false;
+	for(var key in UIWindowManager.soundMusic) {
+		if(name === key || !name) {
+			var info = UIWindowManager.soundMusic[key];
+			if(info && info.audio) {
+				if(info.playing) {
+					playing = true;
+					break;
+				}
+			}
+		}
+	}
+
+	return playing;
+}
+
+UIWindowManager.prototype.stopSoundMusic = function(name) {
+	for(var key in UIWindowManager.soundMusic) {
+		if(name === key || !name) {
+			var info = UIWindowManager.soundMusic[key];
+			if(info && info.audio) {
+				if(info.audio.stop) {
+					info.audio.stop();
+				}
+				else {
+					info.audio.pause();
+				}
+				info.playing = false;
+			}
+		}
+	}
+
+	return this;
+}
+
+UIWindowManager.prototype.playSoundMusic = function(name) {
+	for(var key in UIWindowManager.soundMusic) {
+		if(name === key || !name) {
+			var info = UIWindowManager.soundMusic[key];
+			if(info && info.audio) {
+				info.audio.play();
+				info.playing = true;
+				console.log("UIWindowManager.prototype.playSoundMusic");
+				break;
+			}
+		}
+	}
+
+	return this;
+}
+
+UIWindowManager.prototype.getSoundMusicNames = function() {
+	if(!this.soundMusicURLs) {
+		return [];
+	}
+
+	var names = this.soundMusicURLs.split("\n");
+	for(var i = 0; i < names.length; i++) {
+		names[i] = basename(names[i]);
+	}
+
+	return names;
 }
 
 function UIWindowManagerCreator() {

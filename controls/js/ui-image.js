@@ -71,7 +71,11 @@ UIImage.prototype.setImageSrcRect = function(x, y, w, h) {
 UIImage.prototype.setValue = function(value) {
 	this.setImage(UIElement.IMAGE_DEFAULT, value);
 
-	return;
+	return this;
+}
+
+UIImage.prototype.getValue = function() {
+	return this.getImageSrc();
 }
 
 UIImage.prototype.setImageSrc = function(value) {
@@ -129,7 +133,6 @@ UIImage.CLICKED_STYLE_RECT_BG = 3;
 UIImage.CLICKED_STYLE_RECT_BORDER = 4;
 
 UIImage.prototype.drawImage =function(canvas) {
-	
 	canvas.save();
 
 	var globalAlpha = canvas.globalAlpha;
@@ -157,6 +160,14 @@ UIImage.prototype.drawImage =function(canvas) {
 
 	var image = this.getBgHtmlImage();
 	var srcRect = this.getImageSrcRect();
+
+	if(this.images.display === UIElement.IMAGE_DISPLAY_DEFAULT) {
+		if(image && image.width) {
+			this.w = srcRect ? srcRect.w : image.width;
+			this.h = srcRect ? srcRect.h : image.height;
+		}
+	}
+	
 	this.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h, srcRect);
 
 	if(this.clickable && this.pointerDown) {
@@ -200,21 +211,6 @@ UIImage.prototype.setClickable = function(clickable) {
 }
 
 UIImage.prototype.shapeCanBeChild = UIGroup.prototype.shapeCanBeChild;
-
-UIImage.prototype.onSized = function() {
-	UIElement.prototype.onSized.call(this);
-
-	if(this.images.display === UIElement.IMAGE_DISPLAY_DEFAULT) {
-		var image = this.getHtmlImage();
-		if(image && image.width) {
-			var srcRect = this.getImageSrcRect();
-			this.w = srcRect ? srcRect.w : image.width;
-			this.h = srcRect ? srcRect.h : image.height;
-		}
-	}
-
-	return;
-}
 
 function UIImageCreator(type, w, h, defaultImage) {
 	var args = [type, "ui-image", null, 1];

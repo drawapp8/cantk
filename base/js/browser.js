@@ -1,7 +1,7 @@
 /*
- * File: trace.js
- * Author:  Li XianJing <xianjimli@hotmail.com>
- * Brief: portable log
+ * File: browser.js
+ * Author: Li XianJing <xianjimli@hotmail.com>
+ * Brief:  functions to detect browser type.
  * 
  * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
@@ -9,24 +9,24 @@
 
 var browser = {    
 	versions:function(){            
-	var u = navigator.userAgent, app = navigator.appVersion;            
-	return {                
-		ie9: u.indexOf('MSIE 9.0') > -1,
-		ie10: u.indexOf('MSIE 10.0') > -1,
-		ie: u.indexOf('MSIE') > -1 || u.indexOf('Trident') > -1,
-		oldIE: u.indexOf('MSIE 8.0') > -1||u.indexOf('MSIE 7.0') > -1 || u.indexOf('MSIE 6.0') > -1,
-		android: u.indexOf('Android') > -1 && u.indexOf('Linux') > -1, 
-		iPhone: u.indexOf('iPhone') > -1, 
-		iPad: u.indexOf('iPad') > -1, 
-		blackberry: u.indexOf('BlackBerry') > -1, 
-		firefoxMobile:u.indexOf('Mobile') > -1 && u.indexOf('Firefox') > -1,
-		firefoxOS:u.indexOf('Mobile') > -1 && u.indexOf('Firefox') > -1 && u.indexOf('Android') < 0,
-		windowPhone: u.indexOf('Windows Phone') > -1,
-		webkit: u.indexOf("WebKit") > -1,
-		weixin: u.indexOf("MicroMessenger") >= 0,
-		weibo: u.indexOf("weibo") >= 0,
-		qq: u.indexOf("QQ") >= 0
-	};
+		var u = navigator.userAgent, app = navigator.appVersion;            
+		return {                
+			ie9: u.indexOf('MSIE 9.0') >=0,
+			ie10: u.indexOf('MSIE 10.0') >=0,
+			ie: u.indexOf('MSIE') >=0 || u.indexOf('Trident') >=0,
+			oldIE: u.indexOf('MSIE 8.0') >=0||u.indexOf('MSIE 7.0') >=0 || u.indexOf('MSIE 6.0') >=0,
+			android: u.indexOf('Android') >=0 && u.indexOf('Linux') >=0, 
+			iPhone: u.indexOf('iPhone') >=0, 
+			iPad: u.indexOf('iPad') >=0, 
+			blackberry: u.indexOf('BlackBerry') >=0, 
+			firefoxMobile:u.indexOf('Mobile') >=0 && u.indexOf('Firefox') >=0,
+			firefoxOS:u.indexOf('Mobile') >=0 && u.indexOf('Firefox') >=0 && u.indexOf('Android') < 0,
+			windowPhone: u.indexOf('Windows Phone') >=0,
+			webkit: u.indexOf("WebKit") >=0,
+			weixin: u.indexOf("MicroMessenger") >= 0,
+			weibo: u.indexOf("weibo") >= 0,
+			qq: u.indexOf("QQ") >= 0
+		};
 	}()
 } 
 
@@ -51,13 +51,6 @@ if(browser.versions.oldIE || browser.versions.ie9) {
 	window.console.log = function(str) {};
 }
 
-var gForceMobile = false
-function setForceMobile(value) {
-	gForceMobile = value;
-
-	return;
-}
-
 function isOldIE() {
 	return browser.versions.oldIE;
 }
@@ -71,7 +64,7 @@ if(browser.versions.oldIE) {
 }
 
 function isMobile() {
-	return gForceMobile || browser.versions.android 
+	return browser.versions.android 
 		|| browser.versions.iPhone 
 		|| browser.versions.blackberry
 		|| browser.versions.windowPhone

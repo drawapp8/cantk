@@ -187,13 +187,27 @@ UIGrid.prototype.calcItemSize = function() {
 	var ih = 0;
 	var w = this.getWidth(true);
 	var h = this.getHeight(true);
-	
+
+	if(this.itemWidth < 20) {
+		this.itemWidthType = UIGrid.ITEM_FIXED_COLS;
+	}
+	else {
+		this.itemWidthType = UIGrid.ITEM_FIXED_WIDTH;
+	}
+
 	if(this.itemWidthType === UIGrid.ITEM_FIXED_COLS) {
 		iw = w/this.itemWidth - this.spacer;
 	}
 	else {
 		var cols = Math.floor(w/this.itemWidth);
 		iw = Math.floor(w/cols);
+	}
+
+	if(this.itemHeight < 20) {
+		this.itemHeightType = UIGrid.ITEM_FIXED_ROWS;
+	}
+	else {
+		this.itemHeightType = UIGrid.ITEM_FIXED_HEIGHT;
 	}
 
 	if(this.itemHeightType === UIGrid.ITEM_FIXED_ROWS) {

@@ -41,23 +41,11 @@ UIColorButton.prototype.initUIColorButton = function(type, w, h) {
 
 UIColorButton.prototype.shapeCanBeChild = UIGroup.prototype.shapeCanBeChild;
 
-UIColorButton.prototype.setBgRotation =function(angle) {
-	this.bgRotation = angle;
-
-	return;
-}
-
 UIColorButton.prototype.paintSelfOnly =function(canvas) {
 	var hw = this.w >> 1;
 	var hh = this.h >> 1;
 
 	canvas.save();
-	if(this.bgRotation) {
-		canvas.translate(hw, hh);
-		canvas.rotate(this.bgRotation);
-		canvas.translate(-hw, -hh);
-	}
-
 	canvas.beginPath();
 
 	if(this.isUIColorButton && this.pointerDown) {

@@ -76,22 +76,30 @@ Array.prototype.has = function(obj) {
     return this.indexOf(obj) >= 0;
 }
 
-Array.prototype.clear = function() {  
+Array.prototype.destroyData = function() {  
 	for(var i = 0; i < this.length; i++) {
 		var iter = this[i];
 
-		if(typeof iter != "object") {
+		if(!iter || typeof iter != "object") {
 			continue;
 		}
 
-		if(iter && iter.destroy && typeof iter.destroy == "function") {
+		if(iter.destroy && typeof iter.destroy == "function") {
 			iter.destroy();
 		}
-		delete iter;
 	}
 
-    this.length=0;  
+    this.length = 0;  
 } 
+
+Array.prototype.clear = function(destroyData) {
+	if(destroyData) {
+		this.destroyData();
+	}
+    this.length = 0;  
+
+    return this;
+}
 
 Array.prototype.copy = function(src) {  
 	this.clear();
@@ -203,6 +211,16 @@ String.prototype.trim = function()
 {
 	return String(this).replace(/^\s+|\s+$|^\n+|\n+$/g, '');
 }
+
+String.prototype.startWith = function(str){var t=this;return t.indexOf(str) == 0;};
+
+String.prototype.endWith = function(str){var t = this;return t.substring(t.length-str.length,t.length) == str;};
+
+String.prototype.isImageFileName = function(){
+	var t = this.toLowerCase();
+
+	return t.endWith(".png") || t.endWith(".jpg") || t.endWith("jpeg");
+};
 
 function drawDashedRect(canvas, x, y, w, h) {
 	var f = 8;
@@ -408,80 +426,131 @@ function CacheCanvasGet(width, height) {
 	return gCacheCanvas;
 }
 
-function drawNinePatchEx(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
-	var dx = 0;
-	var dy = 0;
-	var tw = 0;
-	var th = 0;
-	var cw = 0;
-	var ch = 0;
-	var dcw = 0;
-	var dch = 0;
-	
-	if(!image) {
-		context.fillRect(x, y, w, h);
-		return;
-	}
+if(isWebkit()) {
+	drawNinePatchEx = function(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
+		var dx = 0;
+		var dy = 0;
+		var tw = 0;
+		var th = 0;
+		var cw = 0;
+		var ch = 0;
+		var dcw = 0;
+		var dch = 0;
+		
+		if(!image) {
+			context.fillRect(x, y, w, h);
+			return;
+		}
 
-	if(!s_w || s_w > image.width) {
-		s_w = image.width;
-	}
+		if(!s_w || s_w > image.width) {
+			s_w = image.width;
+		}
 
-	if(!s_h || s_h > image.height) {
-		s_h = image.height;
-	}
+		if(!s_h || s_h > image.height) {
+			s_h = image.height;
+		}
 
-	if(w < s_w && h < s_h) {
-		context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
+		if(w < s_w && h < s_h) {
+			context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
 
-		return;
-	}
+			return;
+		}
 
-	tw = Math.floor(s_w/3);
-	th = Math.floor(s_h/3);
-	cw = s_w - tw - tw;
-	ch = s_h - th - th;
-    
-    dcw = w - tw - tw;
-    dch = h - th - th;
+		tw = Math.floor(s_w/3);
+		th = Math.floor(s_h/3);
+		cw = s_w - tw - tw;
+		ch = s_h - th - th;
+		
+		dcw = w - tw - tw;
+		dch = h - th - th;
 
-    /*draw four corner*/
-    context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
-    context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
-    context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
-    context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
+		/*draw four corner*/
+		context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
+		context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
+		context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
+		context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
 
+		//top/bottom center
+		if(dcw > 0) {
+			context.drawImage(image, s_x+tw, s_y, cw, th, x+tw, y, dcw, th);
+			context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw, y+h-th, dcw, th);
+		}
 
-	if(dcw > 0) {
-    	if(isWebkit()) {
-	    	context.drawImage(image, s_x+tw, s_y, cw, th, x+tw, y, dcw, th);
-    		context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw, y+h-th, dcw, th);
-    	}
-    	else {
-			context.drawImage(image, s_x+tw, s_y, cw, th, x+tw-0.5, y, dcw+1, th);
-			context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw-0.5, y+h-th, dcw+1, th);
-    	}
-	}
-
-	if(dch > 0) {
-		if(isWebkit()) {
+		//left/right middle 
+		if(dch > 0) {
 			context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th, tw, dch);
 			context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th, tw, dch);
 		}
-		else {
+
+		//center + middle
+		if(dcw > 0 && dch > 0) {
+			context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw, y+th, dcw, dch);
+		}
+
+		return;
+	}
+} else {
+	drawNinePatchEx = function(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
+		var dx = 0;
+		var dy = 0;
+		var tw = 0;
+		var th = 0;
+		var cw = 0;
+		var ch = 0;
+		var dcw = 0;
+		var dch = 0;
+		
+		if(!image) {
+			context.fillRect(x, y, w, h);
+			return;
+		}
+
+		if(!s_w || s_w > image.width) {
+			s_w = image.width;
+		}
+
+		if(!s_h || s_h > image.height) {
+			s_h = image.height;
+		}
+
+		if(w < s_w && h < s_h) {
+			context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
+
+			return;
+		}
+
+		tw = Math.floor(s_w/3);
+		th = Math.floor(s_h/3);
+		cw = s_w - tw - tw;
+		ch = s_h - th - th;
+		
+		dcw = w - tw - tw;
+		dch = h - th - th;
+
+		/*draw four corner*/
+		context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
+		context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
+		context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
+		context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
+
+		if(dcw > 0) {
+			context.drawImage(image, s_x+tw, s_y, cw, th, x+tw-1, y, dcw+2, th);
+			context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw-1, y+h-th, dcw+2, th);
+		}
+
+		if(dch > 0) {
 			context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th-0.5, tw, dch+1);
 			context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th-0.5, tw, dch+1);
 		}
-	}
 
-	//center
-	if(dcw > 0 && dch > 0) {
-    	context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw-1, y+th-1, dcw+2, dch+2);
-	}
+		//center
+		if(dcw > 0 && dch > 0) {
+			context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw-1, y+th-1, dcw+2, dch+2);
+		}
 
-    return;
+		return;
+	}
 }
-
 
 function drawNinePatch(context, image, x, y, w, h) {
 	if(!image) {
@@ -606,13 +675,17 @@ if(!window.orgViewPort) {
 	//console.log("OrgViewPort: " + window.orgViewPort.width + "x" + window.orgViewPort.height);
 }
 
-function layoutText(canvas, fontSize, str, width) {
+function layoutText(canvas, fontSize, str, width, flexibleWidth) {
+	if(width <= 0 || !str) {
+		return [];
+	}
+
 	var i = 0;
 	var j = 0;
 	var wordW = 0;
 	var lineW = 0;
 	var logicLine = "";
-	var logicLines = new Array();
+	var logicLines = [];
 	var phyLines = str.split("\n");
 	var textLayout = new TextLayout(canvas);
 
@@ -622,7 +695,7 @@ function layoutText(canvas, fontSize, str, width) {
 		if(line) {
 			textLayout.setText(line);
 			while(textLayout.hasNext()) {
-				var lineInfo = textLayout.nextLine(width, fontSize);
+				var lineInfo = textLayout.nextLine(width, fontSize, flexibleWidth);
 				logicLines.push(lineInfo.text);
 			}
 		}
@@ -686,7 +759,7 @@ function TextLayout(canvas) {
 		return this.startOffset < this.str.length;
 	}
 
-	this.nextLine = function(width, fontSize) {
+	this.nextLine = function(width, fontSize, flexibleWidth) {
 		var done = false;
 		var lineText = "";
 		var str = this.str;
@@ -724,7 +797,7 @@ function TextLayout(canvas) {
 		var nextChar = null;
 		var lineWidth = canvas.measureText(lineText).width;
 
-		var flexibleWidth = Math.floor(width * 0.3);
+		var flexibleWidth = flexibleWidth ? flexibleWidth : Math.floor(width * 0.3);
 
 		var fontSize2 = 2 * fontSize;
 		var maxWidth = width + flexibleWidth;
@@ -733,7 +806,10 @@ function TextLayout(canvas) {
 		for(i = this.startOffset + n; i < length; i++) {
 			chr = str.charAt(i);
 			code = str.charCodeAt(i);
-			
+			if(chr === '\t') {
+				chr = ' ';
+			}
+
 			lineText += chr;
 			chrWidth  = canvas.measureText(chr).width;
 			lineWidth = lineWidth + 1 + chrWidth;
@@ -850,7 +926,7 @@ function httpDoRequest(info) {
 
 	//cross domain via proxy.
 	if(!info.noProxy && url.indexOf("http") === 0 && url.indexOf(window.location.hostname) < 0) {
-		url = '/proxy.php?url=' + window.btoa(url) + '&mode=native&full_headers=1&send_cookies=1&send_session=0';
+		url = '/proxy.php?url=' + window.btoa(encodeURI(url)) + '&mode=native&full_headers=1&send_cookies=1&send_session=0';
 
 		if(info.headers && info.headers["User-Agent"]) {
 			var ua = info.headers["User-Agent"];
@@ -1088,8 +1164,8 @@ function isScriptLoaded(url) {
 
 
 /////////////////////////////////////////////////////////
-
-function getLanguageName() {
+Locales = {};
+Locales.getLanguageName = function() {
 	var lang = "";
 	if(navigator.language) {
 		lang = navigator.language;
@@ -1104,7 +1180,7 @@ function getLanguageName() {
 }
 
 function cantkGetLocale() {
-	return getLanguageName();
+	return Locales.getLanguageName();
 }
 	
 var requestAnimFrame = (function(){
@@ -1164,6 +1240,16 @@ function dirname(path) {
 	return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
 }
 
+String.prototype.basename = function(withoutExt) {
+	var filename = this.replace(/\\/g,'/').replace( /.*\//, '' );
+
+	return withoutExt ? filename.replace(/\.[a-z|A-Z|0-9]+/g, "") : filename;
+}
+
+String.prototype.dirname = function() {
+	return this.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+}
+
 function cantkIsFullscreen() {
 	return document.fullscreenElement || document.mozFullScreen || document.webkitIsFullScreen;
 }
@@ -1198,28 +1284,73 @@ function cantkRequestFullscreen(onDone) {
 	return false;
 }
 
-window.makeUniqRandArray = makeUniqRandArray;
-
-Object.destroy = function(obj) {
-	if(obj.children) {
-		var n = obj.children.length;
-		for(var i = 0; i < n; i++) {
-			Object.destroy(obj.children[i]);
-		}
-		obj.children.length = 0;
+function saveStrToFile(fileName, content) {
+	function get_blob_builder() {
+		return window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder;
 	}
 
-	for(var key in obj) {
-		var value = obj[key];
-		if(typeof value != "function") {
-			obj[key] = null;
-		}
+	try {
+		var BB = get_blob_builder();
+		var bb = new BB;
+		bb.append(content);
+		saveAs(bb.getBlob("text/plain;charset=" + document.characterSet), fileName);
+	}catch(e) {
+		var bb = new Blob([content], {type:"text/plain;charset=" + document.characterSet});
+		saveAs(bb, fileName);
 	}
-
-	obj = null;
 
 	return;
 }
+
+function readLocalTextFile(onSuccess, onFail) {
+	function onFileChoosed(file) {
+		try {
+			var reader = new FileReader();
+			reader.onload = function (evt) {
+				var result = evt.target.result;
+				if(onSuccess) {
+					onSuccess(result);
+				}
+				return;
+			};
+			
+			reader.onerror = function(evt) {
+				if(onFail) {
+					onFail(evt);
+				}
+				return;
+			};
+			reader.readAsText(file);
+			reader = null;
+		}catch(e) {
+			if(onFail) {
+				onFail(null);
+			}
+		}
+	}
+
+	var input = document.createElement("input");
+	input.type = "file";
+	input.multiple = false;
+	input.onchange = function(e) {
+		if(this.files && this.files.length) {
+			var file = this.files[0];
+			if(file && (!file.type || file.type.indexOf("text") >= 0)) {
+				onFileChoosed(file);
+			}
+			else {
+				console.log("Not text file.");
+			}
+		}
+	}
+	input.click();
+
+	input = null;
+
+	return;
+}
+
+window.makeUniqRandArray = makeUniqRandArray;
 
 console.log("Build At " + gBuildDate);
 

@@ -21,6 +21,8 @@ CanTK.AccelerateInterpolator = AccelerateInterpolator;
 CanTK.AccDecelerateInterpolator = AccDecelerateInterpolator;
 CanTK.DecelerateInterpolator = DecelerateInterpolator;
 CanTK.detectDeviceConfig = cantkDetectDeviceConfig;
+CanTK.regShapeCreator = cantkRegShapeCreator;
+CanTK.ShapeCreator = ShapeCreator;
 
 window.isOldIE = isOldIE;
 window.isTizen = isTizen;
@@ -37,8 +39,6 @@ window.cantkRegisterUIElements = cantkRegisterUIElements;
 window.cantkGetViewPort = cantkGetViewPort;
 
 CanTK.UIImage = UIImage;
-CanTK.getEffectsPlayer = getEffectsPlayer;
-CanTK.getMusicPlayer = getMusicPlayer;
 CanTK.Physics = Physics;
 
 CanTK.Shape = Shape;

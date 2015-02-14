@@ -31,19 +31,45 @@ UIBox.prototype.initUIBox = function(type, w, h) {
 }
 
 UIBox.prototype.shapeCanBeChild = function(shape) {
-	return this.children.length===0 && shape.isUIMouseJoint;
+	if(!UIGroup.prototype.shapeCanBeChild.call(this, shape) || (shape.isUIJoint && !shape.isUIMouseJoint)) {
+		return false;
+	}
+
+	return !shape.isUIPhysicsShape;
+}
+
+UIBox.prototype.onSized = function() {
+	var win = this.getWindow();
+	this.updateLayoutParams();
+	if(this.body && win && win.isUIScene) {
+		var shape = this.body.GetFixtureList().GetShape();
+		var hw = this.getWidth(true) >> 1;
+		var hh = this.getHeight(true) >> 1;
+		shape.SetAsBox(Physics.toMeter(hw), Physics.toMeter(hh));
+
+		this.body.SynchronizeFixtures();
+		this.setPosition(this.x, this.y);
+	}
 }
 
 UIBox.prototype.paintSelfOnly = function(canvas) {
-	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
-		return;
-	}
+	var x = this.getHMargin();
+	var y = this.getVMargin();
+	var w = this.getWidth(true);
+	var h = this.getHeight(true);
 	canvas.fillStyle = this.style.fillColor;
 	canvas.strokeStyle = this.style.lineColor;
+
 	canvas.beginPath();
-	canvas.rect(0, 0, this.w, this.h);
-	canvas.fill();
-	canvas.stroke();
+	canvas.rect(x, y, w, h);
+	if(!this.isFillColorTransparent()) {
+		canvas.fill();
+	}
+
+	if(!this.isStrokeColorTransparent()) {
+		canvas.stroke();
+	}
+
 
 	return;
 }

@@ -605,7 +605,7 @@ window.Modernizr = (function( window, document, undefined ) {
  * Taps happen when an element is pressed and then released.
  */
 (function(exports) {
-  var DOUBLETAP_TIME = 500;
+  var DOUBLETAP_TIME = isMobile() ? 500 : 300;
   var WIGGLE_THRESHOLD = 30;
 
   /**

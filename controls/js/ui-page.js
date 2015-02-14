@@ -51,6 +51,10 @@ UIPage.prototype.shapeCanBeChild = function(shape) {
 		return false;
 	}
 
+	if(shape.isUIPageIndicator && !this.isUIPageExt) {
+		return false;
+	}
+
 	return true;
 }
 

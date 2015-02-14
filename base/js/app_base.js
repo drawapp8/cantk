@@ -40,7 +40,7 @@ function AppBase(canvasID, type) {
 
 		this.canvas	 = canvasCreate(canvasID);
 		this.adjustCanvasSize();
-		this.manager = new WindowManager(this, this.canvas);
+		this.manager = WWindowManager.create(this, this.canvas);
 		canvasAttachManager(this.canvas, this.manager, this);
 		
 		return;

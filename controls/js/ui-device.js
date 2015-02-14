@@ -178,7 +178,7 @@ UIDevice.prototype.getScreen = function() {
 	return null;
 }
 
-UIDevice.prototype.enterPreview = function() {
+UIDevice.prototype.enterPreview = function(previewCurrentWindow) {
 	var screen = this.getScreen();
 	var windowManager = this.getWindowManager();
 	if(!windowManager || !screen || !this.app) {
@@ -188,7 +188,9 @@ UIDevice.prototype.enterPreview = function() {
 	if(windowManager.mode != Shape.MODE_EDITING) {
 		return;
 	}
-	
+
+	this.getApp().saveTemp();
+
 	var button = this.findChildByName("button-preview", false);
 	if(button) {
 		button.setText(dappGetText("Edit"));
@@ -205,6 +207,12 @@ UIDevice.prototype.enterPreview = function() {
 	ResLoader.reset();
 	this.getApp().loadUserScripts();
 	windowManager.systemInit();
+	if(previewCurrentWindow) {
+		windowManager.setInitWindow(windowManager.getCurrent());
+	}
+	else {
+		windowManager.setInitWindow(0);
+	}
 
 	return;
 }
@@ -233,6 +241,7 @@ UIDevice.prototype.exitPreview = function() {
 	this.setMode(Shape.MODE_EDITING);
 	screen.setMode(Shape.MODE_EDITING, true);
 	windowManager.restoreState();
+	windowManager.clearState();
 	this.setSelected(true);
 
 	return;
@@ -253,10 +262,6 @@ UIDevice.prototype.shapeCanBeChild = function(shape) {
 		}
 
 		return false;
-	}
-
-	if(shape.isUIButton) {
-		return !this.findChildByName(shape.name);
 	}
 
 	return (shape.isUIScreen && this.getScreen() === null);

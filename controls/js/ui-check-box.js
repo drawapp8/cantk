@@ -14,27 +14,28 @@ function UICheckBox() {
 UICheckBox.prototype = new UIElement();
 UICheckBox.prototype.isUICheckBox = true;
 
-UICheckBox.prototype.initUICheckBox = function(type, w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg) {
+UICheckBox.prototype.initUICheckBox = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
 	this.setTextType(Shape.TEXT_INPUT);
 	this.images.display = UIElement.IMAGE_DISPLAY_SCALE;
 
-	onFocusedImg  = onFocusedImg ? onFocusedImg : onImg;
-	onActiveImg   = onActiveImg ? onActiveImg : onImg;
-	offFocusedImg = offFocusedImg ? offFocusedImg : offImg;
-	offActiveImg   = offActiveImg ? offActiveImg : offImg;
+	this.setImage(UIElement.IMAGE_ON_BG, null);
+	this.setImage(UIElement.IMAGE_ON_ACTIVE, null);
+	this.setImage(UIElement.IMAGE_OFF_BG, null);
+	this.setImage(UIElement.IMAGE_OFF_ACTIVE, null);
+	
+	this.setImage(UIElement.IMAGE_CHECKED_FG, null);
+	this.setImage(UIElement.IMAGE_UNCHECK_FG, null);
 
-	this.setImage(UIElement.IMAGE_ON_FG, onImg);
-	this.setImage(UIElement.IMAGE_ON_ACTIVE, onActiveImg);
-	this.setImage(UIElement.IMAGE_ON_FOCUSED, onFocusedImg);
-	this.setImage(UIElement.IMAGE_OFF_FG, offImg);
-	this.setImage(UIElement.IMAGE_OFF_ACTIVE, offActiveImg);
-	this.setImage(UIElement.IMAGE_OFF_FOCUSED, offFocusedImg);
 	this.addEventNames(["onChanged", "onUpdateTransform"]);
 	this.setRoundRadius(5);
 	this.value = true;
+	this.style.textColor = "Black";
+	this.style.textColorOn = "Black";
+	this.style.fillColor = "White";
+	this.style.fillColorOn = "White";
 
 	return this;
 }
@@ -56,91 +57,114 @@ UICheckBox.prototype.setValue = function(value) {
 	return this;
 }
 
-UICheckBox.prototype.getFgImage = function() {
+UICheckBox.prototype.getBgImage = function() {
 	var image = null;
-	var offset = 5;
 	if(this.value) {
 		if(this.pointerDown) {
 			image = this.getImageByType(UIElement.IMAGE_ON_ACTIVE);
-			this.offsetX = image ? 0 : offset;
-			this.offsetY = image ? 0 : offset;
-		}
-		else {
-			delete this.offsetX;
-			delete this.offsetY;
-			if(this.selected) {
-				image = this.getImageByType(UIElement.IMAGE_ON_FOCUSED);
-			}
 		}
 
 		if(!image || !image.src) {
-			image = this.getImageByType(UIElement.IMAGE_ON_FG);
+			image = this.getImageByType(UIElement.IMAGE_ON_BG);
 		}
 	}
 	else {
 		if(this.pointerDown) {
 			image = this.getImageByType(UIElement.IMAGE_OFF_ACTIVE);
-			this.offsetX = image ? 0 : offset;
-			this.offsetY = image ? 0 : offset;
-		}
-		else {
-			delete this.offsetX;
-			delete this.offsetY;
-			if(this.selected) {
-				image = this.getImageByType(UIElement.IMAGE_OFF_FOCUSED);
-			}
 		}
 
 		if(!image || !image.src) {
-			image = this.getImageByType(UIElement.IMAGE_OFF_FG);
+			image = this.getImageByType(UIElement.IMAGE_OFF_BG);
 		}
-	}
-
-	if(!image) {
-		delete this.offsetX;
-		delete this.offsetY;
 	}
 
 	return image;
 }
 
-Shape.prototype.getTextColor = function(canvas) {
-	return this.value ? this.style.fillColor : this.style.textColor;
+UICheckBox.prototype.getFgImage = function() {
+	return this.getImageByType(this.value ? UIElement.IMAGE_CHECKED_FG : UIElement.IMAGE_UNCHECK_FG);
 }
 
-Shape.prototype.getBgColor = function(canvas) {
-	return !this.value ? this.style.fillColor : this.style.textColor;
+UICheckBox.prototype.getTextColor = function(canvas) {
+	return this.value ? this.style.textColorOn : this.style.textColor;
 }
 
-UICheckBox.prototype.drawFgImage =function(canvas) {
+UICheckBox.prototype.drawText = function(canvas) {
+	return;
+}
+
+UICheckBox.prototype.getBgColor = function(canvas) {
+	return this.value ? this.style.fillColorOn : this.style.fillColor;
+}
+
+UICheckBox.prototype.paintSelfOnly = function(canvas) {
+	var text = this.getText();
 	var image = this.getFgImage();
+	var bgImage = this.getBgImage();
+	var fillColor = this.getBgColor();
+	var htmlImage = image ? image.getImage() : null;
+	var srcRect = image ? image.getImageRect() : null;
 
-	if(image) {
-		var srcRect = image.getImageRect();
-
-		image = image.getImage();
-		this.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h, srcRect);
+	if(!bgImage && fillColor) {
+		canvas.fillStyle = fillColor;
+		drawRoundRect(canvas, this.w, this.h, this.roundRadius);
+		canvas.fill();
 	}
-	else {
-		var hw = this.w >> 1;
-		var hh = this.h >> 1;
 
-		canvas.beginPath();
-		if(!this.roundRadius) {
-			canvas.rect(0, 0, this.w, this.h);
+	var border = this.getHMargin();
+	canvas.textBaseline = "middle";
+	canvas.font = this.style.getFont();
+	canvas.fillStyle = this.getTextColor();
+	if(htmlImage && text) {
+
+		switch(this.iconLocation) {
+			case 'left': {
+				var x = border;
+				var h = Math.min(this.h, srcRect.h);
+				var y = (this.h - h)>>1;
+				var w = h;
+				this.drawImageAt(canvas, htmlImage, UIElement.IMAGE_DISPLAY_AUTO_SIZE_DOWN, x, y, w, h, srcRect);
+
+				y = this.h >> 1;
+				x = this.w - border;
+				this.hTextAlign = "right";
+				canvas.textAlign = "right";
+				canvas.fillText(text, x, y);
+				break;
+			}
+			default: {
+				var h = Math.min(this.h, srcRect.h);
+				var w = h;
+				var x = this.w - border - w;
+				var y = (this.h - h)>>1;
+
+				this.drawImageAt(canvas, htmlImage, UIElement.IMAGE_DISPLAY_AUTO_SIZE_DOWN, x, y, w, h, srcRect);
+				y = this.h >> 1;
+				x = border;
+				this.hTextAlign = "left";
+				canvas.textAlign = "left";
+				canvas.fillText(text, x, y);
+			}
 		}
-		else if(this.roundRadius < hw && this.roundRadius < hh) {
-			drawRoundRect(canvas, this.w, this.h, this.roundRadius);
+	}
+	else if(htmlImage) {
+		this.drawImageAt(canvas, htmlImage, UIElement.IMAGE_DISPLAY_AUTO_SIZE_DOWN, 0, 0, this.w, this.h, srcRect);
+	}
+	else if(text) {
+		var y = this.h >> 1;
+		if(this.hTextAlign === "center") {
+			var x = this.w >> 1;
+			canvas.textAlign = "center";
+		}
+		else if(this.hTextAlign === 'right') {
+			var x = this.w - border;
+			canvas.textAlign = "right";
 		}
 		else {
-			canvas.arc(hw, hh, Math.min(hh, hw), 0, Math.PI * 2);
+			var x = border;
+			canvas.textAlign = "left";
 		}
-
-		canvas.fillStyle = this.getBgColor();
-		canvas.strokeStyle = this.getLineColor();
-		canvas.lineWidth = this.pointerDown ? 2 * this.style.lineWidth : this.style.lineWidth;
-		canvas.fill();
-		canvas.stroke();
+		canvas.fillText(text, x, y);
 	}
 
 	return;
@@ -157,13 +181,13 @@ UICheckBox.prototype.onClick = function(point, beforeChild) {
 	return;
 }
 
-function UICheckBoxCreator(w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg) {
+function UICheckBoxCreator(w, h) {
 	var args = ["ui-checkbox", "ui-checkbox", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UICheckBox();
-		return g.initUICheckBox(this.type, w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg);
+		return g.initUICheckBox(this.type, w, h);
 	}
 	
 	return;

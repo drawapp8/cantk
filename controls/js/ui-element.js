@@ -11,16 +11,18 @@ function UIElement() {
 	return;
 }
 
-UIElement.IMAGE_DISPLAY_CENTER = 0;
-UIElement.IMAGE_DISPLAY_TILE   = 1;
-UIElement.IMAGE_DISPLAY_9PATCH = 2;
-UIElement.IMAGE_DISPLAY_SCALE  = 3;
-UIElement.IMAGE_DISPLAY_AUTO = 4;
-UIElement.IMAGE_DISPLAY_DEFAULT = 5;
-UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO  = 6;
-UIElement.IMAGE_DISPLAY_TILE_V = 7;
-UIElement.IMAGE_DISPLAY_TILE_H = 8;
-UIElement.IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)", "vtile", "htile"];
+UIElement.IMAGE_DISPLAY_CENTER = WImage.DISPLAY_CENTER;
+UIElement.IMAGE_DISPLAY_TILE   = WImage.DISPLAY_TILE;
+UIElement.IMAGE_DISPLAY_9PATCH = WImage.DISPLAY_9PATCH;
+UIElement.IMAGE_DISPLAY_SCALE  = WImage.DISPLAY_SCALE;
+UIElement.IMAGE_DISPLAY_AUTO = WImage.DISPLAY_AUTO;
+UIElement.IMAGE_DISPLAY_DEFAULT = WImage.DISPLAY_DEFAULT;
+UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO  = WImage.DISPLAY_SCALE_KEEP_RATIO;
+UIElement.IMAGE_DISPLAY_TILE_V = WImage.DISPLAY_TILE_V;
+UIElement.IMAGE_DISPLAY_TILE_H = WImage.DISPLAY_TILE_H;
+UIElement.IMAGE_DISPLAY_AUTO_SIZE_DOWN = WImage.DISPLAY_AUTO_SIZE_DOWN;
+
+UIElement.IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)", "vtile", "htile", "auto-size-down"];
 
 UIElement.X_FIX_LEFT = 0;
 UIElement.X_FIX_RIGHT = 1;
@@ -44,15 +46,17 @@ UIElement.WIDTH_FIX = 0;
 UIElement.WIDTH_SCALE = 1;
 UIElement.WIDTH_FILL_PARENT = 2;
 UIElement.WIDTH_FILL_AVAILABLE = 3;
+UIElement.WIDTH_FILL_TO_PARENT_RIGHT = 4;
 
 UIElement.HEIGHT_FIX = 0;
 UIElement.HEIGHT_SCALE = 1;
 UIElement.HEIGHT_FILL_PARENT = 2;
 UIElement.HEIGHT_FILL_AVAILABLE = 3;
 UIElement.HEIGHT_KEEP_RATIO_WITH_WIDTH = 4;
+UIElement.HEIGHT_FILL_TO_PARENT_BOTTOM = 5;
 
-UIElement.WIDTH_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible"];
-UIElement.HEIGHT_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible", "keep_ratio_with_width"];
+UIElement.WIDTH_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible", "fill_to_parent_right"];
+UIElement.HEIGHT_LAYOUT_NAMES = ["fix", "scale", "fill_parent", "fill_avaible", "keep_ratio_with_width", "fill_to_parent_bottom"];
 
 UIElement.IMAGE_DEFAULT	   = "default_bg";
 UIElement.IMAGE_MASK	   = "mask_fg";
@@ -66,8 +70,10 @@ UIElement.IMAGE_NORMAL_FG  = "normal_fg";
 UIElement.IMAGE_ACTIVE_FG  = "active_fg";
 UIElement.IMAGE_ON_FG	   = "on_fg";
 UIElement.IMAGE_OFF_FG	   = "off_fg";
+UIElement.IMAGE_ON_BG	   = "on_bg";
+UIElement.IMAGE_OFF_BG	   = "off_bg";
 UIElement.IMAGE_CHECKED_FG	   = "checked_fg";
-UIElement.IMAGE_UNCHECK_FG	   = "uncheck_fg";
+UIElement.IMAGE_UNCHECK_FG	   = "unchecked_fg";
 UIElement.IMAGE_ON_FOCUSED	   = "focused_on_bg";
 UIElement.IMAGE_ON_ACTIVE	   = "active_on_bg";
 UIElement.IMAGE_OFF_FOCUSED	   = "focused_off_bg";
@@ -268,6 +274,17 @@ UIElement.prototype.onDeinit = function() {
 	return;
 }
 
+UIElement.prototype.onWindowOpen = function() {
+	if(this.animations && this.defaultAnimationName) {
+		var config = this.animations[this.defaultAnimationName];
+		if(config) {
+			this.animate(config);
+		}
+	}
+
+	return;
+}
+
 UIElement.prototype.initChildren = function() {
 	var children = this.children;
 	var n = this.children.length;
@@ -281,7 +298,13 @@ UIElement.prototype.initChildren = function() {
 }
 
 UIElement.prototype.init = function() {
-	this.onInit();
+	this.visible = this.runtimeVisible;
+
+	try {
+		this.onInit();
+	}catch(e) {
+		console.log("onInit Failed:" + e.message);
+	}
 	this.initChildren();
 
 	return;
@@ -328,8 +351,10 @@ UIElement.prototype.postRedraw = function() {
 		}
 	}
 
-	return;
+	return this;
 }
+
+UIElement.prototype.requestRedraw = UIElement.prototype.postRedraw; 
 
 UIElement.prototype.setMode = function(mode, recursive) {
 	this.mode = mode;
@@ -424,6 +449,17 @@ UIElement.prototype.findSelectedShapes = function(shapes) {
 	return;
 }
 
+UIElement.onSelected = function(shape) {
+}
+
+UIElement.prototype.onSelectChanged = function() {
+	if(this.selected) {
+		UIElement.onSelected(this);
+	}
+
+	return;
+}
+
 UIElement.prototype.setSelected = function(selected) {
 	if(!selected) {
 		for(var i = 0; i < this.children.length; i++) {
@@ -432,17 +468,18 @@ UIElement.prototype.setSelected = function(selected) {
 		}
 	}
 	
+	if(selected) {
+		this.selectedTime = Date.now();
+	}
+
 	if(this.selected === selected) {
 		return;
 	}
 
 	this.targetShape = null;
 	this.selected = selected;
+	this.onSelectChanged();
 
-	if(this.view && this.view.onShapeSelected) {
-		this.view.onShapeSelected(this);
-	}
-	
 	return;
 }
 
@@ -468,14 +505,16 @@ UIElement.prototype.foreachImage = function(onVisit) {
 }
 
 UIElement.prototype.forEach = function(onVisit) {
-	onVisit(this);
+	if(onVisit(this)) {
+		return true;
+	}
 
 	for(var i = 0; i < this.children.length; i++) {
 		var iter = this.children[i];
 		iter.forEach(onVisit);
 	}
 
-	return;
+	return false;
 }
 
 UIElement.prototype.getAllTabStopElements = function() {
@@ -535,15 +574,20 @@ UIElement.prototype.setPointerOverShape = function(shape) {
 UIElement.prototype.setTarget = function(shape) {
 	for(var i = 0; i < this.children.length; i++) {
 		var child = this.children[i];
-		if(child != shape) {
+		if(child !== shape) {
 			child.setSelected(false);
 		}
 	}
 
 	this.targetShape = shape;
 	this.selected = !shape;
+	this.onSelectChanged();
 
-	return;
+	return this;
+}
+
+UIElement.prototype.getTarget = function() {
+	return this.targetShape;
 }
 
 UIElement.prototype.initContainerShape = function(type) {
@@ -561,10 +605,14 @@ UIElement.prototype.initContainerShape = function(type) {
 
 UIElement.prototype.defaultDispatchPointerDownToChildren = function(p) {
 	var targetShape = this.targetShape;
-	if(targetShape && targetShape.selected && targetShape.mode === Shape.MODE_EDITING) {
+	if(targetShape && targetShape.mode === Shape.MODE_EDITING) {
 		var hitTestResult = this.hitTest(p);
 
 		if(hitTestResult != Shape.HIT_TEST_MM && hitTestResult != Shape.HIT_TEST_NONE) {
+			if(this.selected) {
+				this.setTarget(null);
+				return true;
+			}
 			if(this.targetShape.onPointerDown(p)) {
 				return true;
 			}
@@ -902,7 +950,7 @@ UIElement.prototype.animMove = function(x, y, hint) {
 		var timePercent = (Date.now() - startTime)/duration;
 		var percent = interpolator.get(timePercent);
 
-		if(el.dragging) {
+		if(el.dragging || !el.parentShape) {
 			return false;
 		}
 
@@ -926,47 +974,78 @@ UIElement.prototype.animMove = function(x, y, hint) {
 	return;
 }
 
-UIElement.prototype.animate = function(config) {
+UIElement.prototype.animate = function(config, onAnimationDone) {
+	if(typeof config === "string") {
+		config = this.animations[config];
+	}
+
 	if(this.animating || this.dragging || !config) {
 		return;
 	}
 
 	var el = this;
-	var duration = isNaN(config.duration) ? 1000 : config.duration;
-	var xStart = isNaN(config.xStart) ? this.x : config.xStart;
-	var yStart = isNaN(config.yStart) ? this.y : config.yStart;
-	var wStart = isNaN(config.wStart) ? this.w : config.wStart;
-	var hStart = isNaN(config.hStart) ? this.h : config.hStart;
-	var xEnd = isNaN(config.xEnd) ? this.x : config.xEnd;
-	var yEnd = isNaN(config.yEnd) ? this.y : config.yEnd;
-	var wEnd = isNaN(config.wEnd) ? this.w : config.wEnd;
-	var hEnd = isNaN(config.hEnd) ? this.h : config.hEnd;
-	var opacityStart = isNaN(config.opacityStart) ? this.opacity : config.opacityStart;
-	var opacityEnd = isNaN(config.opacityEnd) ? this.opacity : config.opacityEnd;
-	var rotationStart = isNaN(config.rotationStart) ? 0 : config.rotationStart;
-	var rotationEnd = isNaN(config.rotationEnd) ? 0 : config.rotationEnd;
-	var scaleStart = isNaN(config.scaleStart) ? this.scale : config.scaleStart;
-	var scaleEnd = isNaN(config.scaleEnd) ? this.scale : config.scaleEnd;
+	var win = this.getWindow();
+	var duration = config.duration || 1000;
+	var xStart = (config.xStart || config.xStart === 0) ? config.xStart : this.x;
+	var xEnd = (config.xEnd || config.xEnd === 0) ? config.xEnd : this.x;
+	var yStart = (config.yStart || config.yStart === 0) ? config.yStart : this.y;
+	var yEnd = (config.yEnd || config.yEnd === 0) ? config.yEnd : this.y;
+	var wStart = (config.wStart || config.wStart === 0) ? config.wStart : this.w;
+	var wEnd = (config.wEnd || config.wEnd === 0) ? config.wEnd : this.w;
+	var hStart = (config.hStart || config.hStart === 0) ? config.hStart : this.h;
+	var hEnd = (config.hEnd || config.hEnd === 0) ? config.hEnd : this.h;
+	var opacityStart = (config.opacityStart || config.opacityStart === 0) ? config.opacityStart : this.opacity;
+	var opacityEnd = (config.opacityEnd || config.opacityEnd === 0) ? config.opacityEnd : this.opacity;
+	var rotationStart = (config.rotationStart || config.rotationStart === 0) ? config.rotationStart : this.rotation;
+	var rotationEnd = (config.rotationEnd || config.rotationEnd === 0) ? config.rotationEnd : this.rotation;
+	var scaleXStart = (config.scaleXStart || config.scaleXStart === 0) ? config.scaleXStart : this.scaleX;
+	var scaleXEnd = (config.scaleXEnd || config.scaleXEnd === 0) ? config.scaleXEnd : this.scaleX;
+	var scaleYStart = (config.scaleYStart || config.scaleYStart === 0) ? config.scaleYStart : this.scaleY;
+	var scaleYEnd = (config.scaleYEnd || config.scaleYEnd === 0) ? config.scaleYEnd : this.scaleY;
 
-	var onDone = config.onDone;
+	var onDone = onAnimationDone || config.onDone;
 	var xRange = xEnd - xStart;
 	var yRange = yEnd - yStart;
 	var wRange = wEnd - wStart;
 	var hRange = hEnd - hStart;
-	var scaleRange = scaleEnd - scaleStart;
+	var scaleXRange = scaleXEnd - scaleXStart;
+	var scaleYRange = scaleYEnd - scaleYStart;
 	var opacityRange = opacityEnd - opacityStart;
 	var rotationRange = rotationEnd - rotationStart;
 
 	var startTime = Date.now();
-	var interpolator =  config.interpolator ? config.interpolator : new DecelerateInterpolator();
+	var interpolator =  null;
+	if(typeof config.interpolator === "string") {
+		interpolator = AnimationFactory.createInterpolator(config.interpolator);
+	}
+	else {
+		interpolator = config.interpolator ? config.interpolator : new DecelerateInterpolator();
+	}
+
+	if(!xRange) {
+		xEnd = xStart = this.x;
+	}
+
+	if(!yRange) {
+		yEnd = yStart = this.y;
+	}
+
+	if(!wRange) {
+		wEnd = wStart = this.w;
+	}
+
+	if(!hRange) {
+		hEnd = hStart = this.h;
+	}
 
 	function animStep() {
+		 if(el.dragging || !el.parentShape || !interpolator || !win.visible) {
+			return false;
+		 }
+
+		el.setVisible(true);
 		var timePercent = (Date.now() - startTime)/duration;
 		var percent = interpolator.get(timePercent);
-
-		if(el.dragging) {
-			return;
-		}
 
 		if(timePercent < 1 && !el.pointerDown) {
 			if(xRange) {
@@ -993,8 +1072,12 @@ UIElement.prototype.animate = function(config) {
 				el.rotation = rotationStart + percent * rotationRange;
 			}
 	
-			if(scaleRange) {
-				el.scale = scaleStart + percent * scaleRange;
+			if(scaleXRange) {
+				el.setScaleX(scaleXStart + percent * scaleXRange);
+			}
+
+			if(scaleYRange) {
+				el.setScaleY(scaleYStart + percent * scaleYRange);
 			}
 
 			el.postRedraw();
@@ -1002,7 +1085,7 @@ UIElement.prototype.animate = function(config) {
 		}
 		else {
 			if(xRange || yRange) {
-				el.move(xEnd, yEnd);
+				el.setPosition(xEnd, yEnd);
 			}
 			
 			if(wRange || hRange) {
@@ -1021,16 +1104,33 @@ UIElement.prototype.animate = function(config) {
 			if(onDone) {
 				onDone(el);
 			}
+			
+			el.callOnAnimateDoneHandler(config.name);
+			
+			if(config.next) {
+				setTimeout(function() {
+					el.animate(config.next);
+				}, 5);
+			}
 
-			delete startTime;
-			delete interpolator;
+			startTime = null;
+			interpolator = null;
 			
 			el.postRedraw();
 			return false;
 		}
 	}
 
-	UIElement.setAnimTimer(animStep);
+	if(config.delay) {
+		setTimeout(function() {
+			startTime = Date.now();
+			UIElement.setAnimTimer(animStep);
+		}, config.delay);
+	}
+	else {
+		UIElement.setAnimTimer(animStep);
+		animStep();
+	}
 
 	return;
 }
@@ -1490,10 +1590,7 @@ UIElement.prototype.addChildWithJson = function(jsShape, index) {
 	if(shape) {
 		shape.fromJson(jsShape);
 		this.addShape(shape, false, null, index);
-
-		if(this.mode != Shape.MODE_EDITING) {
-			shape.init();
-		}
+		shape.setVisible(true);
 	}
 
 	return shape;
@@ -1503,6 +1600,12 @@ UIElement.prototype.setAlwaysOnTop = function(value) {
 	this.alwaysOnTop = value;
 
 	return;
+}
+
+UIElement.onAddShape = function(shape, addByUser) {
+}
+
+UIElement.prototype.fixShapeName = function(shape) {
 }
 
 UIElement.prototype.addShape = function(shape, offsetIt, point, index) {
@@ -1565,6 +1668,7 @@ UIElement.prototype.addShape = function(shape, offsetIt, point, index) {
 	shape.setParent(this);
 	shape.setView(this.view);
 	shape.setApp(this.app);
+	this.fixShapeName(shape);
 
 	if(isNaN(index) || index < 0) {
 		this.children.push(shape);
@@ -1575,6 +1679,9 @@ UIElement.prototype.addShape = function(shape, offsetIt, point, index) {
 
 	if(shape.isUIElement) {
 		shape.setMode(this.mode, true);
+		if(this.mode !== Shape.MODE_EDITING) {
+			shape.init();
+		}
 	}
 
 	for(var i = 0; i < this.children.length; i++) {
@@ -1593,6 +1700,7 @@ UIElement.prototype.addShape = function(shape, offsetIt, point, index) {
 	if(shape.isCreatingElement()) {
 		this.relayout();
 	}
+	UIElement.onAddShape(shape, offsetIt);
 
 	return true;
 }
@@ -1632,6 +1740,15 @@ UIElement.prototype.afterChildRemoved = function(shape) {
 	return true;
 }
 
+UIElement.prototype.remove = function(destroyIt) {
+	var parentShape = this.getParent();
+	if(parentShape) {
+		parentShape.removeChild(this, destroyIt);	
+	}
+
+	return;
+}
+
 UIElement.prototype.removeAll = function() {
 	var n = this.children.length;
 	for(var i = 0; i < n; i++) {
@@ -1642,17 +1759,24 @@ UIElement.prototype.removeAll = function() {
 	return;
 }
 
-UIElement.prototype.removeChild = function(child) {
-	return this.removeShape(child);
+UIElement.prototype.removeChild = function(child, destroyIt) {
+	return this.removeShape(child, destroyIt);
 }
 
-UIElement.prototype.removeShape = function(shape) {
+UIElement.onRemoveShape = function(parentShape, shape) {
+}
+
+UIElement.prototype.removeShape = function(shape, destroyIt) {
 	if(!this.shapeCanBeRemove(shape)) {
 		return false;
 	}
 	
 	if(this.targetShape === shape) {
 		this.targetShape = null;
+	}
+
+	if(this.pointerEventTarget === shape) {
+		this.pointerEventTarget = null;
 	}
 
 	this.children.remove(shape);
@@ -1670,7 +1794,12 @@ UIElement.prototype.removeShape = function(shape) {
 		this.relayout();
 	}
 
+	UIElement.onRemoveShape(this, shape);
 	shape.onRemoved();
+
+	if(destroyIt) {
+		shape.destroy();
+	}
 
 	return;
 }
@@ -1716,6 +1845,24 @@ UIElement.prototype.getIndexOfChild = function(child) {
 	return this.children.indexOf(child);
 }
 
+UIElement.prototype.getZIndex = function() {
+	if(this.parentShape) {
+		return this.parentShape.getIndexOfChild(this);
+	}
+
+	return 0;
+}
+
+UIElement.prototype.setZIndex = function(index) {
+	var parentShape = this.parentShape;
+	if(parentShape) {
+		parentShape.children.remove(this);
+		parentShape.children.insert(index, this);
+	}
+
+	return this;
+}
+
 UIElement.prototype.findChildByType = function(type, recursive) {
 	var i = 0;
 	var s = null;
@@ -1740,6 +1887,17 @@ UIElement.prototype.findChildByType = function(type, recursive) {
 	}
 
 	return null;
+}
+
+UIElement.prototype.findChildByPath = function(names) {
+	var name = names.shift();
+	var child = this.findChildByName(name);
+
+	if(names.length) {
+		return child.findChildByPath(names);
+	}
+
+	return child;
 }
 
 UIElement.prototype.findChildByName = function(name, recursive) {
@@ -1768,7 +1926,21 @@ UIElement.prototype.findChildByName = function(name, recursive) {
 	return null;
 }
 
-UIElement.prototype.find = UIElement.prototype.findChildByName;
+UIElement.prototype.find = function(name, recursive) {
+	if(!name) {
+		return this;
+	}
+
+	if(name.indexOf("/") >= 0) {
+		var names = name.split("/");
+		names.remove("");
+
+		return this.findChildByPath(names);
+	}
+	else {
+		return this.findChildByName(name, recursive);
+	}
+}
 
 UIElement.prototype.setValueOf = function(name, value) {
 	var child = this.findChildByName(name, true);
@@ -1788,26 +1960,35 @@ UIElement.prototype.getSelectMark = function(type, point) {
 	}
 
 	var ret = true;
+	var delta = 4;
 	switch(type) {
 		case Shape.HIT_TEST_TL: {
-			point.x = 0;
-			point.y = 0;
+			point.x = delta
+			point.y = delta;
 			break;
 		}
 		case Shape.HIT_TEST_TR: {
-			point.x = this.w;
-			point.y = 0;
+			point.x = this.w-delta;
+			point.y = delta;
 			break;
 		}
 		case Shape.HIT_TEST_BL: {
-			point.x = 0;
-			point.y = this.h;
+			point.x = delta;
+			point.y = this.h-delta;
 			break;
 		}
 		case Shape.HIT_TEST_BR: {
-			point.x = this.w;
-			point.y = this.h;
+			point.x = this.w-delta;
+			point.y = this.h-delta;
 			break;
+		}
+		case Shape.HIT_TEST_MOVE: {
+			var win = this.getWindow();
+			if(this.children.length && win !== this) {
+				point.x = this.w >> 1;
+				point.y = this.h + 20;
+				break;
+			}
 		}
 		default: {
 			ret = this.getMoreSelectMark(type, point);
@@ -1844,7 +2025,7 @@ UIElement.prototype.afterPaintChild = function(child, canvas) {
 
 UIElement.prototype.paintTargetShape = function(canvas) {
 	var targetShape = this.targetShape;
-	if(targetShape && targetShape.selected && targetShape.dragging) {
+	if(targetShape && (this.isUIList || this.isUIGrid)) {
 		shape = targetShape;
 		this.beforePaintChild(shape, canvas);
 		shape.paintSelf(canvas);
@@ -1876,6 +2057,14 @@ UIElement.prototype.defaultPaintChildren = function(canvas) {
 }
 
 UIElement.prototype.beforePaintChildren = function(canvas) {
+	if(this.rotateChildren && this.rotation) {
+		var hw = this.w >> 1;
+		var hh = this.h >> 1;
+		canvas.translate(hw, hh);
+		canvas.rotate(this.rotation);
+		canvas.translate(-hw, -hh);
+	}
+
 	return;
 }
 
@@ -1887,6 +2076,9 @@ UIElement.prototype.paintChildren = function(canvas) {
 	this.defaultPaintChildren(canvas);
 
 	return;
+}
+
+UIElement.prototype.clearBackground =function(canvas) {
 }
 
 UIElement.prototype.paintSelfOnly =function(canvas) {
@@ -1924,7 +2116,6 @@ UIElement.prototype.drawImageAtCenter = function(ctx, image, x, y, w, h, keepRat
 
 
 UIElement.prototype.drawImage =function(canvas) {
-	this.drawBgImage(canvas);
 	this.drawFgImage(canvas);
 
 	return;
@@ -1971,6 +2162,10 @@ UIElement.prototype.getBgImage =function() {
 	if(!image || !image.getImage()) {
 		image = this.images.default_bg;
 	}
+	
+	if(!image || !image.getImage()) {
+		image = this.images.normal_bg;
+	}
 
 	if(!image || !image.getImage()) {
 		return;
@@ -1986,131 +2181,7 @@ UIElement.prototype.drawImageAt = function(canvas, image, display, x, y, dw, dh,
 }
 
 UIElement.drawImageAt = function(canvas, image, display, x, y, dw, dh, srcRect) {
-	if(!image) {
-		return;
-	}
-
-	var imageWidth = srcRect ?  srcRect.w : image.width;
-	var imageHeight = srcRect ? srcRect.h : image.height;
-
-	if(imageWidth <= 0 || imageHeight <= 0) {
-		return;
-	}
-
-	var sx = srcRect ? srcRect.x : 0;
-	var sy = srcRect ? srcRect.y : 0;
-	var dx = 0;
-	var dy = 0;
-	var w = imageWidth;
-	var h = imageHeight;
-
-//	if((display === UIElement.IMAGE_DISPLAY_CENTER) && (imageWidth > dw || imageHeight > dh)) {
-//		display = UIElement.IMAGE_DISPLAY_AUTO;
-//	}
-
-	switch(display) {
-		case UIElement.IMAGE_DISPLAY_CENTER: {
-			dx = Math.floor(x + (dw - imageWidth)/2);
-			dy = Math.floor(y + (dh - imageHeight)/2);
-
-			canvas.drawImage(image, sx, sy, w, h, dx, dy, w, h);
-			break;
-		}
-		case UIElement.IMAGE_DISPLAY_SCALE: {
-			dx = x;
-			dy = y;
-			canvas.drawImage(image, sx, sy, imageWidth, imageHeight, dx, dy, dw, dh);
-			break;
-		}
-		case UIElement.IMAGE_DISPLAY_TILE: {
-			dx = x;
-			dy = y;
-
-			while(dy < dh) {
-				dx = x;
-				h = Math.min(dh-dy, imageHeight);
-				while(dx < dw) {
-					w = Math.min(dw-dx, imageWidth);
-					canvas.drawImage(image, sx, sy, w, h, dx, dy, w, h);
-					dx = dx + w;
-				}
-				dy = dy + h;
-			}
-			break;
-		}
-		case UIElement.IMAGE_DISPLAY_TILE_H: {
-			dx = x;
-			h = Math.min(dh, imageHeight);
-			while(dx < dw) {
-				w = Math.min(dw-dx, imageWidth);
-				canvas.drawImage(image, sx, sy, w, h, dx, y, w, h);
-				dx = dx + w;
-			}
-			break;
-		}
-		case UIElement.IMAGE_DISPLAY_TILE_V: {
-			dy = y;
-			w = Math.min(dw, imageWidth);
-			while(dy < dh) {
-				h = Math.min(dh-dy, imageHeight);
-				canvas.drawImage(image, sx, sy, w, h, x, dy, w, h);
-				dy = dy + h;
-			}
-			break;
-		}
-		case UIElement.IMAGE_DISPLAY_9PATCH: {
-			dx = x;
-			dy = y;
-			if(imageWidth >= dw && imageHeight >= dh) {
-				canvas.drawImage(image, sx, sy, imageWidth, imageHeight, dx, dy, dw, dh);
-			}
-			else {
-				drawNinePatchEx(canvas, image, sx, sy, imageWidth, imageHeight, dx, dy, dw, dh);
-			}
-			break;
-		}
-		case UIElement.IMAGE_DISPLAY_AUTO: {
-			var scale = Math.min(dw/imageWidth, dh/imageHeight);
-			w = imageWidth * scale;
-			h = imageHeight * scale;
-			dx = Math.floor(x + (dw - w) * 0.5);
-			dy = Math.floor(y + (dh - h) * 0.5);
-			
-			canvas.drawImage(image, sx, sy, imageWidth, imageHeight, dx, dy, w, h);
-			break;
-		}
-		case UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO: {
-			var sw = imageWidth/dw;
-			var sh = imageHeight/dh;
-
-			if(sw < sh) {
-				var s = dh/dw;
-				w = imageWidth;
-				h = w * s;
-			}
-			else {
-				var s = dw/dh;
-				h = imageHeight;
-				w = h * s;
-			}
-
-			dx = x;
-			dy = y;
-			
-			canvas.drawImage(image, sx, sy, w, h, dx, dy, dw, dh);
-			break;
-		}
-		default: {
-			dx = x;
-			dy = y;
-			w = Math.min(imageWidth, dw);
-			h = Math.min(imageHeight, dh);
-			canvas.drawImage(image, sx, sy, w, h, dx, dy, w, h);
-			break;
-		}
-	}
-
-	return;
+	return WImage.draw(canvas, image, display, x, y, dw, dh, srcRect);
 }
 
 UIElement.drawImageLine = function(canvas, image, display, p0, p1, srcRect) {
@@ -2150,7 +2221,7 @@ UIElement.prototype.afterDrawIcon = function(canvas) {
 
 UIElement.prototype.getLockImage = function() {
 	if(!this.aLockImage) {
-		this.aLockImage = new CanTkImage();
+		this.aLockImage = new WImage();
 		this.aLockImage.setImageSrc("/drawapp8/images/lock.png");
 	}
 
@@ -2344,14 +2415,28 @@ UIElement.prototype.paintSelf = function(canvas) {
 	this.prepareStyle(canvas);
 	this.updateTransform();
 	this.updateHighlightTransform();
-	this.applyTransform(canvas);
 
+
+	var flipX = this.flipX ? -1 : 1;
+	var flipY = this.flipY ? -1 : 1;
+	if(flipX < 0 || flipY < 0) {
+		canvas.save();
+		
+		var hw = this.w >> 1;
+		var hh = this.h >> 1;
+		canvas.translate(hw, hh);
+		canvas.scale(flipX, flipY);
+		canvas.translate(-hw, -hh);
+	}
+
+	this.applyTransform(canvas);
+	this.clearBackground(canvas);
+	this.drawBgImage(canvas);
 	this.paintSelfOnly(canvas);
 	this.drawImage(canvas);
 
-	if(this.drawText && this.textType !== Shape.TEXT_NONE) {
-		this.drawText(canvas);
-		this.drawTextTips(canvas);
+	if(flipX < 0 || flipY < 0) {
+		canvas.restore();
 	}
 
 	if((this.hitTestResult !== Shape.HIT_TEST_NONE 
@@ -2370,6 +2455,11 @@ UIElement.prototype.paintSelf = function(canvas) {
 		this.paintChildren(canvas);
 		this.afterPaintChildren(canvas);
 		canvas.restore();
+	}
+
+	if(this.drawText && this.textType !== Shape.TEXT_NONE) {
+		this.drawText(canvas);
+		this.drawTextTips(canvas);
 	}
 
 	if(this.mode === Shape.MODE_EDITING) {
@@ -2447,17 +2537,21 @@ UIElement.prototype.childrenFromJson = function(js) {
 	if(js.children) {
 		var n = js.children.length;
 
-		this.children.clear();
+		this.children.clear(true);
 		for(var i = 0; i < n; i++) {
 			var jsShape = js.children[i];
 			var type = jsShape.type ? jsShape.type : jsShape.id;
 			var shape = ShapeFactoryGet().createShape(type, C_CREATE_FOR_USER);
 			if(shape) {
-				this.addShapeDirectly(shape);
-				shape.fromJson(jsShape);
+				if(this.addShapeDirectly(shape)) {
+					shape.fromJson(jsShape);
+				}
 			}
 		}
 	}
+
+	this.targetShape = null;
+	this.pointerEventTarget = null;
 
 	return;
 }
@@ -2578,11 +2672,21 @@ UIElement.prototype.onBindData = function(data) {
 	if(text !== undefined) {
 		this.setText(text);
 	}
+	
 	if(image !== undefined) {
 		this.setImage(UIElement.IMAGE_DEFAULT, image);
 	}
+
 	if(value !== undefined) {
 		this.setValue(value);
+	}
+	
+	if(data.enable !== undefined) {
+		this.setEnable(data.enable);
+	}
+	
+	if(data.visible !== undefined) {
+		this.setVisible(data.visible);
 	}
 
 	if(data.textColor) {
@@ -2606,9 +2710,28 @@ UIElement.prototype.onBindData = function(data) {
 	if(data.height) {
 		this.h = data.height;
 	}
+	
+	if(data.width) {
+		this.w = data.width;
+	}
 
 	if(this.offset) {
 		this.offset = 0;
+	}
+
+	var attrs = ["children", "text", "value", "image", "visible", "enable", "textColor", "fillColor", "lineColor", "fontSize", "userData"];
+	for(var key in data) {
+		if(attrs.indexOf(key) >= 0) continue;
+		var value = data[key];
+		var child = this.find(key, true);
+		if(!child) continue;
+
+		if(typeof value  === "object") {
+			child.doBindData(value);
+		}
+		else {
+			child.setValue(value);		
+		}
 	}
 
 	return;
@@ -2718,7 +2841,6 @@ UIElement.prototype.dupChild = function(name, zIndex) {
 		var shape = child.clone();
 		this.addShape(shape, false, null, zIndex);
 		shape.setVisible(true);
-		shape.init();
 
 		return shape;
 	}
@@ -2767,9 +2889,7 @@ UIElement.prototype.bindData = function(data, animHint, clearOldData) {
 	shape.relayoutChildren(animHint);
 	console.log("bindData: done");
 
-	setTimeout(function() {
-		shape.postRedraw();
-	}, 500);
+	shape.postRedraw();
 
 	return;
 }
@@ -2792,6 +2912,7 @@ UIElement.prototype.doBindData = function(data, clearOldData) {
 	if((this.isUIList || this.isUIGrid)) {
 		if(m > n) {
 			templateJson.y = 0;
+			templateJson.visible = true;
 			for(i = n; i < m; i++) {
 				this.addChildWithJson(templateJson);
 			}
@@ -2837,43 +2958,23 @@ UIElement.prototype.doBindData = function(data, clearOldData) {
 	return;
 }
 
-UIElement.prototype.bindDataUrl = function(dataUrl, preprocess, onBindDone) {
+UIElement.prototype.bindDataUrl = function(dataUrl, doConvert, onBindDone) {
 	var rInfo = {};
 	var shape = this;
 
-	rInfo.method = "GET";
-	rInfo.url = dataUrl;
-	rInfo.noCache = true;
-
-	rInfo.onDone = function(result, xhr, respContent) {
-		var success = (xhr.status === 200);
-		if(xhr.status === 200) {
-			var data = respContent;
-			if(preprocess) {
-				data = preprocess(respContent);
-			}
-			
-			try {
-				var js = JSON.parse(data);
-
-				shape.bindData(js, "default", true);	
-
-				console.log("bindDataUrl: done");
-			}
-			catch(e) {
-				success = false;
-				console.log("bindDataUrl: failed" + e.message);
-			}
+	httpGetJSON(dataUrl, function(js) {
+		if(doConvert) {
+			js = doConvert(js);
 		}
-		
+
+		if(js) {
+			shape.bindData(js, "default", true);
+		}
+
 		if(onBindDone) {
-			onBindDone(success);
+			onBindDone(js);
 		}
-
-		return;
-	}
-
-	httpDoRequest(rInfo);
+	});
 
 	return;
 }
@@ -2914,6 +3015,13 @@ UIElement.prototype.setValue = function(value) {
 	this.setText(value);
 
 	return this;
+}
+
+UIElement.prototype.addValue = function(delta) {
+	var oldValue = this.getValue();
+	var value =  (oldValue ? parseInt(oldValue) : 0) + delta;
+
+	return this.setValue(value);
 }
 
 UIElement.prototype.getPositionInView = function() {
@@ -2970,30 +3078,38 @@ UIElement.prototype.setBgImage = function(src) {
 }
 
 UIElement.prototype.setImage = function(type, src) {
-	type = type ? type : UIElement.IMAGE_DEFAULT;
-
 	var me = this;
-	var image = this.images[type];
+	type = type ? type : UIElement.IMAGE_DEFAULT;
 		
+	var image = null;
 	function onImageLoad(img) {
 		me.postRedraw();
 		if(me.images.display === UIElement.IMAGE_DISPLAY_DEFAULT && img && img.width) {
-			var rect = image.getImageRect();
+			var rect = image ? image.getImageRect() : null;
 			me.w = rect ? rect.w : img.width;
-			me.h = rect.h ? rect.h : img.height;
+			me.h = rect ? rect.h : img.height;
 		}
 
 		return;
 	}
 
-	if(!image) {
-		image = new CanTkImage();
+	if(typeof src === "string") {
+		image = WImage.create(src, onImageLoad);
 	}
-	image.setImageSrc(src, onImageLoad);
+	else if(typeof src === "object") {
+		image = WImage.createWithImage(src); 
+	}
+	else {
+		image = WImage.create(src, onImageLoad);
+	}
 
 	this.images[type] = image;
 
-	return;
+	if(!image) {
+		console.log("image is null:" + type + ":" + src);
+	}
+
+	return this;
 }
 
 UIElement.prototype.getHtmlImageByType = function(type) {
@@ -3030,11 +3146,13 @@ UIElement.prototype.addEventNames = function(eventNames) {
 	if(eventNames) {
 		for(var i = 0; i < eventNames.length; i++) {
 			var eName = eventNames[i];
-			this.events[eName] = null;
+			if(!this.events[eName]) {
+				this.events[eName] = null;
+			}
 		}
 	}
 
-	return;
+	return this;
 }
 
 UIElement.prototype.removeEventNames = function(eventNames) {
@@ -3045,7 +3163,7 @@ UIElement.prototype.removeEventNames = function(eventNames) {
 		}
 	}
 
-	return;
+	return this;
 }
 
 UIElement.prototype.getEventNames = function() {
@@ -3074,6 +3192,7 @@ UIElement.prototype.initUIElement= function(type) {
 	this.name = type;
 	this.events = {};
 	this.uid = UIElement.uidStart++;
+	this.runtimeVisible = true;
 
 	this.images  = {};
 	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
@@ -3124,19 +3243,10 @@ UIElement.prototype.updateLayoutParams = function() {
 		this.heightParam = this.h/this.w;
 	}
 
-	return;
+	return this;
 }
 
-UIElement.prototype.elementToJson = function(o) {
-	this.updateLayoutParams();
-
-	o.events = this.events;
-	o.images = {};
-
-	if(this.value != undefined) {
-		o.value = this.value;
-	}
-
+UIElement.prototype.imagesToJson = function(o) {
 	for(var key in this.images) {
 		var value = this.images[key];
 		if(key === "display") {
@@ -3166,6 +3276,41 @@ UIElement.prototype.elementToJson = function(o) {
 	return o;
 }
 
+UIElement.prototype.elementToJson = function(o) {
+	this.updateLayoutParams();
+
+	o.events = this.events;
+	o.images = {};
+
+	this.imagesToJson(o);
+
+	if(this.value != undefined) {
+		o.value = this.value;
+	}
+
+	if(this.animations) {
+		o.animations = JSON.parse(JSON.stringify(this.animations));
+	}
+
+	return o;
+}
+
+UIElement.prototype.imagesFromJson = function(js) {
+	if(js.images) {
+		for(var key in js.images) {
+			var value = js.images[key];
+			if(key === "display") {
+				this.images[key] = value;
+			}
+			else if(key.indexOf("real-image") !== 0) {
+				this.setImage(key, value);
+			}
+		}
+	}
+
+	return;
+}
+
 UIElement.prototype.elementFromJson = function(js) {
 	if(js.events) {
 		delete js.events.onOnUpdateTransform;
@@ -3182,16 +3327,10 @@ UIElement.prototype.elementFromJson = function(js) {
 		}
 	}
 
-	if(js.images) {
-		for(var key in js.images) {
-			var value = js.images[key];
-			if(key === "display") {
-				this.images[key] = value;
-			}
-			else if(key.indexOf("real-image") !== 0) {
-				this.setImage(key, value);
-			}
-		}
+	this.imagesFromJson(js);
+
+	if(js.animations) {
+		this.animations = js.animations;
 	}
 
 	if(js.enable != undefined) {
@@ -3209,13 +3348,6 @@ UIElement.prototype.setEnable = function(enable) {
 	this.enable = enable;
 
 	return this;
-}
-
-UIElement.prototype.setOpacity = function(opacity) {
-	this.opacity = Math.max(0, opacity);
-	this.opacity = Math.min(1, this.opacity);
-
-	return;
 }
 
 UIElement.prototype.setVisible = function(visible) {
@@ -3244,12 +3376,6 @@ UIElement.prototype.isVisible = function() {
 	}
 
 	return true;
-}
-
-UIElement.prototype.hide = function() {
-	this.visible = false;
-
-	return;
 }
 
 UIElement.prototype.onShowHTML = function() {
@@ -3293,24 +3419,10 @@ UIElement.prototype.hideHTML = function() {
 
 UIElement.prototype.show = function() {
 	return this.setVisible(true);
-
-	return;
 }
 
 UIElement.prototype.hide = function() {
 	return this.setVisible(false);
-}
-
-UIElement.prototype.showEventDialog = function() {
-	showUIPropertyDialog(this, this.textType, null, 3);
-
-	return;
-}
-
-UIElement.prototype.showProperty = function() {
-	showUIPropertyDialog(this, this.textType);
-
-	return;
 }
 
 UIElement.prototype.beforeRelayout = function() {
@@ -3337,7 +3449,7 @@ UIElement.prototype.getPrevSibling = function() {
 UIElement.prototype.setAutoScaleFontSize = function(value) {
 	this.enableAutoScaleFontSize = value;
 
-	return;
+	return this;
 }
 
 UIElement.prototype.autoScaleFontSize = function(scale) {
@@ -3354,11 +3466,11 @@ UIElement.prototype.autoScaleFontSize = function(scale) {
 
 
 UIElement.prototype.getRelayoutWidth = function() {
-	return this.getWidth(true);
+	return this.getWidth();
 }
 
 UIElement.prototype.getRelayoutHeight = function() {
-	return this.getHeight(true);
+	return this.getHeight();
 }
 
 UIElement.prototype.relayout = function() {
@@ -3391,6 +3503,8 @@ UIElement.prototype.relayout = function() {
 	var hParent = p.getRelayoutHeight();
 	var hMargin = p.getHMargin();
 	var vMargin = p.getVMargin();
+	var wParentClient = wParent - hMargin - hMargin;
+	var hParentClient = hParentClient - vMargin - vMargin;
 
 	var bottom = this.y + this.h;
 	var right = this.x + this.w
@@ -3420,7 +3534,7 @@ UIElement.prototype.relayout = function() {
 			break;
 		}
 		case UIElement.WIDTH_FILL_PARENT: {
-			w = wParent;
+			w = wParentClient;
 			break;
 		}
 		case UIElement.WIDTH_FILL_AVAILABLE: {
@@ -3455,7 +3569,7 @@ UIElement.prototype.relayout = function() {
 			break;
 		}
 		case UIElement.HEIGHT_FILL_PARENT: {
-			h = hParent;
+			h = hParentClient;
 			break;
 		}
 		case UIElement.HEIGHT_FILL_AVAILABLE: {
@@ -3477,7 +3591,7 @@ UIElement.prototype.relayout = function() {
 			break;
 		}
 		case UIElement.X_CENTER_IN_PARENT: {
-			x = (wParent - w)/2 + hMargin;
+			x = (wParent - w) >> 1;
 			break;
 		}
 		case UIElement.X_LEFT_IN_PARENT: {
@@ -3485,7 +3599,7 @@ UIElement.prototype.relayout = function() {
 			break;
 		}
 		case UIElement.X_RIGHT_IN_PARENT: {
-			x = wParent - w + hMargin;
+			x = wParent - w - hMargin;
 			break;
 		}
 		case UIElement.X_AFTER_PREV: {
@@ -3509,7 +3623,7 @@ UIElement.prototype.relayout = function() {
 			break;
 		}
 		case UIElement.Y_MIDDLE_IN_PARENT: {
-			y = (hParent - h)/2 + vMargin;
+			y = (hParent - h) >> 1;
 			break;
 		}
 		case UIElement.Y_TOP_IN_PARENT: {
@@ -3517,7 +3631,7 @@ UIElement.prototype.relayout = function() {
 			break;
 		}
 		case UIElement.Y_BOTTOM_IN_PARENT: {
-			y = hParent - h + vMargin;
+			y = hParent - h - vMargin;
 			break;
 		}
 		case UIElement.Y_AFTER_PREV: {
@@ -3562,7 +3676,7 @@ UIElement.prototype.relayout = function() {
 				w = hNext.x - x;
 			}
 			else {
-				w = wParent - x + p.hMargin;
+				w = wParent - x  - hMargin;
 			}
 
 			if(w <= 0) {
@@ -3570,18 +3684,26 @@ UIElement.prototype.relayout = function() {
 			}
 		}
 
-			
 		if(this.heightAttr === UIElement.HEIGHT_FILL_AVAILABLE) {
 			if(vNext) {
 				h = vNext.y - y;
 			}
 			else {
-				h = hParent - y + p.vMargin;
+				h = hParent - y - vMargin;
 			}
 			if(h <= 0) {
 				h = this.h;
 			}
 		}
+		
+	}
+	
+	if(this.widthAttr === UIElement.WIDTH_FILL_TO_PARENT_RIGHT) {
+		w = wParent - x  - hMargin;
+	}
+			
+	if(this.heightAttr === UIElement.HEIGHT_FILL_TO_PARENT_BOTTOM) {
+		h = hParent - y - vMargin;
 	}
 	
 	if(this.heightAttr === UIElement.HEIGHT_KEEP_RATIO_WITH_WIDTH) {
@@ -3816,18 +3938,6 @@ UIElement.prototype.canBeComponent = function() {
 	return true;
 }
 
-UIElement.prototype.makeItComponent = function() {
-	showMakeItComponentDialog(this);
-
-	return;
-}
-
-UIElement.prototype.showBindingDataDialog = function() {
-	showBindingDataDialog(this);
-
-	return;
-}
-
 UIElement.prototype.isCreatingElement = function() {
 	if(this.view && this.view.creatingShape === this) {
 		return true;
@@ -4039,58 +4149,35 @@ UIElement.prototype.animHide = function(animHint, onAnimDone) {
 	return;
 }
 
-UIElement.prototype.atLeft = function() {
-	this.exec(new PositionSizeAttrCommand(this, UIElement.X_LEFT_IN_PARENT, null, null, null));
 
-	return;
+UIElement.prototype.getSavedState = function() {
+	return this.savedState ? this.savedState.json : null;
 }
 
-UIElement.prototype.atRight = function() {
-	this.exec(new PositionSizeAttrCommand(this, UIElement.X_RIGHT_IN_PARENT, null, null, null));
-
-	return;
-}
-
-UIElement.prototype.atTop = function() {
-	this.exec(new PositionSizeAttrCommand(this, null, UIElement.Y_TOP_IN_PARENT, null, null));
-	
-	return;
-}
-
-UIElement.prototype.atBottom = function() {
-	this.exec(new PositionSizeAttrCommand(this, null, UIElement.Y_BOTTOM_IN_PARENT, null, null));
-	
-	return;
-}
-
-UIElement.prototype.atCenter = function() {
-	this.exec(new PositionSizeAttrCommand(this, UIElement.X_CENTER_IN_PARENT, null, null, null));
-	
-	return;
-}
-
-UIElement.prototype.atMiddle = function() {
-	this.exec(new PositionSizeAttrCommand(this, null, UIElement.Y_MIDDLE_IN_PARENT, null, null));
-	
-	return;
-}
-
-
-UIElement.prototype.saveState = function() {
+UIElement.prototype.saveState = function(json) {
 	this.savedState = {};
-	this.savedState.json = this.toJson();
 	
-	return;
+	UIElement.disableGetRelativePathOfURL = true;
+	this.savedState.json = json ? json : this.toJson();
+	UIElement.disableGetRelativePathOfURL = false;
+	
+	return this;
 }
 
 UIElement.prototype.restoreState = function() {
 	if(this.savedState && this.savedState.json) {
 		this.fromJson(this.savedState.json);
-		Object.destroy(this.savedState.json);
+	}
+
+	return this;
+}
+
+UIElement.prototype.clearState = function(clear) {
+	if(this.savedState) {
 		this.savedState.json = null;
 	}
 
-	return;
+	return this;
 }
 
 UIElement.prototype.isUserMovable = function() {
@@ -4129,18 +4216,6 @@ UIElement.prototype.getEditorRect = function() {
 	return rect;
 }
 
-UIElement.prototype.loadSoundEffect = function(name, url) {
-	getEffectsPlayer().load(name, url);
-
-	return;
-}
-
-UIElement.prototype.playSoundEffect = function(name) {
-	getEffectsPlayer().play(name);
-
-	return;
-}
-
 //////////////////////////////////////////////////////////////////////
 function UIGroup() {
 	return;
@@ -4156,57 +4231,19 @@ UIGroup.prototype.initUIGroup = function(type, w, h, img) {
 	this.setDefSize(w, h);
 	this.setTextType(Shape.TEXT_NONE);
 	this.setImage(UIElement.IMAGE_DEFAULT, img);
-	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 	this.setCanRectSelectable(false, false);
 	this.addEventNames(["onInit"]);
+	this.style.lineColor = "rgba(0,0,0,0)";
+	this.style.fillColor = "rgba(0,0,0,0)";
+	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 
 	return this;
 }
 
-UIGroup.prototype.getCustomProp = function() {
-	var content = ' \
-		<label class="description" for="border">' + dappGetText("Border") + ':</label>\
-		<input id="border"  class="element text small" type="number" maxlength="2" value="0"/> \
-		<label class="description" for="linewidth1">' + dappGetText("Line Width") + ':</label>\
-		<input id="linewidth1"  class="element text small" type="number" maxlength="2" value="0"/> \
-		<label class="description" for="roundradius">' + dappGetText("Round Radius") + ':</label>\
-		<input id="roundradius"  class="element text small" type="number" maxlength="2" value="0"/>'
-
-	return content;
-}
-
-UIGroup.prototype.loadCustomProp = function(form) {
-	var group = this;
-
-	form.roundradius.value = this.roundRadius;
-	form.roundradius.onchange = function(e) {
-		group.setRoundRadius(parseInt(this.value));
-
-		return;
-	}
-	
-	form.border.value = this.getHMargin();
-	form.border.onchange = function(e) {
-		var border = parseInt(this.value);
-		group.setMargin(border, border);
-
-		return;
-	}
-	
-	form.linewidth1.value = this.style.lineWidth;
-	form.linewidth1.onchange = function(e) {
-		var linewidth = parseInt(this.value);
-		group.style.setLineWidth(linewidth);
-
-		return;
-	}
-	
-	return;
-}
-
 UIGroup.prototype.shapeCanBeChild = function(shape) {
 	if(shape.isUIDevice || shape.isUIScreen || shape.isUIStatusBar 
-		|| shape.isUIWindow || shape.isUIPageManager || shape.isUIPage) {
+		|| shape.isUIWindow || shape.isUIPageManager || shape.isUIPage 
+		|| shape.isUIList || shape.isUIListItem || shape.isUIGridView) {
 		return false;
 	}
 
@@ -4280,40 +4317,44 @@ UIElement.setTimeout = function(func, deltaTime) {
 	func.time = Date.now() + deltaTime;
 	UIElement.funcs.push(func);
 
-	if(!UIElement.animTimerID) {
-		function executeTimers() {
-			var funcs = UIElement.funcs;
+	function executeTimers() {
+		var funcs = UIElement.funcs;
 
-			var now = Date.now();
-			var n = funcs.length;
-			UIElement.funcs = [];
+		var now = Date.now();
+		var n = funcs.length;
+		UIElement.funcs = [];
 
-			for(var i = 0; i < n; i++) {
-				var iter = funcs[i];
-				if(iter.time <= now) {
-					if(iter()) {
-						iter.time = now + iter.deltaTime;
-						UIElement.funcs.push(iter);
-					}
-				}
-				else {
+		for(var i = 0; i < n; i++) {
+			var iter = funcs[i];
+			if(iter.time <= now) {
+				if(iter()) {
+					iter.time = now + iter.deltaTime;
 					UIElement.funcs.push(iter);
 				}
 			}
-
-			funcs = null;
-			if(UIElement.funcs.length) {
-				UIElement.animTimerID = requestAnimFrame(executeTimers);
-			}
 			else {
-				UIElement.animTimerID = 0;
+				UIElement.funcs.push(iter);
 			}
 		}
 
+		funcs = null;
+		if(UIElement.funcs.length) {
+			UIElement.animTimerID = requestAnimFrame(executeTimers);
+		}
+		else {
+			UIElement.animTimerID = 0;
+		}
+	}
+
+	if(!UIElement.animTimerID) {
 		UIElement.animTimerID = requestAnimFrame(executeTimers, 16);
 	}
 
 	return;
+}
+
+UIElement.getMainCanvas = function() {
+	return document.getElementById("main_canvas");
 }
 
 UIElement.getMainCanvasScale = function(force) {
@@ -4321,7 +4362,7 @@ UIElement.getMainCanvasScale = function(force) {
 		var xScale = 1;
 		var yScale = 1;
 		UIElement.canvasScale = {};
-		var mainCanvas = document.getElementById("main_canvas");
+		var mainCanvas = UIElement.getMainCanvas();
 		
 		if(mainCanvas.style.width && mainCanvas.style.height) {
 			xScale = mainCanvas.width/parseFloat(mainCanvas.style.width);
@@ -4337,6 +4378,26 @@ UIElement.getMainCanvasScale = function(force) {
 
 UIElement.prototype.isFullscreenMode = function() {
 	return cantkIsFullscreen();
+}
+
+UIElement.prototype.setFlipX = function(flipX) {
+	this.flipX = flipX;
+
+	return this;
+}
+
+UIElement.prototype.setFlipY = function(flipY) {
+	this.flipY = flipY;
+
+	return this;
+}
+
+UIElement.prototype.getFlipX = function() {
+	return this.flipX;
+}
+
+UIElement.prototype.getFlipY = function() {
+	return this.flipY;
 }
 
 UIElement.prototype.requestFullscreen = function(onDone) {
@@ -4355,3 +4416,147 @@ UIElement.prototype.requestFullscreen = function(onDone) {
 
 	return;
 }
+
+UIElement.fixArtTextStyle = function(style) {
+	style.fontSize = style.fontSize ? style.fontSize : 16;
+	style.imageBorder = style.imageBorder? style.imageBorder: 10;
+	style.textAlignH = style.textAlignH ? style.textAlignH : "left";
+	style.startColor = style.startColor ? style.startColor : "Green";
+	style.endColor = style.endColor ? style.endColor : "Green";
+	style.lineWidth = style.lineWidth ? style.lineWidth : 0;
+	style.lineColor = style.lineColor ? style.lineColor : "Black";
+	style.shadowColor = style.shadowColor ? style.shadowColor : "Black";
+	style.shadowBlur = style.shadowBlur ? style.shadowBlur : 5;
+	style.shadowOffsetX = style.shadowOffsetX ? style.shadowOffsetX : 2;
+	style.shadowOffsetY = style.shadowOffsetY ? style.shadowOffsetY : 2;
+	
+	return style;
+}
+
+UIElement.createArtTextImage = function(text, style, bgColor) {
+	UIElement.fixArtTextStyle(style);
+
+	if(!text) {
+		return null;
+	}
+
+	var w = 300;
+	var h = 80;
+	var border = style.imageBorder;
+	var fontSize = style.fontSize;
+	var fontFamily = style.fontFamily;
+	var textAlign = style.textAlign;
+	var monospace = style.monospace;
+	var tcanvas = cantkGetTempCanvas(w, h);
+	var ctx = tcanvas.getContext("2d");
+	ctx.clearRect(0, 0, w, h);
+
+	var x = w >> 1;
+	var y = h >> 1;
+	var fontStr = "";
+	var n = text.length;
+	if(style.textB) {
+		fontStr += "Bold ";
+	}
+
+	if(style.textI) {
+		fontStr += "Italic ";
+	}
+
+	fontStr += fontSize + "pt '" + fontFamily + "'";
+	ctx.font = fontStr;
+	ctx.textBaseline = "middle";
+	ctx.textAlign = "center";
+
+	switch(textAlign) {
+		case 'left': {
+			x = border;
+			ctx.textAlign = "left";
+			break;
+		}
+		case 'right': {
+			x = w-border;
+			ctx.textAlign = "right";
+			break;
+		}
+		default:break;
+	}
+
+	if(monospace) {
+		var cw = 0;
+		for(var i = 0; i < n; i++) {
+			var c = text[i];
+			var charW = ctx.measureText(c).width;
+			if(charW > cw) {
+				cw = charW;
+			}
+		}
+		cw = cw + 4;
+		w = n * cw;
+	}
+	else {
+		var textW = ctx.measureText(text).width;
+		w = textW + border * 2;
+	}
+	h = style.fontSize + 2*(Math.abs(style.shadowOffsetY) + style.shadowOffsetY + border);
+	tcanvas.width = w;
+	tcanvas.height = h;
+
+	if(bgColor) {
+		ctx.fillStyle = bgColor;
+		ctx.fillRect(0, 0, w, h);
+	}
+
+	ctx.font = fontStr;
+	ctx.textBaseline = "middle";
+	ctx.textAlign = "center";
+	if(style.useTexture && style.texture) {
+		var wimage = WImage.create(style.texture);
+		var image = wimage.getImage();
+		if(image) {
+			var pattern = ctx.createPattern(image, "repeat");
+			ctx.fillStyle = pattern;
+		}
+	}
+	else {
+		var grd = ctx.createLinearGradient(0,0,0,h);
+		if(style.horizonalGradient) {
+			grd = ctx.createLinearGradient(0,0,w,0);
+		}
+		grd.addColorStop(0, style.startColor);
+		grd.addColorStop(1, style.endColor);
+		ctx.fillStyle = grd;
+	}
+
+	ctx.shadowOffsetX = style.shadowOffsetX;
+	ctx.shadowOffsetY = style.shadowOffsetY;
+	ctx.shadowBlur = style.shadowBlur;
+	ctx.shadowColor = style.shadowColor;
+
+	x = w >> 1;
+	y = h >> 1;
+	ctx.lineWidth = style.lineWidth;
+	ctx.strokeStyle = style.lineColor;
+
+	if(monospace) {
+		x = 0;
+		var hcw = cw >> 1;
+		var n = text.length;
+		ctx.textAlign = "center";
+		for(var i = 0; i < n; i++) {
+			x = i * cw + hcw;
+			var c = text[i];
+			ctx.fillText(c, x, y);
+			ctx.strokeText(c, x, y);
+		}
+	}
+	else {
+		ctx.fillText(text, x, y);
+		ctx.strokeText(text, x, y);
+	}
+
+	var url = tcanvas.toDataURL();
+
+	return url;
+}
+

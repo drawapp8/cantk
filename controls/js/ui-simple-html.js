@@ -70,8 +70,18 @@ UISimpleHTML.prototype.extractHtmlElements = function(el, indexInParent) {
 		node.fontStyle = "bold ";
 	}
 
+	var color = null;
+	
 	if(el.style && el.style.color) {
-		this.colors.push(el.style.color);
+		color = el.style.color;
+	}
+
+	if(!color && el.getAttribute) {
+		color = el.getAttribute("color");
+	}
+
+	if(color) {
+		this.colors.push(color);
 	}
 	
 	if(node) {
@@ -430,10 +440,6 @@ UISimpleHTML.prototype.shapeCanBeChild = function(shape) {
 }
 
 UISimpleHTML.prototype.paintSelfOnly = function(canvas) {
-	if(this.drawCache(canvas)) {
-		return;
-	}
-
 	var i = 0;
 	var x = 0;
 	var y = 0;

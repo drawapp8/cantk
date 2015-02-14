@@ -31,8 +31,13 @@ UIPoint.prototype.paintSelfOnly = function(canvas) {
 
 	canvas.beginPath();
 	canvas.arc(x, y, 10, 0, 2 * Math.PI);
-	canvas.fill();
-	canvas.stroke();
+
+	if(!this.isFillColorTransparent()) {
+		canvas.fill();
+	}
+	if(!this.isStrokeColorTransparent()) {
+		canvas.stroke();
+	}
 
 	return;
 }

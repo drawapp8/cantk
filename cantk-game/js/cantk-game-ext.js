@@ -186,13 +186,15 @@ UIElement.prototype.setRotation = function(rotation) {
 
 	return this;
 }
+
+
 UIElement.prototype.setAngle = UIElement.prototype.setRotation;
 
 UIElement.prototype.setPositionByBody = function(x, y) {
 	this.x = x;
 	this.y = y;
 
-	this.callOnMoved();
+	this.callOnMovedHandler();
 
 	return this;
 }
@@ -200,6 +202,8 @@ UIElement.prototype.setPositionByBody = function(x, y) {
 UIElement.prototype.setV = function(x, y) {
 	var body = this.body;
 	if(body) {
+		this.setVisible(true);
+
 		if(!body.IsActive()) {
 			body.SetActive(true);
 		}
@@ -234,3 +238,41 @@ UIElement.prototype.setVOf = function(name, x, y) {
 
 	return this;
 }
+
+UIElement.prototype.getV = function() {
+	return this.body ? this.body.GetLinearVelocity() : {x:0, y:0};
+}
+
+UIElement.prototype.addV = function(dx, dy) {
+	var v = this.getV();
+
+	if(dx !== null && dx !== undefined) {
+		v.x += dx;
+	}
+	
+	if(dy !== null && dy !== undefined) {
+		v.y += dy;
+	}
+
+	return this.setV(v.x, v.y);
+}
+
+
+UIElement.prototype.playSoundEffect = function(name) {
+	this.getWindowManager().playSoundEffect(name);
+
+	return this;
+}
+
+UIElement.prototype.playSoundMusic = function(name) {
+	this.getWindowManager().playSoundMusic(name);
+
+	return this;
+}
+
+UIElement.prototype.stopSoundMusic = function(name) {
+	this.getWindowManager().stopSoundMusic(name);
+
+	return this;
+}
+

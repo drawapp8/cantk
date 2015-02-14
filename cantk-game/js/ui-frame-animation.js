@@ -18,20 +18,56 @@ UIFrameAnimation.prototype.initUIFrameAnimation = function(type, w, h) {
 	this.initUIElement(type);	
 	
 	this.setDefSize(w, h);
-	this.addEventNames(["onChanged"]);
 	this.setTextType(Shape.TEXT_NONE);
 	this.current = 0;
 	this.frameRate = 10;
-	this.startFrame = 0;
-	this.endFrame = 0;
 	this.playing = false;
 	this.autoPlay = true;
 	this.repeatTimes = 0xFFFFFFFF;
 	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
 
-	this.addEventNames(["onUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
+	this.addEventNames(["onDoubleClick", "onUpdateTransform"]);
 
 	return this;
+}
+
+UIFrameAnimation.prototype.syncImageFrames = function() {
+	this.frames = [];
+	for(var key in this.images) {
+		var iter = this.images[key];
+		if(key.indexOf("option_image_") >= 0 && iter) {
+			this.frames.push(iter);
+		}
+	}
+
+	return;
+}
+
+UIFrameAnimation.prototype.elementToJson = function(o) {
+	UIElement.prototype.elementToJson.call(this, o);
+
+	if(this.groups) {
+		o.groups = JSON.parse(JSON.stringify(this.groups));
+	}
+
+	return o;
+}
+
+UIFrameAnimation.prototype.elementFromJson = function(js) {
+	UIElement.prototype.elementFromJson.call(this, js);
+	
+	this.playing = false;
+	this.syncImageFrames();
+
+	if(js.groups) {
+		this.groups = js.groups;
+	}
+	else if(js.groupsData) {
+		this.groups = this.parseGroupsData(js.groupsData);
+		this.groupsData = null;
+	}
+
+	return js;
 }
 
 UIFrameAnimation.prototype.afterChildAppended = function(shape) {
@@ -53,54 +89,67 @@ UIFrameAnimation.prototype.stop = function() {
 	return this;
 }
 
-UIFrameAnimation.prototype.gotoAndPlayByName = function(name, repeatTimes, onDone, onOneCycle) {
-	var range = this.getGroupRange(name);
-	
-	return this.gotoAndPlay(range.start, range.end, repeatTimes, onDone, onOneCycle);
+UIFrameAnimation.prototype.playSequence = function(sequence, repeatTimes, onDone, onOneCycle) {
+	var n = this.frames.length;
+	if(!n || !sequence || !sequence.length) {
+		return;
+	}
+
+	this.playing = true;
+	this.onDone = onDone;
+	this.onOneCycle = onOneCycle;
+	this.runningSequence = sequence;
+	this.repeatTimes = repeatTimes ? repeatTimes : 0xFFFFFFFF;
+
+	this.current = 0;
+
+	return;
 }
 
-UIFrameAnimation.prototype.play = UIFrameAnimation.prototype.gotoAndPlayByName;
-
-UIFrameAnimation.prototype.gotoAndPlay = function(startFrame, endFrame, repeatTimes, onDone, onOneCycle) {
-	if(this.frames && this.frames.length) {
-		this.playing = true;
-		this.repeatTimes = repeatTimes ? repeatTimes : 0xFFFFFFFF;
-
-		this.onDone = onDone;
-		this.onOneCycle = onOneCycle;
-		var n = this.frames.length;
-		this.startFrame = startFrame ? Math.min(startFrame, n-1) : 0;
-		this.endFrame = endFrame ? Math.min(endFrame, n-1) : 0;
-
-		if(this.startFrame > this.endFrame) {
-			var t = this.startFrame;
-			this.startFrame = this.endFrame;
-			this.endFrame = t;
-		}
-
-		this.current = this.startFrame;
+UIFrameAnimation.prototype.playRange = function(startFrame, endFrame, repeatTimes, onDone, onOneCycle) {
+	var n = this.frames.length;
+	if(startFrame > endFrame) {
+		var t = startFrame;
+		startFrame = endFrame;
+		endFrame = t;
 	}
-	else {
-		this.playing = false;
+
+	var sequence = [];
+	for(var i = startFrame; i <= endFrame; i++) {
+		sequence.push(i);
 	}
+
+	this.playSequence(sequence, repeatTimes, onDone, onOneCycle);
 
 	return this;
 }
 
+UIFrameAnimation.prototype.gotoAndPlayByName = function(name, repeatTimes, onDone, onOneCycle) {
+	var range = this.getGroupRange(name);
+
+	if(range.start !== undefined && range.end !== undefined) { 
+		return this.gotoAndPlay(range.start, range.end, repeatTimes, onDone, onOneCycle);
+	}
+	else if(range && range.length){
+		return this.playSequence(range, repeatTimes, onDone, onOneCycle);
+	}
+	else if(this.animations && name) {
+		this.animate(name);
+	}
+}
+
+UIFrameAnimation.prototype.play = UIFrameAnimation.prototype.gotoAndPlayByName;
+UIFrameAnimation.prototype.gotoAndPlay = UIFrameAnimation.prototype.playRange;
+
 UIFrameAnimation.prototype.nextFrame = function() {
-	if(!this.frames || !this.frames.length) {
+	if(!this.frames || !this.frames.length || !this.runningSequence || !this.runningSequence.length) {
 		return;
 	}
 
-	var n = this.frames.length;
-	var start = this.startFrame;
-	var end = this.endFrame;
+	var current = this.current + 1;
+	var n = this.runningSequence.length;
 
-	var current = (this.current - start + 1)%(end - start + 1) + start;
-
-	this.current = current;
-
-	if(current === end) {
+	if(current === n) {
 		this.repeatTimes--;
 		if(this.repeatTimes <= 0) {
 			this.playing = false;
@@ -124,6 +173,7 @@ UIFrameAnimation.prototype.nextFrame = function() {
 			}
 		}
 	}
+	this.current = current % n;
 
 	return;
 }
@@ -133,11 +183,17 @@ UIFrameAnimation.prototype.getCurrentImage = function() {
 		return null;
 	}
 
-	if(this.current >= this.frames.length) {
+	if(!this.runningSequence || !this.runningSequence.length) {
+		return this.frames[0];
+	}
+
+	if(this.current >= this.runningSequence.length) {
 		this.current = 0;
 	}
 
-	return this.frames[this.current];
+	var index =  this.runningSequence[this.current];
+
+	return this.frames[index];
 }
 
 UIFrameAnimation.prototype.parseGroupsData = function(groupsData) {
@@ -191,17 +247,11 @@ UIFrameAnimation.prototype.stringifyGroups = function(groups) {
 UIFrameAnimation.prototype.setGroupsData = function(groupsData) {
 	if(groupsData) {
 		this.groups = this.parseGroupsData(groupsData);
-		this.groupsData = this.stringifyGroups(this.groups);
 	}else {
 		this.groups = {};
-		this.groupsData = null;
 	}
 
 	return this;
-}
-
-UIFrameAnimation.prototype.getGroupsData = function() {
-	return this.groupsData ? this.groupsData : "";
 }
 
 UIFrameAnimation.prototype.getGroupRange = function(name) {
@@ -228,7 +278,6 @@ UIFrameAnimation.prototype.getValue = function() {
 UIFrameAnimation.prototype.setValue = function(value) {
 	var display = this.images.display;
 	this.images = {};
-	this.frames = [];
 	this.images.display = display;
 
 	if(value) {
@@ -247,39 +296,27 @@ UIFrameAnimation.prototype.setValue = function(value) {
 			var name = "option_image_" + (k++);
 			this.setImage(name, iter);
 		}
-
-		for(var key in this.images) {
-			var iter = this.images[key];
-			if(key.indexOf("option_image_") >= 0 && iter) {
-				this.frames.push(iter);
-			}
-		}
 	}
+	this.syncImageFrames();
 	
 	return this;
 }
 
-UIFrameAnimation.prototype.onFromJsonDone = function() {
-	this.playing = false;
-	
-	this.frames = [];
-	for(var key in this.images) {
-		var iter = this.images[key];
-		if(key.indexOf("option_image_") >= 0 && iter) {
-			this.frames.push(iter);
-		}
+UIFrameAnimation.prototype.startAutoPlay = function() {
+	if(this.defaultGroupName) {
+		this.play(this.defaultGroupName, 0xFFFFFFF); 
 	}
-
-	if(this.groupsData) {
-		this.setGroupsData(this.groupsData);
+	else {
+		this.gotoAndPlay(0, this.frames.length-1, 0xFFFFFFF);	
 	}
 
 	return;
 }
-		
+
 UIFrameAnimation.prototype.onInit = function() {
 	var me =  this;
 	var duration = this.getDuration();
+	this.syncImageFrames();
 
 	function update() {
 		if(!me.parentShape) {
@@ -306,11 +343,15 @@ UIFrameAnimation.prototype.onInit = function() {
 
 	UIElement.setTimeout(update, duration);
 
+	this.stop();
 	if(this.autoPlay && this.frames && this.frames.length) {
-		this.gotoAndPlay(0, this.frames.length-1, 10000000);	
-	}
-	else {
-		this.stop();
+		if(this.autoPlayDelay) {
+			var me = this;
+			setTimeout(function() {me.startAutoPlay();}, this.autoPlayDelay);
+		}
+		else {
+			this.startAutoPlay();
+		}
 	}
 
 	return;
@@ -330,13 +371,7 @@ UIFrameAnimation.prototype.getDuration = function() {
 	return Math.floor(1000/this.frameRate);
 }
 
-UIFrameAnimation.prototype.shapeCanBeChild = function(shape) {
-	if(this.widthAttr === UIElement.WIDTH_FILL_PARENT && this.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
-		return false;
-	}
-
-	return shape.isUIPhysicsShape || shape.isUIMouseJoint || shape.isUIImage || shape.isUIBitmapFontText || shape.isUIStatus;
-}
+UIFrameAnimation.prototype.shapeCanBeChild = UISprite.prototype.shapeCanBeChild;
 
 UIFrameAnimation.prototype.drawImage =function(canvas) {
 	var image = this.getCurrentImage();

@@ -70,14 +70,21 @@ UIEdit.prototype.drawText = function(canvas) {
 	var x = this.leftMargin;
 	var text = this.getLocaleText(this.text);
 	var width = this.w - x - this.rightMargin;
+	var inputTips = this.inputTips;
 
-	if(!text || this.editing) {
+	if((!text && !inputTips) || this.editing) {
 		return;
 	}
 	
 	canvas.save();
 	canvas.font = this.style.getFont();
-	canvas.fillStyle = this.style.textColor;	
+	if(text) {
+		canvas.fillStyle = this.style.textColor;	
+	}
+	else {
+		text = inputTips;
+		canvas.fillStyle = "#E0E0E0";
+	}
 
 	canvas.beginPath();
 	canvas.rect(0, 0, this.w - this.rightMargin, this.h);
@@ -215,6 +222,9 @@ UIEdit.prototype.editText = function(point) {
 	}
 
 	return;
+}
+
+UIEdit.prototype.drawTextTips = function(canvas) {
 }
 
 function UIEditCreator(w, h, leftMargin, rightMargin, bg, focusedBg) {

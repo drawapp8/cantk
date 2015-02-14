@@ -570,14 +570,19 @@ LShape.prototype.resetStyle = function(canvas) {
 }
 
 LShape.prototype.showProperty = function() {
-	showLinePropertyDialog(this, this.textType);
+	var app = this.getApp();
+	if(app) {
+		app.showLShapePropertyDialog(this);
+	}
+
+	return;
 
 	return;
 }
 
 LShape.prototype.asIcon = function() {
 	this.isIcon = true;
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 
 	return;
 }	

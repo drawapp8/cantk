@@ -14,8 +14,8 @@ function UIRadioBox() {
 UIRadioBox.prototype = new UICheckBox();
 UIRadioBox.prototype.isUIRadioBox = true;
 
-UIRadioBox.prototype.initUIRadioBox = function(type, w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg) {
-	return this.initUICheckBox(type, w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg)
+UIRadioBox.prototype.initUIRadioBox = function(type, w, h) {
+	return this.initUICheckBox(type, w, h)
 }
 
 UIRadioBox.prototype.setParent = function(parentShape) {
@@ -55,13 +55,13 @@ UIRadioBox.prototype.onClick = function(point, beforeChild) {
 	return this.callOnClickHandler(point);
 }
 
-function UIRadioBoxCreator(w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg) {
+function UIRadioBoxCreator(w, h) {
 	var args = ["ui-radiobox", "ui-radiobox", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIRadioBox();
-		g.initUIRadioBox(this.type, w, h, onFocusedImg, onActiveImg, onImg, offFocusedImg, offActiveImg, offImg);
+		g.initUIRadioBox(this.type, w, h);
 
 		return g;
 	}

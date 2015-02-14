@@ -26,7 +26,9 @@ Shape.HIT_TEST_BM = 7;
 Shape.HIT_TEST_BR = 8;
 Shape.HIT_TEST_HANDLE = 9;
 Shape.HIT_TEST_WORKAREA = 10;
-Shape.HIT_TEST_MAX = 11
+Shape.HIT_TEST_ROTATION = 11;
+Shape.HIT_TEST_MOVE = 12;
+Shape.HIT_TEST_MAX = 13;
 Shape.HIT_TEST_MM = -1;
 
 Shape.ALIGN_LEFT = 1;
@@ -103,7 +105,7 @@ Shape.prototype.setParent = function(parentShape) {
 Shape.prototype.getParent = function(name) {
 	if(name) {
 		for(var iter = this.parentShape; iter != null; iter = iter.parentShape) {
-			if(iter.name === name) {
+			if(iter.name === name || iter.type === name) {
 				return iter;
 			}
 		}
@@ -223,7 +225,7 @@ Shape.prototype.initShape = function(x, y, w, h, type) {
 
 Shape.prototype.setDefaultStyle = function() {
 	this.style = new ShapeStyle();
-	this.setStyle(DefaultShapeStyleGet());
+	this.setStyle(Shape.getDefaultStyle());
 
 	return this;
 }
@@ -509,9 +511,24 @@ Shape.prototype.setScale = function(scaleX, scaleY) {
 	return this;
 }
 
+Shape.prototype.getRotation = function() {
+	return this.rotation;
+}
+
 Shape.prototype.setRotation = function(rotation) {
 	this.rotation = rotation;
 	
+	return this;
+}
+
+Shape.prototype.getOpacity = function() {
+	return this.opacity;
+}
+
+Shape.prototype.setOpacity = function(opacity) {
+	this.opacity = Math.max(0, opacity);
+	this.opacity = Math.min(1, this.opacity);
+
 	return this;
 }
 
@@ -736,12 +753,15 @@ Shape.prototype.paintSelf = function(canvas) {
 }
 
 Shape.prototype.setSelected = function(selected) {
+	if(selected) {
+		this.selectedTime = Date.now();
+	}
+
 	if(this.selected === selected) {
 		return;
 	}
 
 	this.selected = selected;
-
 	if(this.view && this.view.onShapeSelected) {
 		this.view.onShapeSelected(this);
 	}
@@ -871,10 +891,10 @@ Shape.prototype.shouldShowContextMenu = function() {
 }
 
 Shape.prototype.toJson = function() {
-	return "";
+	return null;
 }
 
-Shape.prototype.fromJson = function(text) {
+Shape.prototype.fromJson = function(js) {
 	return this;
 }
 
@@ -1004,6 +1024,9 @@ function splitText(text) {
 	return text.split("\n--\n");
 }
 
+Shape.onRestacked = function(shapes, shape) {
+}
+
 function restackShapeInArray(shapes, offset) {
 	var n = 0;
 	var pos = 0;
@@ -1033,6 +1056,7 @@ function restackShapeInArray(shapes, offset) {
 
 	shapes[pos] = shapes[new_pos];
 	shapes[new_pos] = selectedShape;
+	Shape.onRestacked(shapes, selectedShape);
 
 	return;
 }
@@ -1340,13 +1364,26 @@ Shape.prototype.onRemoved = function() {
 }
 
 Shape.prototype.destroy = function() {
+	var parentShape = this.parentShape;
+	if(parentShape) {
+		if(parentShape.targetShape === this) {
+			parentShape.targetShape = null;	
+		}
+		if(parentShape.pointerEventTarget === this) {
+			parentShape.pointerEventTarget = null;
+		}
+		this.parentShape = null;	
+	}
+
+	if(this.container) {
+		this.container = null;
+	}
+
 	this.app = null;
 	this.view = null;
-	this.parentShape = null;	
-	this.isInvalid = true;
 
 	if(this.children) {
-		this.children.clear();
+		this.children.clear(true);
 		this.children = null;
 	}
 
@@ -1363,8 +1400,7 @@ Shape.prototype.destroy = function() {
 	}
 
 	this.onDestroy();
-
-	Object.destroy(this);
+	this.isInvalid = true;
 
 	return;
 }

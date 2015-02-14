@@ -170,6 +170,8 @@ UIProgressBar.prototype.setPercentOnly = function(value, notNotify) {
 }
 
 UIProgressBar.prototype.setPercent = function(value, notNotify) {
+	value = Math.max(0, Math.min(value, 100));
+
 	this.setPercentOnly(value, notNotify);
 
 	if(this.drag) {
@@ -246,7 +248,7 @@ UIProgressBar.prototype.paintSelfOnly = function(canvas) {
 	return;
 }
 
-UIProgressBar.prototype.drawImage = function(canvas) {
+UIProgressBar.prototype.drawBgImage = function(canvas) {
 	var image = null;
 	var y = 0;
 	var h = this.h;	

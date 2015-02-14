@@ -161,7 +161,7 @@ UIWindow.prototype.dispatchPointerDownToChildren = function(p) {
 		this.setTarget(this.grabElement);
 		return true;
 	}
-
+	
 	return this.defaultDispatchPointerDownToChildren(p);
 }
 
@@ -188,6 +188,30 @@ UIWindow.prototype.onPointerMoveNormal = function(point) {
 UIWindow.prototype.onPointerUpNormal = function(point) {
 	if(this.popupWindow) {
 		return this.popupWindow.onPointerUpNormal(point)
+	}
+	else {
+		var dx = this.lastPosition.x - this.pointerDownPosition.x;
+		var dy = this.lastPosition.y - this.pointerDownPosition.y;
+		var adx = Math.abs(dx);
+		var ady = Math.abs(dy);
+		if(adx > 20 || ady > 20) {
+			if((adx >> 1) > ady) {
+				if(dx < 0) {
+					this.callOnSwipeLeftHandler();
+				}
+				else {
+					this.callOnSwipeRightHandler();
+				}
+			}
+			if((ady >> 1) > adx) {
+				if(dy < 0) {
+					this.callOnSwipeUpHandler();
+				}
+				else {
+					this.callOnSwipeDownHandler();
+				}
+			}
+		}
 	}
 
 	return UIElement.prototype.onPointerUpNormal.call(this, point);
@@ -257,6 +281,10 @@ UIWindow.prototype.isAnimationEnabled = function() {
 	return this.animHint !== "none";
 }
 
+UIWindow.prototype.getAnimationDuration = function(toShow) {
+	return toShow ? this.openAnimationDuration : this.closeAnimationDuration;
+}
+
 UIWindow.prototype.getAnimationName = function(toShow) {
 	var anim = "";
 	switch(this.animHint) {
@@ -279,6 +307,10 @@ UIWindow.prototype.getAnimationName = function(toShow) {
 		}
 		case "htranslate": {
 			anim = toShow ? "anim-forward" : "anim-backward";
+			break;
+		}
+		case "vtranslate": {
+			anim = toShow ? "anim-upward" : "anim-downward";
 			break;
 		}
 		default: {
@@ -305,12 +337,12 @@ UIWindow.prototype.isSplashWindow = function() {
 }
 
 UIWindow.prototype.getSupportedAnimations = function() {
-	var animations = ["none", "default", "scale", "fade", "htranslate", "popup"];
+	var animations = ["none", "default", "scale", "fade", "popup", "htranslate", "vtranslate"];
 
 	return animations;
 }
 
-UIWindow.prototype.paintSelfOnly =function(canvas) {
+UIWindow.prototype.clearBackground =function(canvas) {
 	var display = this.images.display;
 	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
@@ -396,6 +428,7 @@ function UINormalWindowCreator(bg) {
 		g.initUIWindow(this.type, 0, 0, 100, 100, bg);
 		g.widthAttr = UIElement.WIDTH_FILL_PARENT;
 		g.heightAttr = UIElement.HEIGHT_FILL_PARENT;
+		g.addEventNames(["onSwipeLeft", "onSwipeRight", "onSwipeUp", "onSwipeDown"]);
 
 		return g;
 	}
@@ -438,6 +471,10 @@ UIWindow.prototype.callOnOpen = function(initData) {
 			}
 		}, duration);
 	}
+
+	this.forEach(function(el) {
+		el.onWindowOpen();
+	});
 
 	return true;
 }

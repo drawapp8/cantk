@@ -11,7 +11,7 @@
 
 Shape.prototype.setDefaultStyle = function() {
 	this.style = new ShapeStyle();
-	this.setStyle(DefaultShapeStyleGet());
+	this.setStyle(Shape.getDefaultStyle());
 
 	if(this.isLine) {
 		this.style.setShadow(true, {x: 0, y: 0, blur: 8, color:"#D0D0D0"});
@@ -255,7 +255,7 @@ ImageRectShape.prototype.paintShape = function(canvas) {
 ImageRectShape.prototype.asIcon = function(canvas) {
 	this.isIcon = true;
 	this.resize(36, 36);
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 
 	this.setImage("ide/images/image.png");
 
@@ -516,7 +516,7 @@ FourArrowShape.prototype.paintShape = function(canvas) {
 FourArrowShape.prototype.asIcon = function(canvas) {
 	this.isIcon = true;
 	this.resize(36, 36);
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	
 	if(!this.has_up || !this.has_down) {
 		this.resize(20, 36);
@@ -824,7 +824,7 @@ TriRectShape.prototype.paintShape = function(canvas) {
 TriRectShape.prototype.asIcon = function() {
 	this.isIcon = true;
 	this.resize(44, 30);
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	
 	return;
 }
@@ -886,7 +886,7 @@ RoundRectShape.prototype.paintShape= function(canvas) {
 RoundRectShape.prototype.asIcon = function() {
 	this.isIcon = true;
 	this.resize(36, 30);
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	
 	return;
 }
@@ -990,7 +990,7 @@ ParallRectShape.prototype.paintShape = function(canvas) {
 ParallRectShape.prototype.asIcon = function() {
 	this.resize(40, 32);
 	if(!this.isIcon) {
-		this.setStyle(getIconShapeStyle());
+		this.setStyle(Shape.getIconShapeStyle());
 	}
 	this.isIcon = true;
 
@@ -1082,7 +1082,7 @@ ArcRectShape.prototype.paintShape = function(canvas) {
 ArcRectShape.prototype.asIcon = function() {
 	this.isIcon = true;
 	this.resize(40, 30);
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	
 	return;
 }
@@ -1264,7 +1264,7 @@ LineShape.prototype.asIcon = function() {
 	this.points[1].x = 20;
 	this.points[1].y = 20;
 	this.isIcon = true;
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	
 	return;
 }
@@ -1312,7 +1312,7 @@ VLineShape.prototype.asIcon = function() {
 	this.points[1].y = 30;
 
 	this.isIcon = true;
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	
 	return;
 }
@@ -1370,7 +1370,7 @@ HLineShape.prototype.asIcon = function() {
 	this.points[1].y = 0;
 
 	this.isIcon = true;
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	
 	return;
 }
@@ -1623,7 +1623,7 @@ SegmentsShape.prototype.asIcon = function() {
 	this.points[3].x = 0;
 	this.points[3].y = 20;
 	this.isIcon = true;
-	this.setStyle(getIconShapeStyle());
+	this.setStyle(Shape.getIconShapeStyle());
 	this.style.setSecondArrowType(C_ARROW_NORMAL);
 
 	return;

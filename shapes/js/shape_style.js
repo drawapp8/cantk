@@ -47,7 +47,7 @@ ShapeStyle.prototype.getFont = function() {
 		font = font + "bold "
 	}
 	
-	font = font + this.fontSize + "pt " + this.fontFamily;
+	font = font + this.fontSize + "pt \"" + this.fontFamily + "\"";
 
 	return font;
 }
@@ -329,33 +329,33 @@ ShapeStyle.prototype.equalTo = function(style) {
 	return thisJson === otherJson;
 }
 
-var gShapeStyle = null;
+Shape.defaultStyle = null;
 
-function DefaultShapeStyleGet() {
-	if(gShapeStyle) {
-		return gShapeStyle;
+Shape.getDefaultStyle = function() {
+	if(Shape.defaultStyle) {
+		return Shape.defaultStyle;
 	}
 	
-	gShapeStyle = createShapeStyle();
+	Shape.defaultStyle = createShapeStyle();
 	
-	return gShapeStyle;
+	return Shape.defaultStyle;
 }
 
-function saveDefaultShapeStyle() {
-	var style = DefaultShapeStyleGet();
+Shape.saveDefaultStyle = function() {
+	var style = Shape.getDefaultStyle();
 	var js = style.toJson();
 	
-	localStorage.style = JSON.stringify(js);
+	WebStorage.set("defaultShapeStyle", JSON.stringify(js));
 
 	return;
 }
 
-function loadDefaultShapeStyle() {
+Shape.loadDefaultStyle = function() {
 	var ret = false;
-	var style = DefaultShapeStyleGet();
+	var style = Shape.getDefaultStyle();
 	
-	if(localStorage.style) {
-		var js = JSON.parse(localStorage.style);
+	if(WebStorage.get("defaultShapeStyle")) {
+		var js = JSON.parse(WebStorage.get("defaultShapeStyle"));
 		style.fromJson(js);
 		ret = true;
 	}
@@ -363,17 +363,33 @@ function loadDefaultShapeStyle() {
 	return ret;
 }
 
-var gIconShapeStyle = null;
-function getIconShapeStyle() {
-	if(!gIconShapeStyle) {
-		gIconShapeStyle = createShapeStyle();
-		gIconShapeStyle.setLineWidth(1);
-		gIconShapeStyle.setFontSize(8);
-		gIconShapeStyle.setLineColor("Black");
-		gIconShapeStyle.setFillColor("White");
-		gIconShapeStyle.setTextColor("Black");
+ShapeStyle.createFromJson= function(js) {
+	var style = new ShapeStyle();
+
+	for(var key in js) {
+		var value = js[key];
+		var type = typeof value;
+		if(type === "function" || type === "undefined") {
+			continue;
+		}
+
+		style[key] = value;
 	}
 
-	return gIconShapeStyle;
+	return style;
+}
+
+Shape.iconShapeStyle = null;
+Shape.getIconShapeStyle = function() {
+	if(!Shape.iconShapeStyle) {
+		Shape.iconShapeStyle = createShapeStyle();
+		Shape.iconShapeStyle.setLineWidth(1);
+		Shape.iconShapeStyle.setFontSize(8);
+		Shape.iconShapeStyle.setLineColor("Black");
+		Shape.iconShapeStyle.setFillColor("White");
+		Shape.iconShapeStyle.setTextColor("Black");
+	}
+
+	return Shape.iconShapeStyle;
 }
 

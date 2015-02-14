@@ -86,7 +86,7 @@ function isDeviceConfigEqual(c1, c2) {
 }
 
 function cantkPreloadImage(src) {
-	var image = new CanTkImage(src);
+	var image = new WImage(src);
 
 	return image;
 }
@@ -116,7 +116,10 @@ function cantkGetTempCanvas(width, height) {
 
 //////////////////////////////////////////////////////////////////////////}-{
 
-var gApp8LocaleStrings = null;
+var gApp8LocaleStrings = {
+	'Loading...':'正在努力加载...'
+};
+
 function webappGetText(text) {
 	var str = null;
 	if(!text) {
@@ -128,6 +131,7 @@ function webappGetText(text) {
 	}
 
 	if(!str) {
+		str = text;
 //		console.log("\""+text+"\":" + "\"" +text+ "\",");
 	}
 

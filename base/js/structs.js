@@ -122,3 +122,11 @@ Math.translatePoint = function(point, angle, distance) {
 
 }
 
+Math.rotatePoint = function(point, angle) {
+	var p = {};
+
+	p.x = point.x * Math.cos(angle) + point.y * Math.sin(angle);
+	p.y = point.y * Math.cos(angle) - point.x * Math.sin(angle);
+
+	return p;
+}

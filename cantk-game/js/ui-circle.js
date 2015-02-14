@@ -32,23 +32,39 @@ UICircle.prototype.initUICircle = function(type, w, h) {
 }
 
 UICircle.prototype.shapeCanBeChild = function(shape) {
-	return this.children.length===0 && shape.isUIMouseJoint;
+	if(!UIGroup.prototype.shapeCanBeChild.call(this, shape) || (shape.isUIJoint && !shape.isUIMouseJoint)) {
+		return false;
+	}
+
+	return !shape.isUIPhysicsShape;
+}
+
+UICircle.prototype.onSized = function() {
+	var win = this.getWindow();
+	this.updateLayoutParams();
+	if(this.body && win && win.isUIScene) {
+		var r = win.toMeter(Math.min(this.getWidth(true)>>1, this.getHeight(true)>>1));
+		var shape = this.body.GetFixtureList().GetShape();
+		shape.SetRadius(r);
+		this.body.SynchronizeFixtures();
+		this.setPosition(this.x, this.y);
+	}
 }
 
 UICircle.prototype.paintSelfOnly = function(canvas) {
-	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
+	if(this.isStrokeColorTransparent()) {
 		return;
 	}
+
 	var x = this.w >> 1;
 	var y = this.h >> 1;
-	var r = Math.min(x, y);
+	var r = Math.min(this.getWidth(true)>>1, this.getHeight(true)>>1);
 
 	canvas.fillStyle = this.style.fillColor;
 	canvas.strokeStyle = this.style.lineColor;
 
 	canvas.beginPath();
 	canvas.arc(x, y, r, 0, Math.PI * 2);
-	canvas.fill();
 	canvas.stroke();
 
 	return;

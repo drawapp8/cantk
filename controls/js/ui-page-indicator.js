@@ -472,7 +472,7 @@ UIPageIndicatorNormal.prototype.setItemImagesByStr = function(str) {
 	for(var i = 0; i < arr.length; i++) {
 		var iter = arr[i];
 		if(iter) {
-			this.itemImages.push(new CanTkImage(iter));
+			this.itemImages.push(new WImage(iter));
 			this.setImage(name + i, iter);
 		}
 	}
@@ -490,7 +490,7 @@ UIPageIndicatorNormal.prototype.setItemImagesOfCurrentByStr = function(str) {
 	for(var i = 0; i < arr.length; i++) {
 		var iter = arr[i];
 		if(iter) {
-			this.itemImagesOfCurrent.push(new CanTkImage(iter));
+			this.itemImagesOfCurrent.push(new WImage(iter));
 			this.setImage(name + i, iter);
 		}
 	}

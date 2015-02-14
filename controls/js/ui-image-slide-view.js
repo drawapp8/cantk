@@ -75,6 +75,16 @@ UIImageSlideView.prototype.getFrameIndicatorParams = function() {
 	return {offsetX:dx, offsetY:dy, itemSize:itemSize, n:n};
 }
 
+UIImageSlideView.prototype.getCurrent = function() {
+	return this.currFrame;
+}
+
+UIImageSlideView.prototype.setCurrent = function(currFrame) {
+	this.setCurrentFrame(currFrame);
+
+	return this;
+}
+
 UIImageSlideView.prototype.setCurrentFrame = function(currFrame) {
 	this.offset = 0;
 	this.currFrame = (currFrame + this.userImages.length)%this.userImages.length;
@@ -82,7 +92,7 @@ UIImageSlideView.prototype.setCurrentFrame = function(currFrame) {
 
 	this.callOnChangedHandler(this.currFrame);
 
-	return;
+	return this;
 }
 
 UIImageSlideView.prototype.animScrollTo = function(range, newFrame) {

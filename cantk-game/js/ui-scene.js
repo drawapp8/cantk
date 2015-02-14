@@ -27,25 +27,9 @@ UIScene.prototype.initUIScene = function(type, w, h, bg) {
 	this.setAnimHint("none");
 	this.setCanRectSelectable(false, true);
 	this.addEventNames(["onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
+	this.addEventNames(["onSwipeLeft", "onSwipeRight", "onSwipeUp", "onSwipeDown"]);
 
 	return this;
-}
-
-UIScene.prototype.saveGameState = function() {
-	if(!this.gameState) {
-		this.gameState = this.toJson();
-	}
-
-	return;
-}
-
-UIScene.prototype.restoreGameState = function() {
-	if(this.gameState) {
-		this.fromJson(this.gameState);
-		this.relayout();
-	}
-
-	return;
 }
 
 UIScene.prototype.resetGame = function() {
@@ -53,28 +37,12 @@ UIScene.prototype.resetGame = function() {
 		var world = this.world;
 		Physics.destroyWorld(world);
 		this.world = null;
-
-		var soundsValue = [];
-
-		for(var i = 0; i < this.children.length; i++) {
-			var iter = this.children[i];
-			if(iter.isUISound) {
-				soundsValue.push(iter.getValue());
-			}
-		}
-
-		this.restoreGameState();
-		this.doInit();
-		this.initChildren();
-		
-		for(var i = 0; i < this.children.length; i++) {
-			var iter = this.children[i];
-			if(iter.isUISound && soundsValue.length) {
-				var value = soundsValue.shift();
-				iter.setValue(value);
-			}
-		}
 	}
+
+	this.restoreState();
+	this.relayout();
+	this.doInit();
+	this.initChildren();
 	this.updateStickyChildren();
 
 	return;
@@ -115,8 +83,8 @@ UIScene.prototype.doInit = function() {
 }
 
 UIScene.prototype.onInit = function() {
-	if(this.enablePhysics) {
-		this.saveGameState();
+	if(!this.getSavedState()) {
+		this.saveState();
 	}
 
 	this.doInit();
@@ -133,6 +101,13 @@ UIScene.prototype.onDeinit = function() {
 		this.world = null;
 	}
 
+//	var me = this;
+//	setTimeout(function() {
+//		me.restoreState();
+//	}, 1000);
+//
+//	this.restoreState();
+//	this.clearState();	
 	this.stop();
 
 	return;

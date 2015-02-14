@@ -165,9 +165,13 @@ var dragonBones;
 
 				return;
 			}
-
 			var image = texture.image;
 			var r = display.textureAtlasRect;
+			//tangram special
+			if(slot.image && slot.imageRect) {
+				image = slot.image;
+				r = slot.imageRect;
+			}
 
 			ctx.save();
 			m.identity();

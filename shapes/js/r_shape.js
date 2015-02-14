@@ -30,8 +30,6 @@ RShape.prototype.initRShape = function(x, y, w, h, type) {
 	this.hMargin = 0;
 	this.vMargin = 0;
 	this.rotation = 0;
-	this.saveWidth = 0;
-	this.saveHeight = 0;
 	this.image = null;
 	this.imageUrl = "";
 	this.lastPosition = {x:0, y:0};
@@ -275,8 +273,8 @@ RShape.prototype.setPosition = function(x, y) {
 }
 
 RShape.prototype.setSize = function(w, h) {
-	this.w = Math.floor(w);
-	this.h = Math.floor(h);
+	this.w = Math.max(Math.floor(w), 20);
+	this.h = Math.max(Math.floor(h), 20);
 
 	return this;
 }
@@ -290,8 +288,8 @@ RShape.prototype.resize = function(w, h) {
 }
 
 RShape.prototype.realResize=function(w, h) {
-	w = Math.floor(w);
-	h = Math.floor(h);
+	w = Math.max(Math.floor(w), 20);
+	h = Math.max(Math.floor(h), 20);
 
 	if(this.w != w || this.h != h) {
 		this.w = w;
@@ -357,6 +355,26 @@ RShape.prototype.isPointIn = function(canvas, point) {
 
 RShape.prototype.getMoreSelectMark = function(type, point) {
 	return false;
+}
+
+RShape.prototype.getRotateSelectMark = function(type, point) {
+	if(type === Shape.HIT_TEST_ROTATION) {
+		point.x = this.w >> 1;
+		point.y = -50;
+
+		return true;
+	}
+
+	return false;
+}
+
+RShape.prototype.drawRotateSelectMark = function(canvas, point, hightlight) {
+	var r = hightlight ? 15 : 10;
+	canvas.arc(point.x, point.y, r, 0, Math.PI * 2);
+	canvas.moveTo(point.x, point.y+r);
+	canvas.lineTo(point.x, 0);
+
+	return;
 }
 
 RShape.prototype.getNearPoint = function(i) {
@@ -489,7 +507,7 @@ RShape.prototype.getSelectMarkPC = function(type, point) {
 			break;
 		}
 		case Shape.HIT_TEST_TM: {
-			point.x = this.w/2;
+			point.x = this.w >> 1;
 			point.y = 0;
 			break;
 		}
@@ -500,12 +518,12 @@ RShape.prototype.getSelectMarkPC = function(type, point) {
 		}
 		case Shape.HIT_TEST_ML: {
 			point.x = 0;
-			point.y = this.h/2;
+			point.y = this.h >> 1;
 			break;
 		}
 		case Shape.HIT_TEST_MR: {
 			point.x = this.w;
-			point.y = this.h/2;
+			point.y = this.h >> 1;
 			break;
 		}
 		case Shape.HIT_TEST_BL: {
@@ -514,13 +532,18 @@ RShape.prototype.getSelectMarkPC = function(type, point) {
 			break;
 		}
 		case Shape.HIT_TEST_BM: {
-			point.x = this.w/2;
+			point.x = this.w >> 1;
 			point.y = this.h;
 			break;
 		}
 		case Shape.HIT_TEST_BR: {
 			point.x = this.w;
 			point.y = this.h;
+			break;
+		}
+		case Shape.HIT_TEST_ROTATION: {
+			point.x = this.w >> 1;
+			point.y = this.h - 100;
 			break;
 		}
 		default: {
@@ -811,10 +834,27 @@ RShape.prototype.drawSizeTips = function(canvas) {
 	canvas.textAlign = "center";
 	canvas.textBaseline = "bottom";
 	canvas.fillStyle = this.style.textColor;
-	
+
+	if(this.rotation) {
+		text += " x r" + Math.round(this.rotation * 180/Math.PI);
+	}
+
 	canvas.beginPath();
 	canvas.fillText(text, this.w/2, 0, this.w);
 	canvas.fill();
+
+	return;
+}
+
+RShape.prototype.drawSelectMark = function(canvas, type, point, hightlight) {
+	canvas.beginPath();
+	if(type === Shape.HIT_TEST_ROTATION) {
+		this.drawRotateSelectMark(canvas, point, hightlight);
+	}
+	else {
+		this.createSelectedMark(canvas, point.x, point.y, hightlight);
+	}
+	canvas.stroke();
 
 	return;
 }
@@ -836,17 +876,13 @@ RShape.prototype.drawSelectMarks = function(canvas) {
 		canvas.strokeStyle = RShape.selectMarkColor;
 		canvas.stroke();	
 		
-		canvas.beginPath();
-		canvas.lineWidth = lineWidth;
-		
 		for(var type = Shape.HIT_TEST_NONE + 1; 
 			type < Shape.HIT_TEST_MAX; type++) {
 			if(this.getSelectMark(type, this.selectMarkPoint)) {
-				this.createSelectedMark(canvas, this.selectMarkPoint.x, this.selectMarkPoint.y, type == this.hitTestResult);
+				this.drawSelectMark(canvas, type, this.selectMarkPoint, type === this.hitTestResult);
 			}
 		}
-		canvas.closePath();
-		canvas.stroke();
+		canvas.beginPath();
 	}
 
 	canvas.restore();
@@ -929,79 +965,112 @@ RShape.prototype.lockPosition = function(isPositionLocked) {
 }
 
 RShape.prototype.execMoveResize = function(x, y, w, h) {
-	this.exec(new MoveResizeCommand(this, x, y, w, h));	
+	if(window.MoveResizeCommand) {
+		this.exec(new MoveResizeCommand(this, x, y, w, h));	
+	}
+	else {
+		if(x || x === 0) {
+			this.x = x;
+		}
+		if(y || y === 0) {
+			this.y = y;
+		}
+		if(w || w === 0) {
+			this.w = w;
+		}
+		if(h || h === 0) {
+			this.h = h;
+		}
+	}
 
 	return;
 }
 
 RShape.prototype.handlePointerEvent = function(point, type) {
 	if(type === C_EVT_POINTER_DOWN) {
-		this.saveDx = this.x;
-		this.saveDy = this.y;
-		this.saveWidth = this.w;
-		this.saveHeight = this.h;
-		
+		this.saveX = this.x;
+		this.saveY = this.y;
+		this.saveW = this.w;
+		this.saveH = this.h;
+		this.saveRotation = this.rotation;
+
 		return;
 	}
 	
-	var dx = point.x - this.lastPosition.x;
-	var dy = point.y - this.lastPosition.y;
-	var tdx = dx;
-	var tdy = dy;
+	var saveW = this.saveW;
+	var saveH = this.saveH;
+	var dx = point.x - this.pointerDownPosition.x;
+	var dy = point.y - this.pointerDownPosition.y;
 	
-	var new_dx = 0;
-	var new_dy = 0;
-	var new_w = this.w;
-	var new_h = this.h;
-	
+	var newDx = 0;
+	var newDy = 0;
+	var newW = saveW;
+	var newH = saveH;
 	switch(this.hitTestResult) {
 		case Shape.HIT_TEST_TL: {
-			new_dx = tdx;
-			new_dy = tdy;
-			new_w = this.w - tdx;
-			new_h = this.h - tdy;
-			
+			newDx = dx;
+			newDy = dy;
+			newW = saveW - dx;
+			newH = saveH - dy;
 			break;
 		}
 		case Shape.HIT_TEST_TM: {
-			new_dy = tdy;
-			new_h = this.h - tdy;			
+			newDy = dy;
+			newH = saveH - dy;			
 			break;
 		}			
 		case Shape.HIT_TEST_TR: {
-			new_dx = 0;
-			new_dy = tdy;
-			new_w = this.w + tdx;
-			new_h = this.h - tdy;			
+			newDx = 0;
+			newDy = dy;
+			newW = saveW + dx;
+			newH = saveH - dy;			
 			break;
 		}
 		case Shape.HIT_TEST_ML: {
-			new_dx = tdx;
-			new_w = this.w - tdx;		
+			newDx = dx;
+			newW = saveW - dx;		
 			break;
 		}			
 		case Shape.HIT_TEST_MR: {
-			new_w = this.w  + tdx;				
+			newW = saveW  + dx;				
 			break;
 		}				
 		case Shape.HIT_TEST_BL: {
-			new_dx = tdx;
-			new_w = this.w - tdx;
-			new_h = this.h + tdy;			
+			newDx = dx;
+			newW = saveW - dx;
+			newH = saveH + dy;			
 			break;
 		}
 		case Shape.HIT_TEST_BM: {
-			new_h = this.h + tdy;			
+			newH = saveH + dy;			
 			break;
 		}			
 		case Shape.HIT_TEST_BR: {
-			new_w = this.w + tdx;
-			new_h = this.h + tdy;			
+			newW = saveW + dx;
+			newH = saveH + dy;			
 			break;
 		}			
+		case Shape.HIT_TEST_MOVE: 
 		case Shape.HIT_TEST_MM: {		
-			new_dx = tdx;
-			new_dy = tdy;
+			newDx = dx;
+			newDy = dy;
+			break;
+		}
+		case Shape.HIT_TEST_ROTATION: {
+			var cx = (this.w >> 1) + this.x;
+			var cy = (this.h >> 1) + this.y;
+			var angle = Math.lineAngle({x:cx, y:cy}, point) + Math.PI * 0.5;
+
+			if(angle > Math.PI * 2) {
+				angle = angle - Math.PI * 2;
+			}
+			this.setRotation(angle);
+
+			if(type === C_EVT_POINTER_UP) {
+				var rotation = this.rotation;
+				this.rotation = this.saveRotation;
+				this.exec(AttributeCommand.create(this, "rotation", null, rotation));
+			}
 			break;
 		}
 		default:break;
@@ -1009,22 +1078,22 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 	
 	if(type === C_EVT_POINTER_UP) {
 
-		if(this.x !== this.saveDx || this.y !== this.saveDy) {
-			var dx = this.x;
-			var dy = this.y;
-			this.x = this.saveDx;
-			this.y = this.saveDy;
+		if(this.x !== this.saveX || this.y !== this.saveY) {
+			var x = this.x;
+			var y = this.y;
+			this.x = this.saveX;
+			this.y = this.saveY;
 			
 			if(this.isUserMovable()) {
-				this.execMoveResize(dx, dy);
+				this.execMoveResize(x, y);
 			}
 		}
 		
-		if(this.w !== this.saveWidth || this.h !== this.saveHeight) {
+		if(this.w !== saveW || this.h !== saveH) {
 			var w = this.w;
 			var h = this.h;
-			this.w = this.saveWidth;
-			this.h = this.saveHeight;
+			this.w = saveW;
+			this.h = saveH;
 	
 			if(this.isUserResizable()) {
 				this.execMoveResize(null, null, w, h);			
@@ -1034,22 +1103,24 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 		this.hitTestResult = Shape.HIT_TEST_NONE;
 	}
 	else {
-		if(new_dx || new_dy) {
+		if(newDx || newDy) {
 			if(this.isUserMovable()) {
-				this.setPosition(this.x + new_dx, this.y + new_dy);
+				this.setPosition(this.saveX + newDx, this.saveY + newDy);
 			}
 
 			this.onMoving();
 		}
 		
-		if(this.w !== new_w || this.h !== new_h) {
+		if(saveW !== newW || saveH !== newH) {
 			if(this.isUserResizable()) {
-				this.setSize(new_w, new_h);
+				this.setSize(newW, newH);
 			}
 		}
 	}
 	
 	if(this.hitTestResult === Shape.HIT_TEST_HANDLE) {
+		dx = point.x - this.lastPosition.x;
+		dy = point.y - this.lastPosition.y;
 		this.moveHandle(dx, dy);
 	}
 	
@@ -1097,14 +1168,15 @@ RShape.prototype.toJson = function() {
 	
 	delete o.mode;
 	delete o.state;
-	delete o.saveDx;
-	delete o.saveDy;
 	delete o.MIN_SIZE;
 	delete o.selected;
 	delete o.animating;
 	delete o.pointerDown;
-	delete o.saveWidth;
-	delete o.saveHeight;
+	delete o.saveX;
+	delete o.saveY;
+	delete o.saveW;
+	delete o.saveH;
+	delete o.saveRotation;
 	delete o.hignlighted;
 	delete o.textNeedRelayout;
 	delete o.openPending;
@@ -1123,6 +1195,7 @@ RShape.prototype.toJson = function() {
 	delete o.hAlign;
 	delete o.editing;
 	delete o.textBaseline;
+	delete o.selectedTime;
 
 	if(!o.textType) {
 		delete o.vTextAlign;
@@ -1272,7 +1345,7 @@ RShape.prototype.setImage = function(value) {
 	}
 
 	this.imageUrl = value;
-	this.image = new CanTkImage(value);
+	this.image = new WImage(value);
 	
 	return this;
 }
@@ -1282,7 +1355,7 @@ RShape.prototype.asIcon = function() {
 	this.resize(36, 36);
 
 	if(!this.isIcon) {
-		this.setStyle(getIconShapeStyle());
+		this.setStyle(Shape.getIconShapeStyle());
 	}
 
 	this.isIcon = true;
@@ -1291,7 +1364,10 @@ RShape.prototype.asIcon = function() {
 }	
 
 RShape.prototype.showProperty = function() {
-	showGeneralPropertyDialog(this, this.textType, true, false);
+	var app = this.getApp();
+	if(app) {
+		app.showRShapePropertyDialog(this);
+	}
 
 	return;
 }

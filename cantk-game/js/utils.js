@@ -14,8 +14,17 @@ function loadDragonBoneArmature(textureJsonURL, skeletonJsonURL, textureURL, onD
 	texture.onload = function()	{
 		httpGetJSON(textureJsonURL, function(data) {
 			var textureData = data;
+			if(!data) {
+				console.log("Get Json Failed:" + textureJsonURL);
+				return;
+			}
 
 			httpGetJSON(skeletonJsonURL, function(data) {
+				if(!data) {
+					console.log("Get Json Failed:" + skeletonJsonURL);
+					return;
+				}
+
 				var skeletonData = data;
 				var factory = new dragonBones.factorys.GeneralFactory();
 

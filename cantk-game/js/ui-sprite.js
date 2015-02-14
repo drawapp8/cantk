@@ -37,8 +37,7 @@ UISprite.prototype.initUISprite = function(type, w, h, bg) {
 	this.setImage("option_image_13", null);
 	this.setImage("option_image_14", null);
 	this.setCanRectSelectable(false, true);
-	this.addEventNames(["onUpdateTransform", "onBeginContact", "onEndContact", "onMoved", "onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
-
+	this.addEventNames(["onDoubleClick", "onUpdateTransform"]);
 
 	return this;
 }
@@ -51,15 +50,17 @@ UISprite.prototype.afterChildAppended = function(shape) {
 }
 
 UISprite.prototype.setValue = function(value) {
-	this.setImage(UIElement.IMAGE_DEFAULT, value);
+	return this.setImageSrc(value);
+}
 
-	return;
+UISprite.prototype.getValue = function() {
+	return this.getImageSrc();
 }
 
 UISprite.prototype.setImageSrc = function(value) {
 	this.setImage(UIElement.IMAGE_DEFAULT, value);
 
-	return;
+	return this;
 }
 
 UISprite.prototype.getImageSrc = function(type) {
@@ -80,7 +81,7 @@ UISprite.prototype.getImageSrcRect = function() {
 	}
 }
 
-UISprite.prototype.drawImage =function(canvas) {
+UISprite.prototype.drawBgImage =function(canvas) {
 	var image = this.getBgHtmlImage();
 
 	if(image) {
@@ -91,21 +92,29 @@ UISprite.prototype.drawImage =function(canvas) {
 	return;
 }
 
-UISprite.prototype.beforePaintChildren = function(canvas) {
-	if(this.rotation) {
-		var hw = this.w >> 1;
-		var hh = this.h >> 1;
-
-		canvas.translate(hw, hh);
-		canvas.rotate(this.rotation);
-		canvas.translate(-hw, -hh);
+UISprite.prototype.shapeCanBeChild = function(shape) {
+	if(!UIGroup.prototype.shapeCanBeChild.call(this, shape) || (shape.isUIJoint && !shape.isUIMouseJoint)) {
+		return false;
 	}
 
-	return;
-}
+	if(this.widthAttr === UIElement.WIDTH_FILL_PARENT && this.heightAttr === UIElement.HEIGHT_FILL_PARENT) {
+		return false;
+	}
 
-UISprite.prototype.shapeCanBeChild = function(shape) {
-	return shape.isUIPhysicsShape || shape.isUIMouseJoint || shape.isUISprite || shape.isUIStatus;
+	if(shape.isUIPhysicsShape || shape.isUIMouseJoint) {
+		var n = this.children.length;
+		for(var i = 0; i < n; i++) {
+			var iter = this.children[i];
+			if(iter.isUIPhysicsShape && shape.isUIPhysicsShape) {
+				return false;
+			}
+			if(iter.isUIMouseJoint && shape.isUIMouseJoint) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 UISprite.prototype.onSized = UIImage.prototype.onSized;

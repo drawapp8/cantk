@@ -36,10 +36,6 @@ UIPolygon.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIPolygon.prototype.paintChildren = function(canvas) {
-	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
-		return;
-	}
-
 	var x0 = 0;
 	var y0 = 0;
 

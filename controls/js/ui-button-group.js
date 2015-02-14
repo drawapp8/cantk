@@ -55,25 +55,26 @@ UIButtonGroup.prototype.paintSelfOnly =function(canvas) {
 }
 
 UIButtonGroup.prototype.relayoutChildren = function() {
-	var border = this.getHMargin();
+	var hMargin = this.getHMargin();
+	var vMargin = this.getVMargin();
 	var n = this.children.length;
 
 	if(n === 0 || this.disableRelayout) {
 		return;
 	}
 
-	var x = border;
-	var y = border;
+	var x = hMargin;
+	var y = vMargin;
 
-	var h = this.h - 2 * border;
+	var h = this.h - 2 * vMargin;
 	var maxWidth = this.buttonMaxWidth;
-	var defaultWidth = Math.floor((this.w - 2 * border)/n);
+	var defaultWidth = Math.floor((this.w - 2 * hMargin)/n);
 	var w = Math.min(defaultWidth, maxWidth);
 
 	for(var i = 0; i < n; i++) {
 		var child = this.children[i];
 		
-		x = i * defaultWidth + (defaultWidth - w)/2 + border;
+		x = i * defaultWidth + (defaultWidth - w)/2 + hMargin;
 
 		child.setPosition(x, y);
 		child.setSize(w, h);
@@ -82,7 +83,7 @@ UIButtonGroup.prototype.relayoutChildren = function() {
 		child.relayoutChildren();
 	}
 	
-	this.w = defaultWidth * n + 2 * border;
+	this.w = defaultWidth * n + 2 * hMargin;
 
 	return;
 }

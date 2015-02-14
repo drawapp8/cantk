@@ -113,7 +113,7 @@ function UIWaitBarCreator(type, w, h, image, imageDisplay) {
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIWaitBar();
-		if(type !== C_CREATE_FOR_ICON) {
+		if(createReason !== C_CREATE_FOR_ICON) {
 			setInterval(function() {
 				if(g.needRedraw()) {
 					g.offset = (g.offset + 1);

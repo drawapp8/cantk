@@ -31,7 +31,8 @@ UIImageThumbView.prototype.initUIImageThumbView = function(w, h) {
 	imageThumbViewInitCustomProp(this);
 	this.errorImage = UIImageView.createImage("drawapp8/images/common/failed.png", null);
 	this.loadingImage = UIImageView.createImage("drawapp8/images/common/loading.png", null);
-	
+	this.addEventNames(["onChanged"]);
+
 	return this;
 }
 
@@ -236,6 +237,7 @@ UIImageThumbViewTape.prototype.onClick = function(point, beforeChild) {
 	}
 	
 	this.callOnClickHandler(point);
+	this.callOnChangedHandler(this.getCurrentImageSrc());
 
 	return;
 }

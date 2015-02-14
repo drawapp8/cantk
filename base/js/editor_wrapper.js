@@ -17,6 +17,12 @@ EditorElement.prototype.setElement = function(element) {
 	return;
 }
 
+EditorElement.prototype.setWrap = function(wrap) {
+	this.element.wrap = wrap;
+	
+	return;
+}
+
 EditorElement.prototype.removeBorder = function() {
 	if(!isMobile()) {
 		this.element.style.background = 'transparent';
@@ -27,17 +33,48 @@ EditorElement.prototype.removeBorder = function() {
 	return;
 }
 
+EditorElement.prototype.setOnChangedHandler = function(onChanged) {
+	var me = this;
+	this.element.onchange = function() {
+		if(onChanged) {
+			onChanged(me, this.value);
+		}
+	}
+
+	return this;
+}
+
+EditorElement.prototype.setOnChangeHandler = function(onChange) {
+	var me = this;
+	this.element.onkeyup = function() {
+		if(onChange) {
+			onChange(me, this.value);
+		}
+	}
+
+	return this;
+}
+
 EditorElement.prototype.setFontSize = function(fontSize) {
 	this.element.style['font-size'] = fontSize + "pt";
 
 	return;
 }
 
+EditorElement.prototype.setScrollType = function(scrollType) {
+	this.element.style['overflow-y'] = scrollType;
+	this.element.style['overflow-x'] = scrollType;
+
+	return;
+}
+
 EditorElement.prototype.show = function() {
 	this.isVisibile = true;
-	//this.element.style.display = 'none';
 	this.element.style.visibility = 'visible';
+	this.element.style.zIndex = 8;
+
 	this.element.focus();
+	EditorElement.imeOpen = true;
 
 	return;
 }
@@ -50,10 +87,12 @@ EditorElement.prototype.setInputType = function(type) {
 
 EditorElement.prototype.hide = function() {
 	this.isVisibile = false;
-	//this.element.style.display = '';
+	this.element.style.zIndex = 0;
 	this.element.style.visibility = 'hidden';  
 	this.element.blur();
 	this.element.onchange = null;
+	EditorElement.imeOpen = false;
+	setElementPosition(UIElement.getMainCanvas(), 0, 0);
 
 	if(this.onHide) {
 		this.onHide();
@@ -112,7 +151,7 @@ EditorElement.prototype.setShape = function(shape) {
 	return;
 }
 
-function createElement(element, id, x, y, w, h) {
+EditorElement.create = function(element, id, x, y, w, h) {
 	var edit = new EditorElement();
 
 	element.id = id;
@@ -237,7 +276,7 @@ function createSingleLineEdit(id, x, y, w, h) {
 		document.body.appendChild(element);
 	}
 
-	return createElement(element, id, x, y, w, h);
+	return EditorElement.create(element, id, x, y, w, h);
 }
 
 function createMultiLineEdit(id, x, y, w, h) {
@@ -248,6 +287,6 @@ function createMultiLineEdit(id, x, y, w, h) {
 		document.body.appendChild(element);
 	}
 
-	return createElement(element, id, x, y, w, h);
+	return EditorElement.create(element, id, x, y, w, h);
 }
 

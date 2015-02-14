@@ -226,10 +226,6 @@ UIFourJoint.prototype.getHeight = function() {
 }
 
 UIFourJoint.prototype.paintSelf = function(canvas) {
-	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
-		return;
-	}
-
 	canvas.save();
 	if(this.isIcon) {
 		this.translate(canvas);

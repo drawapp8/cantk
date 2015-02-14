@@ -7,7 +7,21 @@
  * 
  */
   
-function WindowManager(app, canvas) {
+function WWindowManager() {
+	return;
+}
+
+WWindowManager.create = function(app, canvas) {
+	WWindowManager.instance = new WWindowManager();
+
+	return WWindowManager.instance.init(app, canvas);
+}
+
+WWindowManager.getInstance = function() {
+	return WWindowManager.instance;
+}
+
+WWindowManager.prototype.init = function(app, canvas) {
 	this.app = app;
 	this.canvas = canvas;
 	
@@ -25,15 +39,16 @@ function WindowManager(app, canvas) {
 	this.eventLogging = false;
 	this.pointerDownPoint = {x:0, y:0};
 	this.lastPointerPoint = {x:0, y:0};
+	this.enablePaint = true;
 
-	return;
+	return this;
 }
 
-WindowManager.prototype.getApp = function() {
+WWindowManager.prototype.getApp = function() {
 	return this.app;
 }
 
-WindowManager.prototype.logEvent = function(type, e, arg) {
+WWindowManager.prototype.logEvent = function(type, e, arg) {
 	var evt = {t:type};
 	var date = new Date();
 	var thisEventTime = date.getTime();
@@ -82,7 +97,7 @@ WindowManager.prototype.logEvent = function(type, e, arg) {
 	return;
 }
 
-WindowManager.prototype.replayEvents = function(eventsJson) {
+WWindowManager.prototype.replayEvents = function(eventsJson) {
 	if(eventsJson) {
 		try {
 			this.events = JSON.parse(eventsJson);
@@ -166,20 +181,28 @@ WindowManager.prototype.replayEvents = function(eventsJson) {
 	return;
 }
 
-WindowManager.prototype.preprocessEvent = function(type, e, arg) {
+WWindowManager.prototype.preprocessEvent = function(type, e, arg) {
 	this.currentEvent = e.originalEvent ? e.originalEvent : e;
 	return true;
 }
 
-WindowManager.prototype.getCanvas2D = function() {
+WWindowManager.prototype.getCanvas2D = function() {
 	return this.canvas.getContext("2d");
 }
 
-WindowManager.prototype.getCanvas = function() {
+WWindowManager.prototype.getCanvas = function() {
 	return this.canvas;
 }
 
-WindowManager.prototype.findTargetWin = function(point) {
+WWindowManager.prototype.getWidth = function() {
+	return this.canvas.width;
+}
+
+WWindowManager.prototype.getHeight = function() {
+	return this.canvas.height;
+}
+
+WWindowManager.prototype.findTargetWin = function(point) {
 	 var target = null;
 	 var nr = this.grabWindows.length;
 	 
@@ -190,7 +213,7 @@ WindowManager.prototype.findTargetWin = function(point) {
 		  nr = this.windows.length;
 		  for(var i = nr-1; i >= 0; i--) {
 				var win = this.windows[i];
-				if(!win.visible || win.insensitive || !win.focusable) {
+				if(!win.visible) {
 					 continue;
 				}
 				
@@ -204,7 +227,7 @@ WindowManager.prototype.findTargetWin = function(point) {
 	 return target;
 }
 		
-WindowManager.prototype.resize = function(w, h) {
+WWindowManager.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
 	this.postRedraw();
@@ -212,19 +235,19 @@ WindowManager.prototype.resize = function(w, h) {
 	return;
 }
 
-WindowManager.prototype.grab = function(win) {
+WWindowManager.prototype.grab = function(win) {
 	 this.grabWindows.push(win);
 	 
 	 return;
 }
 
-WindowManager.prototype.ungrab = function(win) {
+WWindowManager.prototype.ungrab = function(win) {
 	 this.grabWindows.remove(win);
 	 
 	 return;
 }
 
-WindowManager.prototype.onDoubleClick = function(point) {	
+WWindowManager.prototype.onDoubleClick = function(point) {	
 	 this.target = this.findTargetWin(point);
 	 
 	if(this.target) {
@@ -237,7 +260,7 @@ WindowManager.prototype.onDoubleClick = function(point) {
 	return;
 }
 
-WindowManager.prototype.onLongPress = function(point) {	
+WWindowManager.prototype.onLongPress = function(point) {	
 	 this.target = this.findTargetWin(point);
 	 
 	if(this.target) {
@@ -250,7 +273,7 @@ WindowManager.prototype.onLongPress = function(point) {
 	return;
 }
 
-WindowManager.prototype.onGesture = function(gesture) {	
+WWindowManager.prototype.onGesture = function(gesture) {	
 	cantkHideAllInput();
 
 	var point = {x:this.w/2, y:this.h/2};
@@ -258,7 +281,7 @@ WindowManager.prototype.onGesture = function(gesture) {
 
 	if(this.target) {
 		this.target.onGesture(gesture);
-		console.log("WindowManager.prototype.onGesture: scale=" + gesture.scale + " rotation=" + gesture.rotation);
+		console.log("WWindowManager.prototype.onGesture: scale=" + gesture.scale + " rotation=" + gesture.rotation);
 	}
 	else {
 		 console.log("Window Manager: no target for x=" + point.x + " y=" + point.y);
@@ -267,30 +290,37 @@ WindowManager.prototype.onGesture = function(gesture) {
 	return;
 }
 
-WindowManager.setInputScale = function(xInputScale, yInputScale) {	
-	WindowManager.xInputScale = xInputScale;
-	WindowManager.yInputScale = yInputScale;
+WWindowManager.setInputScale = function(xInputScale, yInputScale) {	
+	WWindowManager.xInputScale = xInputScale;
+	WWindowManager.yInputScale = yInputScale;
 
 	return;
 }
 
-WindowManager.prototype.translatePoint = function(point) {	
-	if(WindowManager.xInputScale) {
-		point.x = Math.round(point.x * WindowManager.xInputScale);
+WWindowManager.prototype.translatePoint = function(point) {	
+	if(WWindowManager.xInputScale) {
+		point.x = Math.round(point.x * WWindowManager.xInputScale);
 	}
 
-	if(WindowManager.yInputScale) {
-		point.y = Math.round(point.y * WindowManager.yInputScale);
+	if(WWindowManager.yInputScale) {
+		point.y = Math.round(point.y * WWindowManager.yInputScale);
 	}
 
 	return point;
 }
 
-WindowManager.prototype.onPointerDown = function(point) {	
+WWindowManager.prototype.onPointerDown = function(point) {	
 	cantkHideAllInput();
 
 	this.translatePoint(point);
 	this.target = this.findTargetWin(point);
+
+	for(var i = 0; i < this.windows.length; i++) {
+		var win = this.windows[i];
+		if(win.state === WWidget.STATE_SELECTED && win !== this.target) {
+			win.setState(WWidget.STATE_NORMAL);
+		}
+	}
 
 	this.pointerDown = true;
 	this.pointerDownPoint.x = point.x;
@@ -308,7 +338,7 @@ WindowManager.prototype.onPointerDown = function(point) {
 	return;
 }
 
-WindowManager.prototype.onPointerMove = function(point) {
+WWindowManager.prototype.onPointerMove = function(point) {
 	this.translatePoint(point);
 	this.target = this.findTargetWin(point);
 	  
@@ -321,7 +351,7 @@ WindowManager.prototype.onPointerMove = function(point) {
 	return;
 }
 
-WindowManager.prototype.onPointerUp = function(point) {
+WWindowManager.prototype.onPointerUp = function(point) {
 	this.translatePoint(point);
 	point = this.lastPointerPoint;
 	this.target = this.findTargetWin(point);
@@ -337,30 +367,30 @@ WindowManager.prototype.onPointerUp = function(point) {
 	return;
 }
 
-WindowManager.prototype.getLastPointerPoint = function() {
+WWindowManager.prototype.getLastPointerPoint = function() {
 	return this.lastPointerPoint;
 }
 
-WindowManager.prototype.isPointerDown= function() {
+WWindowManager.prototype.isPointerDown= function() {
 	return this.pointerDown;
 }
 
-WindowManager.prototype.isClicked = function() {
+WWindowManager.prototype.isClicked = function() {
 	var dx = Math.abs(this.lastPointerPoint.x - this.pointerDownPoint.x);
 	var dy = Math.abs(this.lastPointerPoint.y - this.pointerDownPoint.y);
 
 	return (dx < 10 && dy < 10);
 }
 
-WindowManager.prototype.isCtrlDown = function() {
+WWindowManager.prototype.isCtrlDown = function() {
 	return this.currentEvent && this.currentEvent.ctrlKey;
 }
 
-WindowManager.prototype.isAltDown = function() {
+WWindowManager.prototype.isAltDown = function() {
 	return this.currentEvent && this.currentEvent.altKey;
 }
 
-WindowManager.prototype.onContextMenu = function(point) {
+WWindowManager.prototype.onContextMenu = function(point) {
 	 this.target = this.findTargetWin(point);
 	 
 	if(this.target) {
@@ -373,7 +403,7 @@ WindowManager.prototype.onContextMenu = function(point) {
 	return;
 }
 
-WindowManager.prototype.onKeyDown = function(code) {
+WWindowManager.prototype.onKeyDown = function(code) {
 	if(!this.target) {
 		this.target = this.findTargetWin({x:50, y:50});
 		console.log("onKeyDown: findTargetWin=" + this.target);
@@ -386,7 +416,7 @@ WindowManager.prototype.onKeyDown = function(code) {
 	return;
 }
 
-WindowManager.prototype.onKeyUp = function(code) {
+WWindowManager.prototype.onKeyUp = function(code) {
 	if(this.target !== null) {
 		this.target.onKeyUp(code);
 	}
@@ -394,13 +424,25 @@ WindowManager.prototype.onKeyUp = function(code) {
 	return;
 }
 
-WindowManager.prototype.addWindow = function(win) {
+WWindowManager.prototype.onWheel = function(delta) {
+	if(!this.target) {
+		this.target = this.findTargetWin({x:50, y:50});
+		console.log("onWheel : findTargetWin=" + this.target);
+	}
+
+	if(this.target !== null) {
+		 return this.target.onWheel(delta);
+	}
+			
+	return false;
+}
+WWindowManager.prototype.addWindow = function(win) {
 	this.windows.push(win);
 	
 	return;
 }
 
-WindowManager.prototype.removeWindow = function(win) {
+WWindowManager.prototype.removeWindow = function(win) {
 	this.windows.remove(win);
 	console.log("remove nr=" + this.windows.length);
 	this.postRedraw();
@@ -408,13 +450,13 @@ WindowManager.prototype.removeWindow = function(win) {
 	return;
 }
 
-WindowManager.prototype.getFrameRate = function() {
+WWindowManager.prototype.getFrameRate = function() {
 	var duration = Date.now() - this.startTime;
 
 	return Math.round(1000  * this.drawCount / duration);
 }
 
-WindowManager.prototype.showFPS = function(maxFpsMode) {
+WWindowManager.prototype.showFPS = function(maxFpsMode) {
 	this.shouldShowFPS = true;
 	this.drawCount = 0;
 	this.startTime = Date.now();
@@ -423,7 +465,26 @@ WindowManager.prototype.showFPS = function(maxFpsMode) {
 	return this;
 }
 
-WindowManager.prototype.postRedraw = function(rect) {
+WWindowManager.prototype.getPaintEnable = function() {
+	return this.enablePaint;
+}
+
+WWindowManager.prototype.setPaintEnable = function(enablePaint) {
+	this.enablePaint = enablePaint;
+	console.log("setPaintEnable:" + enablePaint);
+
+	if(enablePaint) {
+		this.postRedraw();
+	}
+
+	return this;
+}
+
+WWindowManager.prototype.postRedraw = function(rect) {
+	if(!this.enablePaint) {
+		return;
+	}
+
 	this.requestCount++;
 
 	var manager = this;
@@ -440,7 +501,7 @@ WindowManager.prototype.postRedraw = function(rect) {
 	return;
 }
 
-WindowManager.prototype.drawWindows = function(canvas) {
+WWindowManager.prototype.drawWindows = function(canvas) {
 	var nr = this.windows.length;
 	for(var i = 0; i < nr; i++) {
 		var win = this.windows[i];
@@ -450,7 +511,7 @@ WindowManager.prototype.drawWindows = function(canvas) {
 	return;
 }
 
-WindowManager.prototype.redrawRect = function(rect) {
+WWindowManager.prototype.redrawRect = function(rect) {
 	var canvas = this.getCanvas2D();
 	canvas.save();
 	if(rect) {
@@ -464,7 +525,7 @@ WindowManager.prototype.redrawRect = function(rect) {
 	return;
 }
  
-WindowManager.prototype.draw = function() {
+WWindowManager.prototype.draw = function() {
 	var canvas = this.getCanvas2D();
 	
 	canvas.save();

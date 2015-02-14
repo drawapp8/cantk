@@ -3,6 +3,7 @@ var C_UI_ELEMENTS = "";
 function cantkRegisterUIElements() {
 	var shapeFactory = ShapeFactoryGet();
 
+//	shapeFactory.addShapeCreator(new UIVScrollViewGeneralCreator(), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UIImageValueCreator(200, 200, null), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UICircleLayoutCreator(400, 400), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UIVScrollImageCreator(), C_UI_ELEMENTS);
@@ -85,6 +86,7 @@ function cantkRegisterUIElements() {
 	shapeFactory.addShapeCreator(new UICheckBoxCreator(160, 60, null, null, null, null,	null, null), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UIRadioBoxCreator(50, 50, null, null, null, null, null, null), C_UI_ELEMENTS);
 	shapeFactory.addShapeCreator(new UICanvasCreator(200, 200), C_UI_ELEMENTS);
+	shapeFactory.addShapeCreator(new UIUnkownCreator(), C_UI_ELEMENTS);
 
 	return;
 }

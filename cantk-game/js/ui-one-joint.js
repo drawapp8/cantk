@@ -27,10 +27,6 @@ UIOneJoint.prototype.initUIOneJoint = function(type, w, h, bg) {
 }
 
 UIOneJoint.prototype.paintSelfOnly = function(canvas) {
-	if(!this.runtimeVisible && this.mode != Shape.MODE_EDITING && !this.isIcon) {
-		return;
-	}
-
 	var x = this.w >> 1;
 	var y = this.h >> 1;
 

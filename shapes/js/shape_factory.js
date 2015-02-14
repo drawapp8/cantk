@@ -10,22 +10,12 @@
 var C_CREATE_FOR_USER = 0;
 var C_CREATE_FOR_ICON = 1;
 var C_CREATE_FOR_PROGRAM = 2;
-var C_CATE_RECENT_USED = "Recent Used";
 
 function ShapeCreator(type, name, icon, visible) {
 	this.type = type;
 	this.icon = icon;
 	this.name = name;
 	this.visible = visible;
-	this.useCount = 0;// cantkLocalStorageGetInt(type);
-
-	this.incUseCount = function() {
-		this.useCount++;
-
-		//cantkLocalStorageSet(this.type, this.useCount);
-
-		return;
-	}
 
 	this.isVisibleToUser = function() {
 		return this.visible;
@@ -65,21 +55,13 @@ function ShapeFactory() {
 	this.categories = {};
 	this.categoryNames = [];
 	this.diagramTypes = [];
-	this.OnCategoryChangeListeners = {};
+	this.listeners = [];
 
-	this.setOnCategoryChangeListener = function(category, listener) {
-		this.OnCategoryChangeListeners[category] = listener;
-
-		return;
-	}
+	ShapeFactory.CATEGORY_RECENT_USED = "Recent Used";
+	ShapeFactory.CATEGORY_USER_COMPONENTS = "User Component";
 
 	this.setDefaultCategory = function(defaultCategory) {
 		this.defaultCategory = defaultCategory;
-		var listener = this.OnCategoryChangeListeners[defaultCategory];
-
-		if(listener) {
-			listener(defaultCategory);
-		}
 
 		return;
 	}
@@ -103,16 +85,13 @@ function ShapeFactory() {
 	}
 
 	this.removeShapeCreator = function(type, category) {
-		var c = this.find(type);
-		var creators = this.categories[category];
-		if(c) {
-			this.creators.remove(c);
-
-			if(creators) {
-				creators.remove(c);
-				if(creators.length === 0) {
-				//	this.categoryNames.remove(category);
-				}
+		var creator = this.find(type);
+		var categoryCreators = this.categories[category];
+		if(creator) {
+			this.creators.remove(creator);
+			if(categoryCreators) {
+				categoryCreators.remove(creator);
+				this.notifyChanged("remove", category, creator);
 			}
 		}
 
@@ -122,6 +101,10 @@ function ShapeFactory() {
 	this.isPlacehodler = function(category) {
 		return category === "---";
 	}
+	
+	this.isUserComponents = function(category) {
+		return category === ShapeFactory.CATEGORY_USER_COMPONENTS;
+	}
 
 	this.addPlaceholder = function() {
 		this.categoryNames.push("---");
@@ -130,13 +113,14 @@ function ShapeFactory() {
 	}
 
 	this.loadRecentUsedShapeCreators = function() {
-		var types = localStorage.recentUsed ? JSON.parse(localStorage.recentUsed) : [];
+		var str = WebStorage.get("recentUsed");
+		var types = str ? JSON.parse(str) : [];
 
 		for(var i = 0; i < types.length; i++) {
 			var type = types[i];
 			var creator = this.find(type);
 			if(creator) {
-				this.addShapeCreator(creator, C_CATE_RECENT_USED);
+				this.addShapeCreator(creator, ShapeFactory.CATEGORY_RECENT_USED);
 				this.recentUsed.push(type);
 			}
 		}
@@ -153,14 +137,16 @@ function ShapeFactory() {
 			if(this.recentUsed.length > 10) {
 				this.recentUsed.shift();
 			}
-			localStorage.recentUsed = JSON.stringify(this.recentUsed);
+			WebStorage.set("recentUsed", JSON.stringify(this.recentUsed));
 
-			this.addShapeCreator(creator, C_CATE_RECENT_USED);
+			this.addShapeCreator(creator, ShapeFactory.CATEGORY_RECENT_USED);
 		}
 	}
 
 	this.addShapeCreator = function(creator, category) {
-		if(category != C_CATE_RECENT_USED) {
+		this.notifyChanged("add", category, creator);
+
+		if(category != ShapeFactory.CATEGORY_RECENT_USED) {
 			this.creators.push(creator);
 		}
 
@@ -172,7 +158,7 @@ function ShapeFactory() {
 			if(!this.categories[category]) {
 				this.categories[category] = [];
 
-				if(category == C_CATE_RECENT_USED) {
+				if(category == ShapeFactory.CATEGORY_RECENT_USED) {
 					this.categoryNames.unshift(category);
 				}
 				else {
@@ -181,7 +167,7 @@ function ShapeFactory() {
 			}
 			
 			this.categories[category].remove(creator);
-			if(category == C_CATE_RECENT_USED) {
+			if(category == ShapeFactory.CATEGORY_RECENT_USED) {
 				this.categories[category].unshift(creator);
 			}
 			else {
@@ -197,19 +183,6 @@ function ShapeFactory() {
 		return this.categoryNames;
 	}
 	
-	this.sortDefaultCategoryByUseCount = function() {
-		return;
-		var arr = this.categories[this.defaultCategory];
-	
-		if(arr && arr.length > 30) {
-			arr.sort(function(a, b) { 
-				return b.useCount - a.useCount;
-			});
-		}
-
-		return;
-	}
-
 	this.getDefaultCategory = function() {
 		return this.categories[this.defaultCategory];
 	}
@@ -229,34 +202,77 @@ function ShapeFactory() {
 		return null;
 	}
 
-	this.createShape = function(type, createReason) {
+	this.createShape = function(type, createReason, exactly) {
+		if(!type) {
+			return null;
+		}
+
 		var c = this.find(type);
 		if(c) {
-			c.incUseCount();
 			return c.createShape(createReason);
 		}
-		else {
+		
+		console.log("not found type " + type + ", create ui-unkown instead.");
+
+		if(!exactly) {
+			c = this.find("ui-unkown");
+			if(c) {
+				return c.createShape(createReason);
+			}
+
 			return null;
 		}
 	}
+
+	this.addListener = function(func) {
+		this.listeners.push(func);
+
+		return this;
+	}
+
+	this.removeListener = function(func) {
+		this.listeners.remove(func);
+
+		return this;
+	}
 	
+	this.notifyChanged = function(type, category, creator) {
+		var listeners = this.listeners;
+		for(var i = 0; i < listeners.length; i++) {
+			var func = listeners[i];
+			if(func) {
+				func(type, category, creator);
+			}
+		}
+
+		return;
+	}
+
 	return;
 }
 
-var gShapeFactory = null;
+ShapeFactory.instance = null;
 
-function ShapeFactoryGet() {
-	if(!gShapeFactory) {
-		gShapeFactory = new ShapeFactory();
-
+ShapeFactory.getInstance = function() {
+	if(!ShapeFactory.instance) {
+		ShapeFactory.instance = new ShapeFactory();
 		setTimeout(function() {
-			gShapeFactory.loadRecentUsedShapeCreators();
+			ShapeFactory.instance.loadRecentUsedShapeCreators();
 		}, 2000);
 	}
 
-	return gShapeFactory;
+	return ShapeFactory.instance;
+}
+
+
+function ShapeFactoryGet() {
+	return ShapeFactory.getInstance();
 }
 
 function dappSetDefaultCategory(name) {
-	return ShapeFactoryGet().setDefaultCategory(name);
+	return ShapeFactory.getInstance().setDefaultCategory(name);
+}
+
+function cantkRegShapeCreator(creator, category) {
+	return ShapeFactory.getInstance().addShapeCreator(creator, category);
 }

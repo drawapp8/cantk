@@ -196,10 +196,6 @@ UIScrollView.prototype.animScrollTo = function(distance, duration) {
 		distance = startOffset;
 	}
 	
-	if(Math.abs(distance) > 100) {
-		//this.prepareCache(this.offset, distance);
-	}
-
 	function scrollIt() {
 		var now = new Date();
 		var nowTime = now.getTime();
@@ -217,7 +213,6 @@ UIScrollView.prototype.animScrollTo = function(distance, duration) {
 			var offset = startOffset - distance;
 			scrollview.scrollBarOpacity = 0;
 			scrollview.scrollTo(offset);
-			scrollview.removeCache();
 		}
 		scrollview.postRedraw();
 
@@ -230,14 +225,6 @@ UIScrollView.prototype.animScrollTo = function(distance, duration) {
 }
 
 UIScrollView.prototype.onOutOfRange = function(offset) {
-	return;
-}
-
-UIScrollView.prototype.prepareCache = function(offset, range) {
-}
-
-UIScrollView.prototype.removeCache = function() {
-
 	return;
 }
 

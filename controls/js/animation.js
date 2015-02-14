@@ -215,28 +215,35 @@ function DecelerateInterpolator(factor) {
 
 //////////////////////////////////////////////////////////////////////
 function AnimationFactory() {
-	this.animations = [];
-
-	this.createAnimation = function(name) {
+	this.createAnimation = function(name, duration) {
 		UIElement.getMainCanvasScale(true);
-		var animation = this.animations[name];
-		if(animation) {
-			return animation;
-		}
-		var durationWeight = isIPhone() ? 2 : 3;
+		var defaultDuration = isIPhone() ? 400 : 600;
+		duration = duration ? duration : defaultDuration;
 		switch(name) {
 			case "anim-forward": {
 				var interpolator =  new DecelerateInterpolator();
-				animation = isAndroid() ? new AnimationHTranslateAndroid(true) : new AnimationHTranslate(true);
+				animation = isAndroid() ? new AnimationHTranslate(true) : new AnimationHTranslate(true);
 				animation.toLeft();
-				animation.init(200 * durationWeight, interpolator);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-backward": {
 				var interpolator =  new DecelerateInterpolator();
-				animation = isAndroid() ? new AnimationHTranslateAndroid(true) : new AnimationHTranslate(false);
+				animation = isAndroid() ? new AnimationHTranslate(false) : new AnimationHTranslate(false);
 				animation.toRight();
-				animation.init(200 * durationWeight, interpolator);
+				animation.init(duration, interpolator);
+				break;
+			}
+			case "anim-upward": {
+				var interpolator =  new DecelerateInterpolator();
+				animation = new AnimationVTranslate(true);
+				animation.init(duration, interpolator);
+				break;
+			}
+			case "anim-downward": {
+				var interpolator =  new DecelerateInterpolator();
+				animation = new AnimationVTranslate(false);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-scale-show-win": {
@@ -249,7 +256,7 @@ function AnimationFactory() {
 					animation = new AnimationScale(true);
 					animation.setRange(0.9, 1.0);
 				}
-				animation.init(600, interpolator);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-scale-hide-win": {
@@ -262,21 +269,23 @@ function AnimationFactory() {
 					animation = new AnimationScale(false);
 					animation.setRange(1.0, 0.9);
 				}
-				animation.init(400, interpolator);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-scale-show-dialog": {
+				duration = duration ? duration : 300;
 				var interpolator =  new DecelerateInterpolator();
 				animation = isAndroid() ? new AnimationBrowserScaleDialog(true) : new AnimationScale(true);
 				animation.setRange(0.9, 1.0);
-				animation.init(300, interpolator);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-scale-hide-dialog": {
+				duration = duration ? duration : 300;
 				var interpolator =  new AccelerateInterpolator();
 				animation = isAndroid() ? new AnimationBrowserScaleDialog(false) : new AnimationScale(false);
 				animation.setRange(1.0, 0.9);
-				animation.init(300, interpolator);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-fade-in": {
@@ -296,13 +305,13 @@ function AnimationFactory() {
 			case "anim-move-up": {
 				var interpolator =  new DecelerateInterpolator();
 				animation = isMobile() ? new AnimationBrowserMove(true) : new AnimationMove(true);
-				animation.init(600, interpolator);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-move-down": {
 				var interpolator =  new AccelerateInterpolator();
 				animation = isMobile() ? new AnimationBrowserMove(false) : new AnimationMove(false);
-				animation.init(600, interpolator);
+				animation.init(duration, interpolator);
 				break;
 			}
 			case "anim-expand-up": 
@@ -360,20 +369,42 @@ function AnimationFactory() {
 			
 		}
 		
-		this.animations[name] = animation;
-
 		return animation;
 	}
 
 	return this;
 }
 
-AnimationFactory.create = function(name) {
+AnimationFactory.createInterpolator = function(name, args) {
+	switch(name) {
+		case 'l': 
+		case 'linear': {
+			return new LinearInterpolator();
+		}
+		case 'b':
+		case 'bounce': {
+			return new BounceInterpolator();
+		}
+		case 'a':
+		case 'accelerate': {
+			return new AccelerateInterpolator();
+		}
+		case 'ad':
+		case 'accelerate-decelerate': {
+			return new AccDecelerateInterpolator();
+		}
+		default: {
+			return new DecelerateInterpolator();
+		}
+	}
+}
+
+AnimationFactory.create = function(name, duration) {
 	if(!AnimationFactory.instance) {
 		AnimationFactory.instance = new AnimationFactory();
 	}
 
-	return AnimationFactory.instance.createAnimation(name);
+	return AnimationFactory.instance.createAnimation(name, duration);
 }
 
 Animation.getCanvas = function() {
@@ -579,6 +610,7 @@ function Animation(showWin) {
 		animation.isFirstStep = true;
 
 		this.beforeRun();
+		WWindowManager.getInstance().setPaintEnable(false);
 
 		function animStep() {
 			var percent = 0;
@@ -593,6 +625,7 @@ function Animation(showWin) {
 			else {
 				animation.cleanup();
 				animation.afterRun();
+				WWindowManager.getInstance().setPaintEnable(true);
 				console.log("Animation done.");
 			}
 			animation.isFirstStep = false;
@@ -678,6 +711,20 @@ function scaleElement(element, scale, opacity, xOrigin, yOrigin) {
 	return;
 }
 
+function rotateElement(element, deg) {
+	var origin = "50% 50%";
+	var transforms = ["transform", "-ms-transform", "-webkit-transform", "-o-transform", "-moz-transform"];
+
+	element.style['transform-style'] = "preserve-3d";
+	for(var i = 0; i < transforms.length; i++) {
+		var trans = transforms[i];
+		element.style[trans + "-origin"] = origin;
+		element.style[trans] = "rotate("+deg+"deg)";
+	}
+
+	return;
+}
+
 function AnimationHTranslateAndroid() {
 	Animation.apply(this, arguments);
 	
@@ -736,6 +783,36 @@ function AnimationHTranslateAndroid() {
 		}
 
 		moveElement(Animation.backendCanvas, -ox+this.x, this.y);
+
+		return true;
+	}
+}
+
+function AnimationVTranslate(showWin) {
+	Animation.apply(this, arguments);
+
+	this.beforeRun = function() {
+		this.range = this.frontH;
+		this.canvas = this.canvasElement.getContext("2d");
+
+		return true;;
+	}
+
+	this.step = function(percent) {
+		var x = this.frontX;
+		var y = this.frontY;
+		var w = this.frontW;
+		var dy = this.range * percent;
+		var h = this.showWin ? dy : (this.range - dy);		
+		var oy = this.showWin ? (this.frontY + this.range - dy) : (this.frontY + dy);
+
+		if(oy > 0) {
+			this.canvas.drawImage(this.canvasImage, 0, this.h - oy, w, oy, 0, 0, w, oy);
+		}
+
+		if(h > 0) {
+			this.canvas.drawImage(this.canvasImage, x+this.w, y, w, h, x, oy, w, h);
+		}
 
 		return true;
 	}

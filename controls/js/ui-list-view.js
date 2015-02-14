@@ -25,6 +25,8 @@ UIListView.prototype.afterChildAppended = UIList.prototype.afterChildAppended;
 UIListView.prototype.childIsBuiltin = UIList.prototype.childIsBuiltin;
 UIListView.prototype.onKeyUpRunning = UIList.prototype.onKeyUpRunning;
 UIListView.prototype.onKeyDownRunning = UIList.prototype.onKeyDownRunning;
+UIListView.prototype.getValue = UIList.prototype.getValue;
+UIListView.prototype.setValue = UIList.prototype.setValue;
 
 UIListView.UPDATE_STATUS_NONE = 0;
 UIListView.UPDATE_STATUS_TIPS = 1;
@@ -68,6 +70,7 @@ UIListView.prototype.initUIListView = function(type, border, itemHeight, bg) {
 	this.initUIVScrollView(type, 0, bg, null);	
 	this.updateStatus = UIListView.UPDATE_STATUS_NONE;
 	this.addEventNames(["onUpdateData"]);
+	this.setTextType(Shape.TEXT_INPUT);
 
 	return this;
 }
@@ -298,13 +301,7 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 	return;
 }
 
-UIListView.prototype.drawText = function(canvas) {
-	if(this.children.length == 0 && this.text) {
-		this.defaultDrawText(canvas);
-	}
-
-	return;
-}
+UIListView.prototype.drawText = UIList.prototype.drawText;
 
 UIListView.prototype.afterPaintChildren = function(canvas) {
 	this.drawScrollBar(canvas);

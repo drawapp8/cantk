@@ -55,10 +55,6 @@ UIList.prototype.shapeCanBeChild = function(shape) {
 	return true;
 }
 
-UIList.prototype.paintSelfOnly =function(canvas) {
-	return;
-}
-
 UIList.prototype.childIsBuiltin = function(child) {
 	return child.name === "ui-list-item-update-status" 
 		|| child.name === "ui-list-item-update-tips"
@@ -282,6 +278,64 @@ UIList.prototype.onKeyUpRunning = function(code) {
 }
 
 UIList.prototype.onKeyDownRunning = function(code) {
+}
+
+UIList.prototype.getValue = function() {
+	var ret = null;
+	var n = this.children.length;
+	if(n < 1) return ret;
+	
+	for(var i = 0; i < n; i++) {
+		var iter = this.children[i];
+		if(!iter.isUIListCheckableItem || !iter.value) continue;
+
+		if(iter.isRadio) {
+			return i;	
+		}
+		else {
+			if(!ret) ret = [];
+			ret.push(i);
+		}
+	}
+
+	if(!ret && this.targetShape) {
+		ret = this.targetShape.getZIndex();
+	}
+
+	return ret;
+}
+
+UIList.prototype.setValue = function(value) {
+	var arr = null;
+	if(typeof value === "array") {
+		arr = value;
+	}
+	else if(typeof value === "number") {
+		arr = [value];
+	}
+	else {
+		arr = [];
+	}
+
+	var n = this.children.length;
+	for(var i = 0; i < n; i++) {
+		var item = this.children[i];
+		if(item.isUIListCheckableItem) {
+			item.setValue(false);
+		}
+	}
+
+	for(var i = 0; i < arr.length; i++) {
+		var index = arr[i];
+		if(index >= 0 && index < n) {
+			var item = this.children[index];
+			if(item.isUIListCheckableItem) {
+				item.setChecked(true);
+			}
+		}
+	}
+
+	return this;
 }
 
 function UIListCreator(border, itemHeight, bg) {

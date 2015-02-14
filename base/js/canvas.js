@@ -150,6 +150,7 @@ function canvasMaxizeIt(canvas, inlineEdit) {
 	canvas.style.position = "absolute";
 	canvas.style.top = 0;
 	canvas.style.left = 0;
+	canvas.style.zIndex = 0;
 
 	if(inlineEdit || isMobile()) {
 		canvas.width  = view.width;
@@ -180,6 +181,7 @@ function canvasCreate(id) {
 		canvas = document.getElementById(id);
 		if(!canvas) {
 			canvas = document.createElement("canvas"); 
+			canvas.style.zIndex = 0;
 			canvas.id = id;
 
 			document.body.appendChild(canvas); 
@@ -299,6 +301,22 @@ function canvasAttachManager(canvas, manager, app) {
 	else if(!isMobile()) {
 		cantkAddEventListener('keyup', onKeyUp);
 		cantkAddEventListener('keydown', onKeyDown);
+		
+		function onWheelEvent(event) {
+			if(EditorElement.imeOpen) return true;
+
+			event = window.event || event ;
+			var delta = event.wheelDelta ? event.wheelDelta : 0;
+			if(delta) {
+				if(manager.onWheel(delta)) {
+					return cancelDefaultAction(event);
+				}
+			}
+			return true;
+		}
+
+		cantkAddEventListener('mousewheel', onWheelEvent);
+		cantkAddEventListener('DOMMouseScroll', onWheelEvent);
 	}
 
 ///////////////////////////////////////////////////////////////
@@ -461,9 +479,29 @@ function canvasAttachManager(canvas, manager, app) {
 ///////////////////////////////////////////////////////////////	
 	var gViewPort = cantkGetViewPort();
 	var gScreenHeight = screen.height;
+
+	function handleInputMethodShow() {
+		console.log("input method show");
+	}
+
+	function handleInputMethodHide() {
+		console.log("input method hide");
+	}
+
 	function handleScreenSizeChanged() {
 		var vp = cantkGetViewPort();
 	   if(gViewPort.width != vp.width || gViewPort.height != vp.height) {
+	   		if(gViewPort.width === vp.width) {
+	   			if(gViewPort.height < vp.height) {
+	   				handleInputMethodHide();
+	   			}
+	   			else {
+	   				handleInputMethodShow();
+	   			}
+
+	   			return;
+	   		}
+
 			app.onSizeChanged();
 			gViewPort = vp;
 	   }

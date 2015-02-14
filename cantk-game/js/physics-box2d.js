@@ -39,10 +39,14 @@ Physics.createFixtureDef = function(world, element) {
 	}
 	
 	if(element.isUICircle || element.physicsShape === "circle") {
+		hw = element.getWidth(true) >> 1;
+		hh = element.getHeight(true) >> 1;
 		var radius = Physics.toMeter(Math.min(hw, hh));
 		fixtureDef.shape = new b2CircleShape(radius);
 	}
 	else if(element.isUIBox || element.physicsShape === "rectangle") {
+		hw = element.getWidth(true) >> 1;
+		hh = element.getHeight(true) >> 1;
 		fixtureDef.shape = new b2PolygonShape();
 		fixtureDef.shape.SetAsBox(Physics.toMeter(hw), Physics.toMeter(hh));
 	}
@@ -137,6 +141,10 @@ Physics.createBody = function(world, element) {
 
 	if(!element.enable) {
 		body.SetActive(false);
+	}
+
+	if(element.xInitVelocity || element.yInitVelocity) {
+		element.setV(element.xInitVelocity, element.yInitVelocity);
 	}
 
 	return body;
@@ -498,7 +506,6 @@ Physics.destroyWorld = function(world) {
 		}
 		
 		world.DestroyBody(b);
-		Object.destroy(b);
 
 		b = next;
 	}while(true);
@@ -513,15 +520,13 @@ Physics.destroyWorld = function(world) {
 		}
 			
 		world.DestroyJoint(joint);
-		Object.destroy(joint);
 
 		joint = next;
 	}while(true);
 
-	Object.destroy(world);
-
 	return;
 }
+
 Physics.reparentPhysicsToScene = function(scene) {
 	var arr = [];
 
@@ -562,7 +567,7 @@ Physics.createWorld = function(scene) {
 	var minX = -scene.w >> 1;
 	var minY = -scene.h >> 1;
 	var fps = scene.fps ? scene.fps : 30;
-	var doSleep = scene.doSleep ? scene.doSleep : true;
+	var allowSleep = scene.allowSleep ? scene.allowSleep : true;
 	var gravityX = scene.gravityX ? scene.gravityX : 0;
 	var gravityY = scene.gravityY ? scene.gravityY : 0;
 	var pixelsPerMeter = scene.pixelsPerMeter ? scene.pixelsPerMeter : 10; 
@@ -575,7 +580,7 @@ Physics.createWorld = function(scene) {
 	worldAABB.lowerBound.Set(minX, minY);
 	worldAABB.upperBound.Set(maxX, maxY);
 
-	world = new b2World(gravity, doSleep);
+	world = new b2World(gravity, allowSleep);
 
 	Physics.createWorldShapes(world, scene);
 	Physics.createWorldJoints(world, scene, scene);
@@ -596,10 +601,10 @@ Physics.createWorld = function(scene) {
 			}
 			setTimeout(function() {
 				if(body1.element) {
-					body1.element.callOnBeginContact(body2);
+					body1.element.callOnBeginContactHandler(body2);
 				}
 				if(body2.element) {
-					body2.element.callOnBeginContact(body1);
+					body2.element.callOnBeginContactHandler(body1);
 				}
 			}, 5);
 		}
@@ -621,10 +626,10 @@ Physics.createWorld = function(scene) {
 
 			setTimeout(function() {
 				if(body1.element) {
-					body1.element.callOnEndContact(body2);
+					body1.element.callOnEndContactHandler(body2);
 				}
 				if(body2.element) {
-					body2.element.callOnEndContact(body1);
+					body2.element.callOnEndContactHandler(body1);
 				}
 			}, 5);
 		}
