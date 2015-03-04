@@ -33,7 +33,7 @@ Features
 
 6. Game engine integration, cocos2d, panda.js, phaser.js, pixi.js, etc.
 
-7. Easy to use, you can create application with Gamebuilder(http://gamebuilder.duapp.com/gamebuilder.php)/AppBuilder(http://gamebuilder.duapp.com/appbuilder.php) by drag & drop.
+7. Easy to use, you can create application with [Gamebuilder](http://gamebuilder.duapp.com/gamebuilder.php)/[AppBuilder](http://gamebuilder.duapp.com/appbuilder.php) by drag & drop.
 
 8. Easy to extension, there are several ways to extend existed controls to get different appearance or function.
 
