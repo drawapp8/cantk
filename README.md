@@ -33,7 +33,7 @@ Features
 
 6. Game engine integration, cocos2d, panda.js, phaser.js, pixi.js, etc.
 
-7. Easy to use, you can create application with Gamebuilder(gamebuilder.duapp.com)/画APP吧(www.drawapp8.com) by drag & drop.
+7. Easy to use, you can create application with Gamebuilder(http://gamebuilder.duapp.com/gamebuilder.php)/AppBuilder(http://gamebuilder.duapp.com/appbuilder.php) by drag & drop.
 
 8. Easy to extension, there are several ways to extend existed controls to get different appearance or function.
 
@@ -52,11 +52,9 @@ Documentation
 
 * 1.[Application Programming Interface](https://github.com/drawapp8/cantk/wiki/English-API)
 
-* 2.[Chinese Introduction](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
+* 2.[中文文档](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
 
 * 3.QQ HTML游戏群: 223466431
-
-* 4.作者微信号： xianjim
 
 
 Screenshots
