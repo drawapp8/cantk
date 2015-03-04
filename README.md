@@ -51,11 +51,8 @@ Documentation
 ==============================================
 
 * 1.[Application Programming Interface](https://github.com/drawapp8/cantk/wiki/English-API)
-
 * 2.[中文介绍](https://github.com/drawapp8/cantk/wiki/Chinese-Introduction)
-* 
 * 3.[中文文档](https://github.com/drawapp8/cantk/wiki/CanTK%E4%B8%AD%E6%96%87%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3)
-
 * 4.QQ HTML游戏群: 223466431
 
 
