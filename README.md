@@ -50,7 +50,7 @@ Online Design Tools
 Documentation
 ==============================================
 
-#### 1.[English Docs]([English Docs](https://github.com/drawapp8/cantk/wiki/English-Docs)
+#### 1.[English Docs](https://github.com/drawapp8/cantk/wiki/English-Docs)
 
 #### 2.[中文文档](https://github.com/drawapp8/cantk/wiki/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3)
 
