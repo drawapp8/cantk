@@ -248,3 +248,6 @@ function UIScrollTextCreator(type, w, h) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIScrollTextCreator("ui-vscroll-text", 200, 200));
+ShapeFactoryGet().addShapeCreator(new UIScrollTextCreator("ui-hscroll-text", 200, 50));
+

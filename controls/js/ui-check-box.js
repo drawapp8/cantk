@@ -193,3 +193,5 @@ function UICheckBoxCreator(w, h) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UICheckBoxCreator(160, 60, null, null, null, null,null, null));
+

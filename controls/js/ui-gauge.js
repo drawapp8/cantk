@@ -245,3 +245,7 @@ function UIGaugePointerCreator() {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIGaugePointerCreator());
+ShapeFactoryGet().addShapeCreator(new UIGaugeCreator());
+

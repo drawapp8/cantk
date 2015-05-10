@@ -250,7 +250,7 @@ UIElement.prototype.callOnClickHandler = function(point) {
 		try {
 			this.handleClick(point);
 		}catch(e) {
-			console.log("this.handleClick:" + e.message);
+			console.log("this.handleClick:" + e.message + "\n" + e.stack);
 		}
 	}
 
@@ -370,7 +370,7 @@ UIElement.prototype.callOnChildDraggedHandler = function(sourceChildIndex, targe
 }
 
 UIElement.prototype.callOnChangingHandler = function(value) {
-	if(!this.enable) {
+	if(!this.enable || this.mode === Shape.MODE_EDITING) {
 		return false;
 	}
 
@@ -398,7 +398,7 @@ UIElement.prototype.callOnChangingHandler = function(value) {
 }
 
 UIElement.prototype.callOnChangedHandler = function(value) {
-	if(!this.enable) {
+	if(!this.enable || this.mode === Shape.MODE_EDITING) {
 		return false;
 	}
 
@@ -448,7 +448,7 @@ UIElement.prototype.callOnInitHandler = function() {
 		try {
 			this.handleOnInit();
 		}catch(e) {
-			console.log("this.handleOnInit:" + e.message);
+			console.log("this.handleOnInit:" + e.message + "\n" + e.stack);
 		}
 	}
 
@@ -523,7 +523,7 @@ UIElement.prototype.callOnFocusOutHandler = function() {
 
 /////////////////////////////////////////////////////////
 
-UIListView.prototype.callOnUpdateDataHandler = function() {
+UIElement.prototype.callOnUpdateDataHandler = function() {
 	if(!this.handleOnUpdateData) {
 		var sourceCode = this.events["onUpdateData"];
 		if(sourceCode) {
@@ -549,7 +549,7 @@ UIListView.prototype.callOnUpdateDataHandler = function() {
 
 ///////////////////////////////////////////////////////////////////
 
-UIWindow.prototype.callOnGestureHandler = function(gesture) {
+UIElement.prototype.callOnGestureHandler = function(gesture) {
 	if(!this.enable) {
 		return false;
 	}
@@ -579,7 +579,7 @@ UIWindow.prototype.callOnGestureHandler = function(gesture) {
 	return true;
 }
 
-UIWindow.prototype.callOnBeforeOpenHandler = function(initData) {
+UIElement.prototype.callOnBeforeOpenHandler = function(initData) {
 	if(!this.handleOnBeforeOpen) {
 		var sourceCode = this.events["onBeforeOpen"];
 		if(sourceCode) {
@@ -603,7 +603,7 @@ UIWindow.prototype.callOnBeforeOpenHandler = function(initData) {
 	return true;
 }
 
-UIWindow.prototype.callOnOpenHandler = function(initData) {
+UIElement.prototype.callOnOpenHandler = function(initData) {
 	if(!this.handleOnOpen) {
 		var sourceCode = this.events["onOpen"];
 		if(sourceCode) {
@@ -627,7 +627,7 @@ UIWindow.prototype.callOnOpenHandler = function(initData) {
 	return true;
 }
 
-UIWindow.prototype.callOnCloseHandler = function(retInfo) {
+UIElement.prototype.callOnCloseHandler = function(retInfo) {
 	if(!this.handleOnClose) {
 		var sourceCode = this.events["onClose"];
 		if(sourceCode) {
@@ -652,7 +652,7 @@ UIWindow.prototype.callOnCloseHandler = function(retInfo) {
 	return true;
 }
 
-UIWindow.prototype.callOnSwitchToBackHandler =function() {
+UIElement.prototype.callOnSwitchToBackHandler =function() {
 	if(!this.handleOnSwitchToBack) {
 		var sourceCode = this.events["onSwitchToBack"];
 		if(sourceCode) {
@@ -674,12 +674,10 @@ UIWindow.prototype.callOnSwitchToBackHandler =function() {
 		}
 	}
 
-	this.hide();
-
 	return true;
 }
 
-UIWindow.prototype.callOnSwitchToFrontHandler = function() {
+UIElement.prototype.callOnSwitchToFrontHandler = function() {
 	if(!this.handleOnSwitchToFront) {
 		var sourceCode = this.events["onSwitchToFront"];
 		if(sourceCode) {
@@ -704,7 +702,7 @@ UIWindow.prototype.callOnSwitchToFrontHandler = function() {
 	return true;
 }
 
-UIWindow.prototype.callOnLoadHandler =function() {
+UIElement.prototype.callOnLoadHandler =function() {
 	if(!this.handleOnLoad) {
 		var sourceCode = this.events["onLoad"];
 		if(sourceCode) {
@@ -729,7 +727,7 @@ UIWindow.prototype.callOnLoadHandler =function() {
 	return true;
 }
 
-UIWindow.prototype.callOnUnloadHandler =function() {
+UIElement.prototype.callOnUnloadHandler =function() {
 	if(!this.handleOnUnload) {
 		var sourceCode = this.events["onUnload"];
 		if(sourceCode) {
@@ -778,23 +776,15 @@ UIElement.prototype.callOnMovedHandler = function() {
 	}
 
 	if(this.cameraFollowMe) {
-		if(!this.xOffsetInWin) {
-			this.xOffsetInWin = this.x;
-		}
-		if(!this.yOffsetInWin) {
-			this.yOffsetInWin = this.y;
-		}
-		var dx = this.x - this.xOffsetInWin;
-		var dy = this.y - this.yOffsetInWin;
-		this.getWindow().setOffset(dx, dy);
+		this.getWindow().cameraFollow(this);
 	}
 
 	return true;
 }
 
-UIElement.prototype.callOnBeginContactHandler = function(body) {
+UIElement.prototype.callOnBeginContactHandler = function(body, contact) {
 	if(this.onBeginContact) {
-		this.onBeginContact(body);
+		this.onBeginContact(body, contact);
 
 		return;
 	}
@@ -802,7 +792,7 @@ UIElement.prototype.callOnBeginContactHandler = function(body) {
 	if(!this.handleOnBeginContact) {
 		var sourceCode = this.events["onBeginContact"];
 		if(sourceCode) {
-			sourceCode = "this.handleOnBeginContact = function(body) {\n" + sourceCode + "\n}\n";
+			sourceCode = "this.handleOnBeginContact = function(body, contact) {\n" + sourceCode + "\n}\n";
 			try {
 				eval(sourceCode);
 			}catch(e) {
@@ -813,7 +803,7 @@ UIElement.prototype.callOnBeginContactHandler = function(body) {
 
 	if(this.handleOnBeginContact) {
 		try {
-			this.handleOnBeginContact(body);
+			this.handleOnBeginContact(body, contact);
 		}catch(e) {
 			console.log("this.handleOnBeginContact:" + e.message);
 		}
@@ -822,9 +812,9 @@ UIElement.prototype.callOnBeginContactHandler = function(body) {
 	return true;
 }
 
-UIElement.prototype.callOnEndContactHandler = function(body) {
+UIElement.prototype.callOnEndContactHandler = function(body, contact) {
 	if(this.onEndContact) {
-		this.onEndContact(body);
+		this.onEndContact(body, contact);
 
 		return;
 	}
@@ -832,7 +822,7 @@ UIElement.prototype.callOnEndContactHandler = function(body) {
 	if(!this.handleOnEndContact) {
 		var sourceCode = this.events["onEndContact"];
 		if(sourceCode) {
-			sourceCode = "this.handleOnEndContact = function(body) {\n" + sourceCode + "\n}\n";
+			sourceCode = "this.handleOnEndContact = function(body, contact) {\n" + sourceCode + "\n}\n";
 			try {
 				eval(sourceCode);
 			}catch(e) {
@@ -843,7 +833,7 @@ UIElement.prototype.callOnEndContactHandler = function(body) {
 
 	if(this.handleOnEndContact) {
 		try {
-			this.handleOnEndContact(body);
+			this.handleOnEndContact(body, contact);
 		}catch(e) {
 			console.log("this.handleOnEndContact:" + e.message);
 		}
@@ -877,7 +867,7 @@ UIElement.prototype.callOnAnimateDoneHandler = function(name) {
 	return true;
 }
 
-UIWindow.prototype.callOnSwipeLeftHandler = function() {
+UIElement.prototype.callOnSwipeLeftHandler = function() {
 	if(!this.handleOnSwipeLeft) {
 		var sourceCode = this.events["onSwipeLeft"];
 		if(sourceCode) {
@@ -901,7 +891,7 @@ UIWindow.prototype.callOnSwipeLeftHandler = function() {
 	return true;
 }
 
-UIWindow.prototype.callOnSwipeRightHandler = function() {
+UIElement.prototype.callOnSwipeRightHandler = function() {
 	if(!this.handleOnSwipeRight) {
 		var sourceCode = this.events["onSwipeRight"];
 		if(sourceCode) {
@@ -925,7 +915,7 @@ UIWindow.prototype.callOnSwipeRightHandler = function() {
 	return true;
 }
 
-UIWindow.prototype.callOnSwipeUpHandler = function() {
+UIElement.prototype.callOnSwipeUpHandler = function() {
 	if(!this.handleOnSwipeUp) {
 		var sourceCode = this.events["onSwipeUp"];
 		if(sourceCode) {
@@ -949,7 +939,7 @@ UIWindow.prototype.callOnSwipeUpHandler = function() {
 	return true;
 }
 
-UIWindow.prototype.callOnSwipeDownHandler = function() {
+UIElement.prototype.callOnSwipeDownHandler = function() {
 	if(!this.handleOnSwipeDown) {
 		var sourceCode = this.events["onSwipeDown"];
 		if(sourceCode) {
@@ -973,7 +963,7 @@ UIWindow.prototype.callOnSwipeDownHandler = function() {
 	return true;
 }
 
-UIStatus.prototype.callOnBecomeZeroHandler = function() {
+UIElement.prototype.callOnBecomeZeroHandler = function() {
 	if(!this.handleOnBecomeZero) {
 		var sourceCode = this.events["onBecomeZero"];
 		if(sourceCode) {
@@ -997,7 +987,7 @@ UIStatus.prototype.callOnBecomeZeroHandler = function() {
 	return true;
 }
 
-UIStatus.prototype.callOnBecomeFullHandler = function() {
+UIElement.prototype.callOnBecomeFullHandler = function() {
 	if(!this.handleOnBecomeFull) {
 		var sourceCode = this.events["onBecomeFull"];
 		if(sourceCode) {
@@ -1021,7 +1011,7 @@ UIStatus.prototype.callOnBecomeFullHandler = function() {
 	return true;
 }
 
-UITimer.prototype.callOnTimeoutHandler = function() {
+UIElement.prototype.callOnTimeoutHandler = function() {
 	if(!this.handleOnTimeout) {
 		var sourceCode = this.events["onTimeout"];
 		if(sourceCode) {
@@ -1044,3 +1034,86 @@ UITimer.prototype.callOnTimeoutHandler = function() {
 
 	return true;
 }
+
+UIElement.prototype.callOnSystemInitHandler = function() {
+	if(!this.handleOnSystemInit) {
+		var sourceCode = this.events["onSystemInit"];
+		if(sourceCode) {
+			sourceCode = "this.handleOnSystemInit = function() {\n" + sourceCode + "\n}\n";
+			try {
+				eval(sourceCode);
+			}catch(e) {
+				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
+			}
+		}
+	}
+
+	if(this.handleOnSystemInit) {
+		try {
+			this.handleOnSystemInit();
+		}catch(e) {
+			console.log("this.handleOnSystemInit:" + e.message);
+		}
+	}
+
+	return true;
+}
+
+UIElement.prototype.callOnScrollOutOfRangeHandler = function(offset) {
+	if(!this.enable) {
+		return false;
+	}
+
+	if(this.onScrollOutOfRange) {
+		this.onScrollOutOfRange(offset);
+
+		return;
+	}
+
+	if(!this.handleOnScrollOutOfRange) {
+		var sourceCode = this.events["onScrollOutOfRange"];
+		if(sourceCode) {
+			sourceCode = "this.handleOnScrollOutOfRange = function(offset) {\n" + sourceCode + "\n}\n";
+			try {
+				eval(sourceCode);
+			}catch(e) {
+				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
+			}
+		}
+	}
+
+	if(this.handleOnScrollOutOfRange) {
+		try {
+			this.handleOnScrollOutOfRange(offset);
+		}catch(e) {
+			console.log("this.handleOnScrollOutOfRange:" + e.message);
+		}
+	}
+
+	return true;
+}
+
+UIElement.prototype.callOnBirthedHandler = function() {
+	if(!this.handleOnBirthed) {
+		var sourceCode = this.events["onBirthed"];
+		if(sourceCode) {
+			sourceCode = "this.handleOnBirthed = function() {\n" + sourceCode + "\n}\n";
+			try {
+				eval(sourceCode);
+			}catch(e) {
+				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
+			}
+		}
+	}
+
+	if(this.handleOnBirthed) {
+		try {
+			this.handleOnBirthed();
+		}catch(e) {
+			console.log("this.handleOnBirthed:" + e.message);
+		}
+	}
+
+	return true;
+}
+

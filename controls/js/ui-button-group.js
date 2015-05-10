@@ -106,3 +106,5 @@ function UIButtonGroupCreator(border, buttonMaxWidth, bg) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIButtonGroupCreator(5, 200, null));
+

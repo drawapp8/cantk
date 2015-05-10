@@ -20,8 +20,10 @@ UITransformAnimation.prototype.initUITransformAnimation = function(type, w, h, b
 	this.animationConfig = {};
 	this.animationConfig.opacityFrom = 1;
 	this.animationConfig.opacityTo = 1;
-	this.animationConfig.scaleFrom = 1;
-	this.animationConfig.scaleTo = 1;
+	this.animationConfig.scaleXFrom = 1;
+	this.animationConfig.scaleXTo = 1;
+	this.animationConfig.scaleYFrom = 1;
+	this.animationConfig.scaleYTo = 1;
 	this.animationConfig.rotationFrom = 0;
 	this.animationConfig.rotationTo = 0;
 	this.animationConfig.offsetXFrom = 0;
@@ -36,6 +38,21 @@ UITransformAnimation.prototype.initUITransformAnimation = function(type, w, h, b
 	return this;
 }
 
+UITransformAnimation.prototype.pause = function() {
+	if(this.animationConfig) {
+		this.animationConfig.paused = true;
+	}
+
+	return this;
+}
+
+UITransformAnimation.prototype.resume = function() {
+	if(this.animationConfig) {
+		this.animationConfig.paused = false;
+	}
+
+	return this;
+}
 
 UITransformAnimation.prototype.play = function() {
 	this.setHighlightConfig(this.animationConfig);
@@ -49,22 +66,42 @@ UITransformAnimation.prototype.stop = function() {
 	return;
 }
 
-UITransformAnimation.prototype.getScaleFrom = function() {
-	return this.animationConfig.scaleFrom;
+UITransformAnimation.prototype.getScaleXFrom = function() {
+	return this.animationConfig.scaleXFrom;
 }
 
-UITransformAnimation.prototype.setScaleFrom = function(scaleFrom) {
-	this.animationConfig.scaleFrom = scaleFrom;
+UITransformAnimation.prototype.setScaleXFrom = function(scaleXFrom) {
+	this.animationConfig.scaleXFrom = scaleXFrom;
 
 	return this;
 }
 
-UITransformAnimation.prototype.getScaleTo = function() {
-	return this.animationConfig.scaleTo;
+UITransformAnimation.prototype.getScaleXTo = function() {
+	return this.animationConfig.scaleXTo;
 }
 
-UITransformAnimation.prototype.setScaleTo = function(scaleTo) {
-	this.animationConfig.scaleTo = scaleTo;
+UITransformAnimation.prototype.setScaleXTo = function(scaleXTo) {
+	this.animationConfig.scaleXTo = scaleXTo;
+
+	return this;
+}
+
+UITransformAnimation.prototype.getScaleYFrom = function() {
+	return this.animationConfig.scaleYFrom;
+}
+
+UITransformAnimation.prototype.setScaleYFrom = function(scaleYFrom) {
+	this.animationConfig.scaleYFrom = scaleYFrom;
+
+	return this;
+}
+
+UITransformAnimation.prototype.getScaleYTo = function() {
+	return this.animationConfig.scaleYTo;
+}
+
+UITransformAnimation.prototype.setScaleYTo = function(scaleYTo) {
+	this.animationConfig.scaleYTo = scaleYTo;
 
 	return this;
 }
@@ -173,16 +210,22 @@ UITransformAnimation.prototype.setRandom = function(random) {
 
 UITransformAnimation.prototype.taFromJson = function(js) {
 	if(js.animationConfig) {
-		this.animationConfig = js.animationConfig;
+		this.animationConfig = JSON.parse(JSON.stringify(js.animationConfig));
 	}
 
 	return;
 }
 
 UITransformAnimation.prototype.taToJson = function(o) {
-	o.animationConfig = this.animationConfig;
+	o.animationConfig = JSON.parse(JSON.stringify(this.animationConfig));
 
 	return o;
+}
+
+UITransformAnimation.prototype.beforePaintChildren = function(canvas) {
+	this.applyTransform(canvas);
+
+	return this;
 }
 
 UITransformAnimation.prototype.onInit = function() {
@@ -202,3 +245,6 @@ function UITransformAnimationCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UITransformAnimationCreator());
+

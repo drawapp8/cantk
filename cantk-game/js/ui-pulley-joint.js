@@ -34,3 +34,5 @@ function UIPulleyJointCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIPulleyJointCreator());
+

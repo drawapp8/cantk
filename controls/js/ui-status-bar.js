@@ -63,3 +63,7 @@ function UIStatusBarCreator(type, w, h, bg) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIStatusBarCreator("ui-status-bar", 640, 40, null));
+ShapeFactoryGet().addShapeCreator(new UIStatusBarCreator("ui-menu-bar", 640, 96, null));
+
+

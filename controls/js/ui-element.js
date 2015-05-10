@@ -80,6 +80,11 @@ UIElement.IMAGE_OFF_FOCUSED	   = "focused_off_bg";
 UIElement.IMAGE_OFF_ACTIVE	   = "active_off_bg";
 UIElement.IMAGE_NORMAL_DRAG    = "normal_drag";
 UIElement.IMAGE_DELETE_ITEM    = "delete_item";
+UIElement.IMAGE_POINT          = "point_img";
+UIElement.IMAGE_POINT1         = "point1_img";
+UIElement.IMAGE_POINT2         = "point2_img";
+UIElement.IMAGE_POINT3         = "point3_img";
+UIElement.IMAGE_POINT4         = "point4_img";
 
 UIElement.ITEM_BG_NORMAL  = "item_bg_normal";
 UIElement.ITEM_BG_ACTIVE  = "item_bg_active";
@@ -303,7 +308,7 @@ UIElement.prototype.init = function() {
 	try {
 		this.onInit();
 	}catch(e) {
-		console.log("onInit Failed:" + e.message);
+		console.log("onInit Failed:" + e.message  + "\n" + e.stack);
 	}
 	this.initChildren();
 
@@ -955,7 +960,7 @@ UIElement.prototype.animMove = function(x, y, hint) {
 		}
 
 		el.postRedraw();
-		if(timePercent < 1 && !el.pointerDown) {
+		if(timePercent < 1) {
 			el.x = Math.floor(xStart + percent * xRange);
 			el.y = Math.floor(yStart + percent * yRange);
 
@@ -974,7 +979,7 @@ UIElement.prototype.animMove = function(x, y, hint) {
 	return;
 }
 
-UIElement.prototype.animate = function(config, onAnimationDone) {
+UIElement.prototype.animate = function(config, onAnimationDone, onStep) {
 	if(typeof config === "string") {
 		config = this.animations[config];
 	}
@@ -1038,8 +1043,14 @@ UIElement.prototype.animate = function(config, onAnimationDone) {
 		hEnd = hStart = this.h;
 	}
 
+	if(wRange || hRange) {
+		el.clipW = this.w;
+		el.clipH = this.h;
+	}
+
 	function animStep() {
 		 if(el.dragging || !el.parentShape || !interpolator || !win.visible) {
+		 	el.animating = false;
 			return false;
 		 }
 
@@ -1047,7 +1058,19 @@ UIElement.prototype.animate = function(config, onAnimationDone) {
 		var timePercent = (Date.now() - startTime)/duration;
 		var percent = interpolator.get(timePercent);
 
-		if(timePercent < 1 && !el.pointerDown) {
+		if(onStep && !onStep(el, timePercent, config)) {
+		 	el.animating = false;
+			
+			if(onDone) {
+				onDone(el);
+			}
+			
+			return false;
+		}
+
+		if(timePercent < 1) {
+			el.animating = true;
+
 			if(xRange) {
 				el.x = Math.floor(xStart + percent * xRange);
 			}
@@ -1055,13 +1078,17 @@ UIElement.prototype.animate = function(config, onAnimationDone) {
 			if(yRange) {
 				el.y = Math.floor(yStart + percent * yRange);
 			}
-			
+		
+			if(xRange || yRange) {
+				el.setPosition(el.x, el.y);
+			}
+
 			if(wRange) {
-				el.w = Math.floor(wStart + percent * wRange);
+				el.clipW = Math.floor(wStart + percent * wRange);
 			}
 			
 			if(hRange) {
-				el.h = Math.floor(hStart + percent * hRange);
+				el.clipH = Math.floor(hStart + percent * hRange);
 			}
 
 			if(opacityRange) {
@@ -1084,13 +1111,14 @@ UIElement.prototype.animate = function(config, onAnimationDone) {
 			return true;
 		}
 		else {
+			el.animating = false;
 			if(xRange || yRange) {
 				el.setPosition(xEnd, yEnd);
 			}
 			
 			if(wRange || hRange) {
-				el.w = wEnd;
-				el.h = hEnd;
+				el.clipW = wEnd;
+				el.clipH = hEnd;
 			}
 
 			if(opacityRange) {
@@ -1290,7 +1318,7 @@ UIElement.prototype.onPointerMoveNormal = function(point) {
 		var pointerOverShape = null;
 
 		if(this.isPointIn(null, point)) {
-			if(this.isUIFrames) {
+			if(this.isUIFrames && this.children.length) {
 				var iter = this.getCurrentFrame();
 				if(iter.isPointIn(null, p)) {
 					pointerOverShape = iter;
@@ -1699,7 +1727,9 @@ UIElement.prototype.addShape = function(shape, offsetIt, point, index) {
 	
 	if(shape.isCreatingElement()) {
 		this.relayout();
+		shape.callOnBirthedHandler(true);
 	}
+
 	UIElement.onAddShape(shape, offsetIt);
 
 	return true;
@@ -1795,7 +1825,7 @@ UIElement.prototype.removeShape = function(shape, destroyIt) {
 	}
 
 	UIElement.onRemoveShape(this, shape);
-	shape.onRemoved();
+	shape.onRemoved(this);
 
 	if(destroyIt) {
 		shape.destroy();
@@ -1955,7 +1985,7 @@ UIElement.prototype.getValueOf = function(name) {
 }
 
 UIElement.prototype.getSelectMark = function(type, point) {
-	if(this.mode != Shape.MODE_EDITING) {
+	if(this.mode != Shape.MODE_EDITING || this.isLocked()) {
 		return false;
 	}
 
@@ -2234,35 +2264,25 @@ UIElement.prototype.getLockImage = function() {
 
 UIElement.prototype.prepareStyle = function(canvas) {
 	var style = this.style;
-	
-	canvas.lineWidth = style.lineWidth;			
-	canvas.strokeStyle = style.lineColor;
-	if(style.enableGradient) {
-		canvas.fillStyle = style.getGradFillStyle(canvas, 0, 0, this.w, this.h);
-	}
-	else {
-		if(!this.isFillColorTransparent()) {
-			canvas.fillStyle = style.fillColor;
-		}
-	}
-	canvas.shadowOffsetX = 0;
-	canvas.shadowOffsetY = 0;
-	canvas.shadowBlur    = 0;
 
-	return;
-}
-
-UIElement.prototype.resetStyle = function(canvas) {
-	canvas.shadowOffsetX = 0;
-	canvas.shadowOffsetY = 0;
-	canvas.shadowBlur    = 0;
-	canvas.fillStyle = "White";
 	canvas.beginPath();
+	if(canvas.lineWidth !== style.lineWidth) {
+		canvas.lineWidth = style.lineWidth;	
+	}
+
+	if(canvas.strokeStyle != style.lineColor) {
+		canvas.strokeStyle = style.lineColor;
+	}
+	
+	if(canvas.fillStyle != style.fillColor) {
+		canvas.fillStyle = style.fillColor;
+	}
 
 	return;
 }
 
 UIElement.prototype.updateTransform = function() {
+	
 	this.callOnUpdateTransformHandler();
 
 	return;
@@ -2316,38 +2336,67 @@ UIElement.prototype.restoreTransform = function() {
 UIElement.prototype.setHighlightConfig = function(highlightConfig) {
 	if(highlightConfig) {
 		//this.restoreTransform();
-		var c = highlightConfig;
+		var c = JSON.parse(JSON.stringify(highlightConfig));
+
+		c.startTime = 0;
 		this.saveTransform();
 		this.removeHighlightConfig = false;
-		this.highlightConfig = highlightConfig;
+		this.highlightConfig = c;
 
 		if(c.rotationFrom !== undefined && c.rotationTo !== undefined) {
 			c.rotationRange = c.rotationTo - c.rotationFrom;
 			c.rotationMiddle = (c.rotationTo + c.rotationFrom)/2;
 		}
+		else {
+			c.rotationRange = 0;
+		}
+
 		if(c.opacityFrom !== undefined && c.opacityTo !== undefined) {
 			c.opacityRange = c.opacityTo - c.opacityFrom;
 			c.opacityMiddle = (c.opacityTo + c.opacityFrom)/2;
 		}
+		else {
+			c.opacityRange = 0;
+		}
+
 		if(c.scaleFrom !== undefined && c.scaleTo !== undefined) {
 			c.scaleRange = c.scaleTo - c.scaleFrom;
 			c.scaleMiddle = (c.scaleTo + c.scaleFrom)/2;
 		}
+		else {
+			c.scaleRange = 0;
+		}
+
 		if(c.scaleXFrom !== undefined && c.scaleXTo !== undefined) {
 			c.scaleXRange = c.scaleXTo - c.scaleXFrom;
 			c.scaleXMiddle = (c.scaleXTo + c.scaleXFrom)/2;
 		}
+		else {
+			c.scaleXRange = 0;
+		}
+
 		if(c.scaleYFrom !== undefined && c.scaleYTo !== undefined) {
 			c.scaleYRange = c.scaleYTo - c.scaleYFrom;
 			c.scaleYMiddle = (c.scaleYTo + c.scaleYFrom)/2;
 		}
+		else {
+			c.scaleYRange = 0;
+		}
+
 		if(c.offsetXFrom !== undefined && c.offsetXTo !== undefined) {
 			c.offsetXRange = c.offsetXTo - c.offsetXFrom;
 			c.offsetXMiddle = (c.offsetXTo + c.offsetXFrom)/2;
 		}
+		else {
+			c.offsetXRange = 0;
+		}
+
 		if(c.offsetYFrom !== undefined && c.offsetYTo !== undefined) {
 			c.offsetYRange = c.offsetYTo - c.offsetYFrom;
 			c.offsetYMiddle = (c.offsetYTo + c.offsetYFrom)/2;
+		}
+		else {
+			c.offsetYRange = 0;
 		}
 	}
 	else {
@@ -2360,11 +2409,21 @@ UIElement.prototype.setHighlightConfig = function(highlightConfig) {
 UIElement.prototype.updateHighlightTransform = function() {
 	if(this.highlightConfig) {
 		var me = this;
+		var tOffset = 0;
 		var c = this.highlightConfig;
-		var random = c.random ? c.random : 0;	
-		var t = (Date.now() + random)/1000;
+		var random = c.random ? c.random/1000 : 0;	
 		var frequency = c.frequency ? c.frequency : 4;
-		var factor = Math.cos(frequency*t) * 0.5;
+		if(c.startTime) {
+			tOffset = (Date.now() - c.startTime)/1000;
+		}
+		else {
+			c.startTime = Date.now();
+		}
+		tOffset += 1/(frequency*4) + random;
+		var womiga = frequency * Math.PI * 2;
+        var factor = Math.cos(womiga*tOffset) * 0.5;
+
+		if(c.paused) return;
 
 		if(this.removeHighlightConfig && Math.abs(factor) < 0.1) {
 			this.removeHighlightConfig = false;
@@ -2407,15 +2466,25 @@ UIElement.prototype.updateHighlightTransform = function() {
 UIElement.prototype.paintSelf = function(canvas) {
 	canvas.save();
 	this.translate(canvas);
-	if(this.isIcon) {
-		this.beforeDrawIcon(canvas);
+	canvas.save();
+
+	if(this.animating) {
+		var clipW = Math.min(this.w, this.clipW);
+		var clipH = Math.min(this.h, this.clipH);
+		if(clipW && clipH) {
+			canvas.beginPath();
+			canvas.rect(0, 0, clipW, clipH);
+			canvas.clip();
+		}
 	}
 
-	canvas.save();
-	this.prepareStyle(canvas);
-	this.updateTransform();
-	this.updateHighlightTransform();
+	if(this.events["onUpdateTransform"]) {
+		this.updateTransform();
+	}
 
+	if(this.highlightConfig) {
+		this.updateHighlightTransform();
+	}
 
 	var flipX = this.flipX ? -1 : 1;
 	var flipY = this.flipY ? -1 : 1;
@@ -2429,6 +2498,7 @@ UIElement.prototype.paintSelf = function(canvas) {
 		canvas.translate(-hw, -hh);
 	}
 
+	this.prepareStyle(canvas);
 	this.applyTransform(canvas);
 	this.clearBackground(canvas);
 	this.drawBgImage(canvas);
@@ -2439,14 +2509,6 @@ UIElement.prototype.paintSelf = function(canvas) {
 		canvas.restore();
 	}
 
-	if((this.hitTestResult !== Shape.HIT_TEST_NONE 
-		&& this.hitTestResult !== Shape.HIT_TEST_WORKAREA
-		&& this.hitTestResult !== Shape.HIT_TEST_MM) 
-		|| this.state !== Shape.STAT_NORMAL) {
-		this.drawSizeTips(canvas);
-	}
-		
-	this.resetStyle(canvas);
 	canvas.restore();
 
 	if(this.children.length || this.mode === Shape.MODE_EDITING) {
@@ -2462,39 +2524,6 @@ UIElement.prototype.paintSelf = function(canvas) {
 		this.drawTextTips(canvas);
 	}
 
-	if(this.mode === Shape.MODE_EDITING) {
-		this.paintSelectingBox(canvas);
-		this.drawSelectMarks(canvas);
-	}
-	
-	if(this.isIcon) {
-		this.afterDrawIcon(canvas);
-	}
-
-	if(this.selected && this.mode === Shape.MODE_EDITING) {
-		this.applyTransform(canvas);
-		if(this.isPositionLocked) {
-			var image = this.getLockImage();
-			if(image) {
-				canvas.drawImage(image, 0, 0);
-			}
-		}
-
-		canvas.font = "16pt Sans";
-		canvas.textBaseline = "bottom";
-		canvas.textAlign = "left";
-		canvas.fillStyle = "#202020";
-		var y = 10;
-		if((this.parentShape && this.parentShape.isUIWindow && this.y < 10) || this.h > 400) {
-			y = 24;
-		}
-
-		var str = dappGetText(this.type);
-		if(this.isUIScrollView) {
-			str = str + "(offset=" +Math.floor(this.offset)+ ")";
-		}
-		canvas.fillText(str, 0, y);
-	}
 	canvas.restore();
 	
 	return;
@@ -3007,6 +3036,22 @@ UIElement.prototype.shouldShowContextMenu = function() {
 	return this.mode === Shape.MODE_EDITING;
 }
 
+UIElement.prototype.setText = function(text, notify) {
+	if(this.text != text) {
+		this.text = this.toText(text);
+
+		if(notify) {
+			this.callOnChangedHandler(text);
+		}
+
+		this.textNeedRelayout = true;
+	}
+
+	return this;
+}
+
+
+
 UIElement.prototype.getValue = function() {
 	return this.getText();
 }
@@ -3504,7 +3549,7 @@ UIElement.prototype.relayout = function() {
 	var hMargin = p.getHMargin();
 	var vMargin = p.getVMargin();
 	var wParentClient = wParent - hMargin - hMargin;
-	var hParentClient = hParentClient - vMargin - vMargin;
+	var hParentClient = hParent - vMargin - vMargin;
 
 	var bottom = this.y + this.h;
 	var right = this.x + this.w
@@ -3777,7 +3822,7 @@ UIElement.prototype.afterRelayoutChild = function(shape) {
 
 
 UIElement.prototype.relayoutChildren = function() {
-	if(this.disableRelayout) {
+	if(this.disableRelayout || !this.children) {
 		return;
 	}
 
@@ -3819,17 +3864,28 @@ UIElement.prototype.getWindowManager = function() {
 }
 
 UIElement.EVENT_STATUS_NONE = 0;
-UIElement.EVENT_STATUS_HANDLED = 1;
-UIElement.lastEventStatus = UIElement.EVENT_STATUS_NONE;
+UIElement.EVENT_VSCROLL_HANDLED = 1;
+UIElement.EVENT_HSCROLL_HANDLED = 2;
+
+UIElement.lastEvent = {};
+UIElement.lastEvent.element = null;
+UIElement.lastEvent.status = UIElement.EVENT_STATUS_NONE;
 
 UIElement.prototype.setLastEventStatus = function(status) {
-	UIElement.lastEventStatus = status;
+	if(status) {
+		UIElement.lastEvent.status |= status;
+		UIElement.lastEvent.element = this;
+	}
+	else {
+		UIElement.lastEvent.status = 0;
+		UIElement.lastEvent.element = null;
+	}
 
 	return;
 }
 
 UIElement.prototype.getLastEventStatus = function() {
-	return UIElement.lastEventStatus;
+	return UIElement.lastEvent.status;
 }
 
 UIElement.prototype.getDevice = function() {
@@ -3900,10 +3956,10 @@ UIElement.prototype.getWindowNames = function() {
 	return [];
 }
 
-UIElement.prototype.openWindow = function(name, onClose, closeCurrent, initData) {
+UIElement.prototype.openWindow = function(name, onClose, closeCurrent, initData, options) {
 	var manager = this.getWindowManager();
 	if(manager) {
-		return manager.openWindow(name, onClose, closeCurrent, initData);
+		return manager.openWindow(name, onClose, closeCurrent, initData, options);
 	}
 
 	return false;
@@ -3960,11 +4016,11 @@ UIElement.prototype.scaleForDensity = function(sizeScale, lcdDensity, recuresive
 		return;
 	}
 
-	if(this.widthAttr === UIElement.WIDTH_FIX || this.widthAttr === UIElement.WIDTH_SCALE) {
+	if(this.widthAttr === UIElement.WIDTH_FIX) {
 		this.w = Math.floor(this.w * sizeScale);
 	}
 
-	if(this.heightAttr === UIElement.HEIGHT_FIX || this.heightAttr === UIElement.HEIGHT_SCALE) {
+	if(this.heightAttr === UIElement.HEIGHT_FIX) {
 		this.h = this.h * sizeScale;
 		if(this.h < 36 && (this.isUIButton || this.isUIProgressBar || this.isUIColorTile || this.isUIColorButton
 			|| this.isUIEdit || this.isUIRadioBox || this.isUICheckBox || this.isUIWaitBar || this.isUISwitch)) {
@@ -3981,16 +4037,12 @@ UIElement.prototype.scaleForDensity = function(sizeScale, lcdDensity, recuresive
 	}
 
 	var isCreating = this.isCreatingElement();
-	if(this.yAttr === UIElement.Y_SCALE || this.yAttr === UIElement.Y_FIX_TOP) {
-		if(!isCreating) {
-			this.y = Math.floor(this.y * sizeScale);
-		}
+	if(!isCreating && this.yAttr === UIElement.Y_FIX_TOP) {
+		this.y = Math.floor(this.y * sizeScale);
 	}
 
-	if(this.xAttr === UIElement.X_SCALE || this.xAttr === UIElement.X_FIX_LEFT) {
-		if(!isCreating) {
-			this.x = Math.floor(this.x * sizeScale);
-		}
+	if(!isCreating && this.xAttr === UIElement.X_FIX_LEFT) {
+		this.x = Math.floor(this.x * sizeScale);
 	}
 
 	this.style.setFontSize(Math.floor(this.style.fontSize * sizeScale));
@@ -4195,7 +4247,7 @@ UIElement.prototype.isUserMovable = function() {
 		return false;
 	}
 
-	return this.userMovable;
+	return this.userMovable && !this.isLocked();
 }
 
 UIElement.prototype.isUserResizable = function() {
@@ -4354,7 +4406,7 @@ UIElement.setTimeout = function(func, deltaTime) {
 }
 
 UIElement.getMainCanvas = function() {
-	return document.getElementById("main_canvas");
+	return CantkRT.getMainCanvas();
 }
 
 UIElement.getMainCanvasScale = function(force) {
@@ -4426,9 +4478,9 @@ UIElement.fixArtTextStyle = function(style) {
 	style.lineWidth = style.lineWidth ? style.lineWidth : 0;
 	style.lineColor = style.lineColor ? style.lineColor : "Black";
 	style.shadowColor = style.shadowColor ? style.shadowColor : "Black";
-	style.shadowBlur = style.shadowBlur ? style.shadowBlur : 5;
-	style.shadowOffsetX = style.shadowOffsetX ? style.shadowOffsetX : 2;
-	style.shadowOffsetY = style.shadowOffsetY ? style.shadowOffsetY : 2;
+	style.shadowBlur = style.shadowBlur ? style.shadowBlur : 0;
+	style.shadowOffsetX = style.shadowOffsetX ? style.shadowOffsetX : 0;
+	style.shadowOffsetY = style.shadowOffsetY ? style.shadowOffsetY : 0;
 	
 	return style;
 }
@@ -4445,7 +4497,7 @@ UIElement.createArtTextImage = function(text, style, bgColor) {
 	var border = style.imageBorder;
 	var fontSize = style.fontSize;
 	var fontFamily = style.fontFamily;
-	var textAlign = style.textAlign;
+	var textAlign = style.textAlignH;
 	var monospace = style.monospace;
 	var tcanvas = cantkGetTempCanvas(w, h);
 	var ctx = tcanvas.getContext("2d");
@@ -4519,19 +4571,26 @@ UIElement.createArtTextImage = function(text, style, bgColor) {
 		}
 	}
 	else {
-		var grd = ctx.createLinearGradient(0,0,0,h);
-		if(style.horizonalGradient) {
-			grd = ctx.createLinearGradient(0,0,w,0);
+		if(style.startColor != style.endColor) {
+			var grd = ctx.createLinearGradient(0,0,0,h);
+			if(style.horizonalGradient) {
+				grd = ctx.createLinearGradient(0,0,w,0);
+			}
+			grd.addColorStop(0, style.startColor);
+			grd.addColorStop(1, style.endColor);
+			ctx.fillStyle = grd;
 		}
-		grd.addColorStop(0, style.startColor);
-		grd.addColorStop(1, style.endColor);
-		ctx.fillStyle = grd;
+		else {
+			ctx.fillStyle = style.startColor;
+		}
 	}
 
-	ctx.shadowOffsetX = style.shadowOffsetX;
-	ctx.shadowOffsetY = style.shadowOffsetY;
-	ctx.shadowBlur = style.shadowBlur;
-	ctx.shadowColor = style.shadowColor;
+	if(style.shadowBlur) {
+		ctx.shadowOffsetX = style.shadowOffsetX;
+		ctx.shadowOffsetY = style.shadowOffsetY;
+		ctx.shadowBlur = style.shadowBlur;
+		ctx.shadowColor = style.shadowColor;
+	}
 
 	x = w >> 1;
 	y = h >> 1;
@@ -4552,11 +4611,15 @@ UIElement.createArtTextImage = function(text, style, bgColor) {
 	}
 	else {
 		ctx.fillText(text, x, y);
-		ctx.strokeText(text, x, y);
+		if(ctx.lineWidth) {
+			ctx.strokeText(text, x, y);
+		}
 	}
 
 	var url = tcanvas.toDataURL();
 
 	return url;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIGroupCreator(200, 200, null));
 

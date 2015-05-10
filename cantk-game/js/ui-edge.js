@@ -33,3 +33,5 @@ function UIEdgeCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIEdgeCreator());
+

@@ -2265,8 +2265,9 @@
 				this.life = 1;
 			else
 				this.life = this.emitTotalTimes;
-
-		} else if (!isNaN(life)) {
+		} 
+		
+		if (life && !isNaN(life)) {
 			this.life = life;
 		}
 

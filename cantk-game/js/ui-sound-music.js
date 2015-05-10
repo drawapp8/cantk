@@ -78,3 +78,5 @@ function UISoundMusicCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UISoundMusicCreator());
+

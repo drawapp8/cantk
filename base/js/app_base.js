@@ -13,6 +13,8 @@ function AppBase(canvasID, type) {
 	this.type = type;
 	this.minHeight = 0;
 
+	AppBase.type = type;
+
 	this.getView = function() {
 		return this.view;
 	}
@@ -38,7 +40,7 @@ function AppBase(canvasID, type) {
 			this.isInlineEdit = false;
 		}
 
-		this.canvas	 = canvasCreate(canvasID);
+		this.canvas	 = CantkRT.getMainCanvas();
 		this.adjustCanvasSize();
 		this.manager = WWindowManager.create(this, this.canvas);
 		canvasAttachManager(this.canvas, this.manager, this);
@@ -62,9 +64,7 @@ function AppBase(canvasID, type) {
 		var view = cantkGetViewPort();
 		
 		switch(this.type) {
-			case AppBase.TYPE_WEBAPP: 
-			case AppBase.TYPE_INLINE_EDITOR: 
-			case AppBase.TYPE_MOBILE_EDITOR: {
+			case AppBase.TYPE_WEBAPP: {
 				w = view.width;
 				h = view.height;
 				break;
@@ -117,6 +117,12 @@ function AppBase(canvasID, type) {
 	this.init();
 
 	return this;
+}
+
+AppBase.isDevApp = function() {
+	return AppBase.type === AppBase.TYPE_PC_EDITOR 
+		|| AppBase.type === AppBase.TYPE_MOBILE_EDITOR 
+		|| AppBase.type === AppBase.TYPE_INLINE_EDITOR;
 }
 
 AppBase.TYPE_WEBAPP = 1;

@@ -79,6 +79,23 @@ UIImageSlideView.prototype.getCurrent = function() {
 	return this.currFrame;
 }
 
+UIImageSlideView.prototype.getCurrentImage = function() {
+	var image = this.cachedImages[this.currFrame];
+
+	return image;
+}
+
+UIImageSlideView.prototype.setValue = function(src) {
+	for(var i = 0; i < this.cachedImages.length; i++) {
+		var iter = this.cachedImages[i];
+		if(iter.src.indexOf(src) >= 0 || src.indexOf(iter.src) >= 0) {
+			return this.setCurrent(i);	
+		}
+	}
+
+	return this;
+}
+
 UIImageSlideView.prototype.setCurrent = function(currFrame) {
 	this.setCurrentFrame(currFrame);
 
@@ -134,6 +151,11 @@ UIImageSlideView.prototype.animScrollTo = function(range, newFrame) {
 }
 
 UIImageSlideView.prototype.onPointerDownRunning = function(point, beforeChild) {
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
+
 	if(!this.velocityTracker) {
 		this.velocityTracker = new VelocityTracker();
 	}
@@ -142,15 +164,26 @@ UIImageSlideView.prototype.onPointerDownRunning = function(point, beforeChild) {
 	return true;
 }
 
+UIImageSlideView.prototype.isEventHandledByChild = function() {
+	var status = UIElement.lastEvent.status;
+	return status & UIElement.EVENT_HSCROLL_HANDLED;
+}
+
+UIImageSlideView.prototype.setEventHandled = function() {
+	this.setLastEventStatus(UIElement.EVENT_HSCROLL_HANDLED);
+	
+	return this;
+}
+
 UIImageSlideView.prototype.onPointerMoveRunning = function(point, beforeChild) {
 	if(this.animating) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
-		return;
-	}
-	if(this.getLastEventStatus() == UIElement.EVENT_STATUS_HANDLED) {
+		this.setEventHandled();
 		return;
 	}
 	if(beforeChild) {
+		return;
+	}
+	if(this.isEventHandledByChild()) {
 		return;
 	}
 
@@ -158,7 +191,7 @@ UIImageSlideView.prototype.onPointerMoveRunning = function(point, beforeChild) {
 	var currFrame = this.currFrame;
 	var dx = this.getMoveAbsDeltaX();
 	if((currFrame > 0 && dx > 0) || ((currFrame+1) < frames && dx < 0)) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+		this.setEventHandled();
 	}
 	else {
 		return;
@@ -172,13 +205,13 @@ UIImageSlideView.prototype.onPointerMoveRunning = function(point, beforeChild) {
 
 UIImageSlideView.prototype.onPointerUpRunning = function(point, beforeChild) {
 	if(this.animating) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
-		return;
-	}
-	if(this.getLastEventStatus() == UIElement.EVENT_STATUS_HANDLED) {
+		this.setEventHandled();
 		return;
 	}
 	if(beforeChild) {
+		return;
+	}
+	if(this.isEventHandledByChild()) {
 		return;
 	}
 	
@@ -186,7 +219,7 @@ UIImageSlideView.prototype.onPointerUpRunning = function(point, beforeChild) {
 	var currFrame = this.currFrame;
 	var dx = this.getMoveAbsDeltaX();
 	if((currFrame > 0 && dx > 0) || ((currFrame+1) < frames && dx < 0)) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+		this.setEventHandled();
 	}
 	else {
 		return;
@@ -387,4 +420,6 @@ function UIImageSlideViewCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIImageSlideViewCreator());
 

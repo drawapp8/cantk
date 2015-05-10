@@ -30,7 +30,8 @@ UIToolBar.prototype.initUIToolBar = function(type, atTop, h, bg) {
 }
 
 UIToolBar.prototype.shapeCanBeChild = function(shape) {
-	if(shape.isUILabel || shape.isUIImage || shape.isUIButton || shape.isUIGroup || shape.isUIButtonGroup || shape.isUIEdit
+	if(shape.isUILabel || shape.isUIImage || shape.isUIButton || shape.isUIGroup 
+	|| shape.isUIButtonGroup || shape.isUIEdit || shape.isUIImageButton
 	|| shape.isUICheckBox || shape.isUIRadioBox || shape.isUIProgressBar || shape.isUISwitch 
 	|| shape.isUILedDigits || shape.isUIGroup || shape.isUILayout || shape.isUIWaitBar || shape.isUIColorBar) {
 		return true;
@@ -61,3 +62,6 @@ function UIToolBarCreator(type, atTop, h, bg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIToolBarCreator("ui-toolbar", true, 85, null));
+

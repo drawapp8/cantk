@@ -83,10 +83,13 @@ WWidget.TYPE_COLOR_EDIT = "color-edit";
 WWidget.TYPE_RANGE_EDIT = "range-edit";
 WWidget.TYPE_FILENAME_EDIT = "filename-edit";
 WWidget.TYPE_FILENAMES_EDIT = "filenames-edit";
+WWidget.TYPE_CANVAS_IMAGE = "canvas-image";
+WWidget.TYPE_ICON_BUTTON = "icon-button";
 
 WWidget.prototype = {};
 WWidget.prototype.init = function(parent, x, y, w, h) {
 	this.text = "";
+	this.tag = null;
 	this.tips = null;
 	this.enable = true;
 	this.visible = true; 
@@ -342,6 +345,7 @@ WWidget.putWidget = function(widget) {
 			WWidget.widgetsPool[type] = [];
 			widgets = WWidget.widgetsPool[type];
 		}
+		widget.userData = null;
 		widget.handleGesture = null;
 		widget.handleClicked = null;
 		widget.handleLongPressed = null;
@@ -393,16 +397,17 @@ WWidget.prototype.remove = function() {
 	return this;
 }
 
+WWidget.prototype.cleanUp = function() {
+}
+
 WWidget.prototype.destroy = function() {
 	if(this.children.length) {
 		this.destroyChildren();
 	}
 
-	if(this.userData) {
-		this.userData = null;
-	}
-
 	this.remove();
+	this.cleanUp();
+
 	WWidget.putWidget(this);
 
 	return;
@@ -502,12 +507,12 @@ WWidget.prototype.drawTips = function(canvas) {
 
 		canvas.textAlign = "center";
 		canvas.textBaseline = "middle";
-		canvas.font = style.font ? style.font : "12pt bold sans-serif";
+		canvas.font = style.font ? style.font : "10pt bold sans-serif";
 		canvas.fillStyle = style.textColor ? style.textColor : "Black";
 		canvas.fillText(tips, x, y);
 	}
 
-	return;
+	return this;
 }
 
 WWidget.prototype.setID = function(id) {
@@ -518,6 +523,26 @@ WWidget.prototype.setID = function(id) {
 
 WWidget.prototype.getID = function() {
 	return this.id;
+}
+
+WWidget.prototype.setName = function(name) {
+	 this.name = name;
+	 
+	 return this;
+}
+
+WWidget.prototype.getName = function() {
+	return this.name;
+}
+
+WWidget.prototype.setTag = function(tag) {
+	 this.tag = tag;
+	 
+	 return this;
+}
+
+WWidget.prototype.getTag = function() {
+	return this.tag;
 }
 
 WWidget.prototype.setUserData = function(userData) {
@@ -532,16 +557,7 @@ WWidget.prototype.getUserData = function() {
 
 WWidget.prototype.setEnable = function(value) {
 	this.enable = value;
-	
-	if(!value) {
-		this.setState(WWidget.STATE_DISABLE);
-	}
-	else {
-		if(this.state === WWidget.STATE_DISABLE) {
-			this.setState(WWidget.STATE_NORMAL);
-		}
-	}
-	
+
 	return this;
 }
 
@@ -549,10 +565,8 @@ WWidget.prototype.onStateChanged = function(state) {
 }
 
 WWidget.prototype.setState = function(state) {
-	if(this.enable) {
-		this.state = state;
-		this.onStateChanged(state);
-	}
+	this.state = state;
+	this.onStateChanged(state);
 	
 	return this;
 }
@@ -955,7 +969,11 @@ WWidget.prototype.onPointerUp = function(point) {
 	}
 	
 	if(this.state !== WWidget.STATE_DISABLE && this.isClicked()) {
-		this.onClicked(point);
+		try {
+			this.onClicked(point);
+		}catch(e) {
+			console.log("this.onClicked:" + JSON.stringify(e));
+		}
 	}
 
 	if(this.state !== WWidget.STATE_DISABLE) {

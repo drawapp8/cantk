@@ -70,3 +70,6 @@ function UICanvasCreator(w, h) {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UICanvasCreator(200, 200));
+

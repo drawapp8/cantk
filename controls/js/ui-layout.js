@@ -34,8 +34,8 @@ UILayout.prototype.paintSelfOnly = function(canvas) {
 	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image && this.mode === Shape.MODE_EDITING) {
-		var x = this.vMargin;
-		var y = this.hMargin;
+		var x = this.hMargin;
+		var y = this.vMargin;
 		var w = this.getWidth(true);
 		var h = this.getHeight(true);
 		var vLayout = this.vLayout;
@@ -190,3 +190,7 @@ function UIHLayoutCreator(w, h, img) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIVLayoutCreator(100, 100, null));
+ShapeFactoryGet().addShapeCreator(new UIHLayoutCreator(100, 100, null));
+

@@ -211,3 +211,5 @@ function UIUIImageNormalViewCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIUIImageNormalViewCreator());
+

@@ -15,27 +15,35 @@ UIOneJoint.prototype = new UIElement();
 UIOneJoint.prototype.isUIJoint = true;
 UIOneJoint.prototype.isUIOneJoint = true;
 
-UIOneJoint.prototype.initUIOneJoint = function(type, w, h, bg) {
+UIOneJoint.prototype.initUIOneJoint = function(type) {
 	this.initUIElement(type);	
 
-	this.setDefSize(w, h);
+	this.setDefSize(20, 20);
 	this.setTextType(Shape.TEXT_NONE);
 	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
-	this.setImage(UIElement.IMAGE_DEFAULT, bg);
+	this.setImage(UIElement.IMAGE_POINT, null);
 
 	return this;
 }
 
 UIOneJoint.prototype.paintSelfOnly = function(canvas) {
-	var x = this.w >> 1;
-	var y = this.h >> 1;
+	var pImage = this.getImageByType(UIElement.IMAGE_POINT);
+	if(pImage && pImage.getImage()) {
+		var image = pImage.getImage();
+		var srcRect = pImage.getImageRect();
+		this.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h, srcRect);
+	}
+	else {
+		var x = this.w >> 1;
+		var y = this.h >> 1;
 
-	canvas.fillStyle = this.style.fillColor;
+		canvas.fillStyle = this.style.fillColor;
 
-	canvas.beginPath();
-	canvas.arc(x, y, 10, 0, 2 * Math.PI);
-	canvas.fill();
-	canvas.stroke();
+		canvas.beginPath();
+		canvas.arc(x, y, 10, 0, 2 * Math.PI);
+		canvas.fill();
+		canvas.stroke();
+	}
 
 	return;
 }
@@ -50,7 +58,7 @@ function UIOneJointCreator() {
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIOneJoint();
-		return g.initUIOneJoint(this.type, 20, 20, null);
+		return g.initUIOneJoint(this.type);
 	}
 	
 	return;

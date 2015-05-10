@@ -83,3 +83,5 @@ function UIUnkownCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIUnkownCreator());
+

@@ -17,6 +17,7 @@ UIParticles.prototype.isUIParticles = true;
 UIParticles.prototype.initUIParticles = function(type) {
 	this.initUIElement(type);	
 	this.name = "ui-particles";
+	this.autoEmit = true;
 	this.setDefSize(200, 200);
 	this.setTextType(Shape.TEXT_NONE);
 	this.setImage(UIElement.IMAGE_DEFAULT, null);
@@ -57,9 +58,22 @@ UIParticles.prototype.initParticles = function() {
 	}
 
 	if(style.texture) {
-		var image = new Image();
-		image.src = style.texture;
+		var image = ResLoader.loadImage(style.texture);
 		emitter.addInitialize(new Proton.ImageTarget(image));
+	}
+	
+	if(style.textures) {
+		var images = [];	
+		var arr = style.textures.split('\n');
+
+		for(var i = 0; i < arr.length; i++) {
+			var src = arr[i];
+			if(!src) continue;
+			var image = ResLoader.loadImage(src);
+			images.push(image);
+		}
+
+		emitter.addInitialize(new Proton.ImageTarget(images));
 	}
 
 	if(style.massMax) {
@@ -131,11 +145,25 @@ UIParticles.prototype.initParticles = function() {
 
 	emitter.p.x = x;
 	emitter.p.y = y;
-	emitter.emit();
+	if(this.autoEmit) {
+		emitter.emit();
+	}
 	proton.addEmitter(emitter);
 
 	this.emitter = emitter;
 	this.lastUpdateTime = Date.now();
+}
+
+UIParticles.prototype.emit = function(once) {
+	this.emitter.stopEmit();
+	if(once) {
+		this.emitter.emit('once', 100000000);
+	}
+	else {
+		this.emitter.emit();
+	}
+
+	return this;
 }
 
 UIParticles.prototype.start = function() {
@@ -167,6 +195,8 @@ UIParticles.prototype.start = function() {
 
 UIParticles.prototype.stop = function() {
 	clearInterval(this.timerID);
+	this.emitter.stopEmit();
+	
 	this.timerID = null;
 	this.emitter = null;
 
@@ -269,3 +299,5 @@ function UIParticlesCreator() {
 	return;
 }
 	
+ShapeFactoryGet().addShapeCreator(new UIParticlesCreator());
+

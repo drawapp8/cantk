@@ -164,3 +164,6 @@ function UIStaticMapCreator() {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIStaticMapCreator());
+

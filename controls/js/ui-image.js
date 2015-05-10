@@ -223,3 +223,7 @@ function UIImageCreator(type, w, h, defaultImage) {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIImageCreator("ui-icon", 32, 32, null));
+ShapeFactoryGet().addShapeCreator(new UIImageCreator("ui-image", 200, 200, null));
+

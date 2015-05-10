@@ -54,19 +54,45 @@ Physics.createFixtureDef = function(world, element) {
 		var cx = hw;
 		var cy = hh;
 		var arr = [];
+		var fixtureDefs = [];
+		var n = element.children.length;
 
-		for(var i = 0; i < element.children.length; i++) {
+		for(var i = 0; i < n; i++) {
 			var p = {};
 			var iter = element.children[i];
+
+			if(!iter.isUIPoint) {
+				continue;
+			}
 
 			p.x = Physics.toMeter(iter.x + (iter.w >> 1) - cx);
 			p.y = Physics.toMeter(iter.y + (iter.h >> 1) - cy);
 
+			if(arr.length === 5) {
+				fixtureDef = new b2FixtureDef();
+				fixtureDef.density = element.density;
+				fixtureDef.friction = element.friction;
+				fixtureDef.restitution = element.restitution;
+				fixtureDef.shape = new b2PolygonShape();
+				fixtureDef.shape.SetAsArray(arr, arr.length);
+				fixtureDefs.push(fixtureDef);
+				arr = [];
+			}
 			arr.push(p);
 		}
 
-		fixtureDef.shape = new b2PolygonShape();
-		fixtureDef.shape.SetAsArray(arr, arr.length);
+		if(arr.length > 2) {
+			fixtureDef = new b2FixtureDef();
+			fixtureDef.density = element.density;
+			fixtureDef.friction = element.friction;
+			fixtureDef.restitution = element.restitution;
+			fixtureDef.shape = new b2PolygonShape();
+			fixtureDef.shape.SetAsArray(arr, arr.length);
+			fixtureDefs.push(fixtureDef);
+			arr = [];
+		}
+
+		return fixtureDefs.length > 1 ? fixtureDefs : fixtureDefs[0];
 	}
 	else if(element.isUIEdge) {
 		var p0 = element.points[0];
@@ -74,7 +100,8 @@ Physics.createFixtureDef = function(world, element) {
 		var c = {x: (p0.x+p1.x) >> 1, y: (p0.y+p1.y) >> 1};
 		var v0 = new b2Vec2(Physics.toMeter(p0.x-c.x), Physics.toMeter(p0.y-c.y));
 		var v1 = new b2Vec2(Physics.toMeter(p1.x-c.x), Physics.toMeter(p1.y-c.y));
-		fixtureDef.c = c;
+		fixtureDef.density = 0;
+		fixtureDef.isSensor = false;
 		fixtureDef.shape = new b2EdgeShape(v0, v1);
 	}
 
@@ -88,15 +115,15 @@ Physics.createBody = function(world, element) {
 	var hh = element.getHeight() >> 1;
 	var x  = pos.x + hw;
 	var y  = pos.y + hh;
+	var density = element.density;
 	var bodyDef = new b2BodyDef();
 	var fixtureDef = Physics.createFixtureDef(world, element);
 
-	if(fixtureDef.density < 0) {
-		delete fixtureDef.density;
+	if(density < 0) {
 		b2BodyDef.type = b2Body.b2_kinematicBody;
 	}
 	else {
-		bodyDef.type = fixtureDef.density ? b2Body.b2_dynamicBody : b2Body.b2_staticBody;
+		bodyDef.type = density ? b2Body.b2_dynamicBody : b2Body.b2_staticBody;
 	}
 
 	bodyDef.position.Set(Physics.toMeter(x), Physics.toMeter(y));
@@ -125,12 +152,17 @@ Physics.createBody = function(world, element) {
 		bodyDef.angularDamping = element.angularDamping;
 	}
 
-//	if(element.gravityScale !== undefined) {
-//		bodyDef.gravityScale = element.gravityScale;
-//	}
-
 	body = world.CreateBody(bodyDef);
-	body.CreateFixture(fixtureDef);
+	if(fixtureDef.length) {
+		for(var i = 0; i < fixtureDef.length; i++) {
+			body.CreateFixture(fixtureDef[i]);
+		}
+		console.log("Create Composite Polygon: n=" + fixtureDef.length);
+	}
+	else {
+		body.CreateFixture(fixtureDef);
+	}
+
 	body.element = element;
 	body.name = element.name;
 	element.body = body;
@@ -253,6 +285,17 @@ Physics.destroyBodyForElement = function(world, element) {
 	return;
 }
 
+Physics.destroyJointForElement = function(world, element) {
+	var joint = element.joint;
+
+	if(joint) {
+		world.DestroyJoint(joint);
+		joint.element = null;
+	}
+
+	return;
+}
+
 Physics.createWorldShapes = function(world, element) {
 	var x = 0;
 	var y = 0;
@@ -268,30 +311,40 @@ Physics.createWorldShapes = function(world, element) {
 	return;
 }
 
-Physics.findBodiesAtPoint= function(scene, point) {
+Physics.findBodiesAtPoint = function(scene, point, zIndex) {
 	var arr = [];
 	var n = scene.children.length;
-	for(var i = n-1; i >= 0; i--) {
+	var canvas = cantkGetTempCanvas(scene.w, scene.h);
+	var ctx = canvas.getContext("2d");
+
+	for(var i = zIndex; i >= 0; i--) {
 		var iter = scene.children[i];
 		if(!iter.body) {
 			continue;
 		}
 
-		if(point.x > iter.x && point.y > iter.y && point.x < (iter.x + iter.w) && point.y < (iter.y + iter.h)) {
+		var rect = {x:iter.x, y:iter.y, w:iter.w, h:iter.h};
+
+		ctx.save();
+		ctx.beginPath();
+		ctx.translate(rect.x, rect.y);
+		if(iter.rotation) {
+			ctx.translate(rect.w >> 1, rect.h >> 1);
+			ctx.rotate(iter.rotation);
+			ctx.translate(-(rect.w >> 1), -(rect.h >> 1));
+		}
+		ctx.rect(0, 0, rect.w, rect.h);
+		if(ctx.isPointInPath(point.x, point.y)) {
 			arr.push(iter.body);
 		}
+		ctx.restore();
 	}
 
 	return arr;
 }
 
-Physics.createWorldJoints = function(world, scene, element) {
-	for(var i = 0; i < element.children.length; i++) {
-		var iter = element.children[i];
-
-		Physics.createWorldJoints(world, scene, iter);
-	}
-
+Physics.createJoint = function(world, element, scene) {
+	var scene = element.getWindow();
 	if(!element.isUIJoint) {
 		return;
 	}
@@ -302,7 +355,8 @@ Physics.createWorldJoints = function(world, scene, element) {
 		p.x = element.x + (element.w >> 1);
 		p.y = element.y + (element.h >> 1);
 
-		arr = Physics.findBodiesAtPoint(scene, p);
+		var zIndex = element.getZIndex();
+		arr = Physics.findBodiesAtPoint(scene, p, zIndex);
 
 		if(arr.length == 1) {
 			arr = [world.GetGroundBody(), arr[0]];
@@ -330,6 +384,7 @@ Physics.createWorldJoints = function(world, scene, element) {
 
 			var joint = world.CreateJoint(rJointDef);
 			joint.element = element;
+			element.joint = joint;
 		}
 		else {
 			console.log("not found body");
@@ -339,8 +394,9 @@ Physics.createWorldJoints = function(world, scene, element) {
 		var rJointDef = null;
 		var p0 = element.points[0];
 		var p1 = element.points[1];
-		var arr0 = Physics.findBodiesAtPoint(scene, p0);
-		var arr1 = Physics.findBodiesAtPoint(scene, p1);
+		var zIndex = element.getZIndex();
+		var arr0 = Physics.findBodiesAtPoint(scene, p0, zIndex);
+		var arr1 = Physics.findBodiesAtPoint(scene, p1, zIndex);
 
 		if(arr0.length && arr1.length) {
 			var anchorPoint0 = new b2Vec2(Physics.toMeter(p0.x), Physics.toMeter(p0.y));
@@ -376,6 +432,7 @@ Physics.createWorldJoints = function(world, scene, element) {
 
 			var joint = world.CreateJoint(rJointDef);
 			joint.element = element;
+			element.joint = joint;
 		}
 		else {
 			console.log("not found body");
@@ -387,8 +444,9 @@ Physics.createWorldJoints = function(world, scene, element) {
 		var p1 = element.points[1];
 		var p2 = element.points[2];
 		var p3 = element.points[3];
-		var arr0 = Physics.findBodiesAtPoint(scene, p0);
-		var arr1 = Physics.findBodiesAtPoint(scene, p3);
+		var zIndex = element.getZIndex();
+		var arr0 = Physics.findBodiesAtPoint(scene, p0, zIndex);
+		var arr1 = Physics.findBodiesAtPoint(scene, p3, zIndex);
 
 		if(arr0.length && arr1.length) {
 			rJointDef = new b2PulleyJointDef();
@@ -402,6 +460,7 @@ Physics.createWorldJoints = function(world, scene, element) {
 			
 			var joint = world.CreateJoint(rJointDef);
 			joint.element = element;
+			element.joint = joint;
 		}
 		else {
 			console.log("not found body");
@@ -411,21 +470,28 @@ Physics.createWorldJoints = function(world, scene, element) {
 	return;
 }
 
+Physics.createWorldJoints = function(world, scene, element) {
+	for(var i = 0; i < element.children.length; i++) {
+		var iter = element.children[i];
+
+		Physics.createWorldJoints(world, scene, iter);
+	}
+
+	Physics.createJoint(world, element, scene);
+}
+
 Physics.updateBodyElementsPosition = function(world) {
 	for (var b = world.m_bodyList; b; b = b.m_next) {
 		var element = b.element;
 
-		if(b.type === b2Body.b2_staticBody) {
-//			continue;
-		}
-
 		if(element) {
 			var a = b.GetAngle();
-			var p = b.GetWorldCenter();
+			var p = b.GetPosition();
+
 			if(p.x !== undefined && p.y !== undefined) {
 				var x = Physics.toPixel(p.x) - (element.w >> 1);
 				var y = Physics.toPixel(p.y) - (element.h >> 1);
-				element.setRotation(a);
+				
 
 				var parent = element.getParent();
 				if(!parent.isUIWindow) {
@@ -437,6 +503,7 @@ Physics.updateBodyElementsPosition = function(world) {
 				var ox = element.x;
 				var oy = element.y;
 
+				element.setRotation(a);
 				if(ox != x || oy != y) {
 					element.setPositionByBody(x, y);
 				}
@@ -557,7 +624,7 @@ Physics.reparentPhysicsToScene = function(scene) {
 }
 
 Physics.createWorld = function(scene) {
-	if(scene.world) {
+	if(scene.world || !window.b2World) {
 		return;
 	}
 
@@ -566,7 +633,7 @@ Physics.createWorld = function(scene) {
 	var maxY = scene.h >> 1;
 	var minX = -scene.w >> 1;
 	var minY = -scene.h >> 1;
-	var fps = scene.fps ? scene.fps : 30;
+	var fps = scene.getFPS();
 	var allowSleep = scene.allowSleep ? scene.allowSleep : true;
 	var gravityX = scene.gravityX ? scene.gravityX : 0;
 	var gravityY = scene.gravityY ? scene.gravityY : 0;
@@ -593,18 +660,18 @@ Physics.createWorld = function(scene) {
 		if(body1.element && body2.element) {
 			var element1 = body1.element;
 			if(element1.handleBeginContactSync) {
-				element1.handleBeginContactSync(body2);
+				element1.handleBeginContactSync(body2, contact);
 			}
 			var element2 = body2.element;
 			if(element2.handleBeginContactSync) {
-				element2.handleBeginContactSync(body1);
+				element2.handleBeginContactSync(body1, contact);
 			}
 			setTimeout(function() {
 				if(body1.element) {
-					body1.element.callOnBeginContactHandler(body2);
+					body1.element.callOnBeginContactHandler(body2, contact);
 				}
 				if(body2.element) {
-					body2.element.callOnBeginContactHandler(body1);
+					body2.element.callOnBeginContactHandler(body1, contact);
 				}
 			}, 5);
 		}
@@ -617,19 +684,19 @@ Physics.createWorld = function(scene) {
 		if(body1.element && body2.element) {
 			var element1 = body1.element;
 			if(element1.handleEndContactSync) {
-				element1.handleEndContactSync(body2);
+				element1.handleEndContactSync(body2, contact);
 			}
 			var element2 = body2.element;
 			if(element2.handleEndContactSync) {
-				element2.handleEndContactSync(body1);
+				element2.handleEndContactSync(body1, contact);
 			}
 
 			setTimeout(function() {
 				if(body1.element) {
-					body1.element.callOnEndContactHandler(body2);
+					body1.element.callOnEndContactHandler(body2, contact);
 				}
 				if(body2.element) {
-					body2.element.callOnEndContactHandler(body1);
+					body2.element.callOnEndContactHandler(body1, contact);
 				}
 			}, 5);
 		}
@@ -672,7 +739,9 @@ Physics.createWorld = function(scene) {
 	var velocityIterations = scene.velocityIterations ? scene.velocityIterations : 8;
 	var positionIterations = scene.positionIterations ? scene.positionIterations : 5;
 
-	var timeStep = 1/25;
+	console.log("Box2d:" + velocityIterations + ":" + positionIterations + ":" + fps);
+
+	var timeStep = 1/fps;
 	var intervalID = 0;
 	function stepIt() {
 		if(scene.world != world) {
@@ -683,9 +752,11 @@ Physics.createWorld = function(scene) {
 
 		if(scene.isVisible() && scene.isTopWindow() && scene.isPlaying()) {
 			world.Step(timeStep, velocityIterations, positionIterations);
-
+		
 			scene.postRedraw();
-			world.ClearForces();
+			if(scene.autoClearForce) {
+				world.ClearForces();
+			}
 			Physics.updateBodyElementsPosition(world);
 		}
 

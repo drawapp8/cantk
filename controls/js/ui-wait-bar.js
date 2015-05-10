@@ -13,17 +13,14 @@ function UIWaitBar() {
 
 UIWaitBar.TILES = 8;
 UIWaitBar.prototype = new UIElement();
-UIWaitBar.prototype.isUIWaitBar = true;
 
-UIWaitBar.prototype.initUIWaitBar = function(type, w, h, image, imageDisplay) {
+UIWaitBar.prototype.initUIWaitBar = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.offset = 0;
-	this.running = false;
 	this.setDefSize(w, h);
 	this.setTextType(Shape.TEXT_NONE);
-	this.images.display = imageDisplay;
-	this.setImage(UIElement.IMAGE_DEFAULT, image);
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 
 	return this;
 }
@@ -32,100 +29,103 @@ UIWaitBar.prototype.shapeCanBeChild = function(shape) {
 	return false;
 }
 
-UIWaitBar.prototype.isRunning = function() {
-	return this.running;
+UIWaitBar.prototype.step = function() {
+	if(this.isVisible() && this.getParent()) {
+		this.offset++;
+	
+		if(this.isUIWaitBar) {
+			this.offset = (this.offset)%UIWaitBar.TILES;
+		}
+
+		this.postRedraw();
+	}
+
+	return this;
 }
 
-UIWaitBar.prototype.start = function() {
-	this.running = true;
-
-	return;
-}
-
-UIWaitBar.prototype.stop = function() {
-	this.running = false;
-
-	return;
-}
-
-UIWaitBar.prototype.drawBgImage =function(canvas) {
+UIWaitBar.prototype.drawBgImage = function(canvas) {
 	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 	
 	if(!image) {
 		return;
 	}
 
-	var imageWidth = image.width;
-	var imageHeight = image.height;
-	var tileHeight = imageHeight/UIWaitBar.TILES;
-	var yOffset = this.offset * tileHeight;
-
-	var sx = 0;
-	var sy = yOffset;
-	var w = imageWidth;
-	var h = imageHeight;
-	var dw = this.w;
-	var dh = this.h;
-	var dx = (dw - imageWidth)/2;
-	var dy = (dh - tileHeight)/2;
-		
-	if(imageWidth < 100 && imageHeight < 100) {
-		sy = 0;
-		dy = (dh - imageHeight)/2;
-		canvas.save();
-		canvas.translate(this.w/2, this.h/2);
-		canvas.rotate(0.1*Math.PI*this.offset);
-		canvas.translate(-this.w/2, -this.h/2);
-		canvas.drawImage(image, sx, sy, imageWidth, imageHeight, dx, dy, imageWidth, imageHeight);
-		canvas.restore();
+	if(this.isUIWaitBar) {
+		this.drawBgImageBar(canvas, image);
 	}
 	else {
-		switch(this.images.display) {
-			case UIElement.IMAGE_DISPLAY_CENTER: {
-				canvas.drawImage(image, sx, sy, w, tileHeight, dx, dy, w, tileHeight);
-				break;
-			}
-			default: {
-				canvas.drawImage(image, sx, sy, w, tileHeight, 0, dy, dw, tileHeight);
-				break;
-			}
-		}	
+		this.drawBgImageBox(canvas, image);
 	}
 
 	return;
 }
 
-UIWaitBar.prototype.needRedraw = function() {
-	if(!this.isVisible() || !this.running) {
-		return false;
-	}
+UIWaitBar.prototype.drawBgImageBox =function(canvas, image) {
+	var angle = 0.05*Math.PI*this.offset;
+	this.setRotation(angle);
 
-	if(this.mode === Shape.MODE_EDITING) {
-		return false;
-	}
+	UIElement.prototype.drawBgImage.call(this, canvas);
 
-	return true;
+	return;
 }
 
-function UIWaitBarCreator(type, w, h, image, imageDisplay) {
-	var args = [type, "ui-wait-bar", null, 1];
+UIWaitBar.prototype.onInit = function() {
+	UIElement.prototype.onInit.call(this);
+
+	var me = this;
+	function stepIt() {
+		me.step();
+		if(me.getParent()) {
+			setTimeout(stepIt, 50);
+		}
+	}
+
+	stepIt();
+
+	return;
+}
+
+UIWaitBar.prototype.drawBgImageBar = function(canvas, image) {
+	var imageWidth = image.width;
+	var imageHeight = image.height;
+	var tileHeight = Math.round(imageHeight/UIWaitBar.TILES);
+	var yOffset = this.offset * tileHeight;
+
+	var rect = {x:0, y:yOffset, w:imageWidth, h:tileHeight};
+
+	UIElement.drawImageAt(canvas, image, this.images.display, 0, 0, this.w, this.h, rect);
+
+	return;
+}
+
+function UIWaitBarCreator(type, w, h) {
+	var args = [type, type, null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIWaitBar();
-		if(createReason !== C_CREATE_FOR_ICON) {
-			setInterval(function() {
-				if(g.needRedraw()) {
-					g.offset = (g.offset + 1);
-					if(g.type === "ui-wait-bar") {
-						g.offset = g.offset%UIWaitBar.TILES;
-					}
-					g.postRedraw();
-				}
-			}, 100);
-		}
-		return g.initUIWaitBar(this.type, w, h, image, imageDisplay);
+		g.isUIWaitBar = true;
+
+		return g.initUIWaitBar(this.type, w, h);
 	}
 	
 	return;
 }
+
+function UIWaitBoxCreator(type, w, h) {
+	var args = [type, type, null, 1];
+	
+	ShapeCreator.apply(this, args);
+	this.createShape = function(createReason) {
+		var g = new UIWaitBar();
+		g.isUIWaitBox = true;
+
+		return g.initUIWaitBar(this.type, w, h);
+	}
+	
+	return;
+}
+	
+ShapeFactoryGet().addShapeCreator(new UIWaitBarCreator("ui-wait-bar", 200, 24));
+ShapeFactoryGet().addShapeCreator(new UIWaitBoxCreator("ui-wait-box", 60, 60));
+

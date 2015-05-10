@@ -15,19 +15,50 @@ UIRevoluteJoint.prototype = new UIOneJoint();
 UIRevoluteJoint.prototype.isUIJoint = true;
 UIRevoluteJoint.prototype.isUIRevoluteJoint = true;
 
-UIRevoluteJoint.prototype.initUIRevoluteJoint = function(type, w, h, bg) {
-	this.initUIOneJoint(type, w, h, bg);	
+UIRevoluteJoint.prototype.initUIRevoluteJoint = function(type) {
+	this.initUIOneJoint(type);	
 	
 	return this;
 }
+
+UIRevoluteJoint.prototype.setMotorSpeed = function(motorSpeed) {
+	if(this.joint) {
+		this.joint.SetMotorSpeed(motorSpeed);
+	}
+
+	return this;
+}
+
+UIRevoluteJoint.prototype.getMotorSpeed = function() {
+	if(this.joint) {
+		return this.joint.GetMotorSpeed();
+	}
+
+	return 0;
+}
+
+UIRevoluteJoint.prototype.recreateJoint = function() {
+	var world = this.getWindow().world;
+
+	if(world) {
+		Physics.destroyJointForElement(world, this);
+		Physics.createJoint(world, this);
+	}
+
+	return;
+}
+
 function UIRevoluteJointCreator() {
 	var args = ["ui-revolute-joint", "ui-revolute-joint", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIRevoluteJoint();
-		return g.initUIRevoluteJoint(this.type, 20, 20, null);
+		return g.initUIRevoluteJoint(this.type);
 	}
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIRevoluteJointCreator());
+

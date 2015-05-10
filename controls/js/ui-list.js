@@ -58,7 +58,9 @@ UIList.prototype.shapeCanBeChild = function(shape) {
 UIList.prototype.childIsBuiltin = function(child) {
 	return child.name === "ui-list-item-update-status" 
 		|| child.name === "ui-list-item-update-tips"
-		|| child.name === "ui-last";
+		|| child.name === "ui-last"
+		|| child.name.indexOf("prebuild") >= 0
+		|| child.name.indexOf("builtin") >= 0;
 }
 
 UIList.FIRST_ITEM = -1;
@@ -115,11 +117,12 @@ UIList.prototype.relayoutChildren = function(animHint) {
 		return;
 	}
 
-	var border = this.getHMargin();
+	var hMargin = this.getHMargin();
+	var vMargin = this.getVMargin();
 
-	var x = border;
-	var y = border;
-	var w = this.w - 2 * border;
+	var x = hMargin;
+	var y = vMargin;
+	var w = this.getWidth(true);
 	var itemHeight = this.getItemHeight();
 	var h = itemHeight;
 	var n = this.children.length;
@@ -150,13 +153,14 @@ UIList.prototype.relayoutChildren = function(animHint) {
 			this.fixListItemImage(child, UIList.MIDDLE_ITEM);	
 		}
 
-		if(this.h <= (y + border + h)) {
-			this.h = y + border + h;
+		if(this.h <= (y + vMargin + h)) {
+			this.h = y + vMargin + h;
 		}
 
 		
 		animatable =  (y < this.h) && (animHint || this.mode === Shape.MODE_EDITING);
 		if(animatable) {
+			child.setSize(w, h);
 			config.xStart = child.x;
 			config.yStart = child.y;
 			config.wStart = child.w;
@@ -298,10 +302,6 @@ UIList.prototype.getValue = function() {
 		}
 	}
 
-	if(!ret && this.targetShape) {
-		ret = this.targetShape.getZIndex();
-	}
-
 	return ret;
 }
 
@@ -349,4 +349,6 @@ function UIListCreator(border, itemHeight, bg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIListCreator(5, 114, null));
 

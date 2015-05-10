@@ -183,40 +183,38 @@ UIEdit.prototype.editText = function(point) {
 	var me = this;
 	if(this.textType && this.textEditable(point)) {
 		var shape = this;
-		var editor = null;
 		var text = this.getText();
 		var rect = this.getEditorRect();
 		var scale = this.getRealScale() / UIElement.getMainCanvasScale().y;
 		var inputType = this.inputType ? this.inputType : "text";
+		var fontSize = this.style.fontSize * scale;
+		var editor = cantkShowInput(inputType, fontSize, text, rect.x, rect.y, rect.w, rect.h);
 
-		editor = cantkShowInput(rect.x, rect.y, rect.w, rect.h);
-		editor.setShape(shape);
-		editor.setInputType(inputType);
-		editor.removeBorder();
-		editor.setFontSize(this.style.fontSize * scale);
-		editor.setText(text);
-
-		editor.element.onchange= function() {
-			if(text !== this.value) {
-				shape.setText(this.value);
-
-				shape.callOnChangedHandler(shape.text);
+		shape.editing = true;
+		function onChanged(text) {
+			if(text !== shape.text) {
+				shape.setText(text, true);
 				shape.postRedraw();
 			}
 			else {
 				shape.text = text;
 			}
 			
-			editor.element.onchange = null;
+			editor.setOnChangedHandler(null);
+	        editor.setOnChangeHandler(null);
 			editor.hide();
-
+			delete shape.editing;
 			shape.callOnFocusOutHandler();
+
 			return;
 		}
 
-		editor.element.onkeyup = function(e) {
+		function onChange(text) {
 			shape.callOnChangingHandler(this.value);
 		}
+
+		editor.setOnChangedHandler(onChanged);
+		editor.setOnChangeHandler(onChange);
 
 		this.callOnFocusInHandler();
 	}
@@ -238,4 +236,6 @@ function UIEditCreator(w, h, leftMargin, rightMargin, bg, focusedBg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIEditCreator(120, 50, 12, 12, null, null));
 

@@ -22,6 +22,7 @@ UIViewPager.prototype.initUIViewPager = function(type) {
 	this.setTextType(Shape.TEXT_NONE);
 	this.widthAttr = UIElement.WIDTH_FILL_PARENT;
 	this.heightAttr = UIElement.HEIGHT_FILL_PARENT;
+	this.velocityTracker = new VelocityTracker();
 
 	return this;
 }
@@ -185,27 +186,37 @@ UIViewPager.prototype.onPointerDownRunning = function(point, beforeChild) {
 	if(beforeChild || this.animating || !this.slideToChange) {
 		return;
 	}
-
-	if(!this.velocityTracker) {
-		this.velocityTracker = new VelocityTracker();
+	
+	if(this.isEventHandledByChild()) {
+		return;
 	}
+	this.setEventHandled();
+
 	this.velocityTracker.clear();
 
 	return true;
 }
 
+UIViewPager.prototype.isEventHandledByChild = function() {
+	var status = UIElement.lastEvent.status;
+	return status & UIElement.EVENT_HSCROLL_HANDLED;
+}
+
+UIViewPager.prototype.setEventHandled = function() {
+	this.setLastEventStatus(UIElement.EVENT_HSCROLL_HANDLED);
+	
+	return this;
+}
+
 UIViewPager.prototype.onPointerMoveRunning = function(point, beforeChild) {
-	if(!this.slideToChange) {
+	if(!this.slideToChange || beforeChild || !this.pointerDown) {
 		return;
 	}
 	if(this.animating) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+		this.setEventHandled();
 		return;
 	}
-	if(this.getLastEventStatus() == UIElement.EVENT_STATUS_HANDLED) {
-		return;
-	}
-	if(beforeChild) {
+	if(this.isEventHandledByChild()) {
 		return;
 	}
 
@@ -213,7 +224,7 @@ UIViewPager.prototype.onPointerMoveRunning = function(point, beforeChild) {
 	var currFrame = this.current;
 	var dx = this.getMoveAbsDeltaX();
 	if((currFrame > 0 && dx > 0) || ((currFrame+1) < frames && dx < 0)) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+		this.setEventHandled();
 	}
 	else {
 		return;
@@ -235,17 +246,15 @@ UIViewPager.prototype.onPointerMoveRunning = function(point, beforeChild) {
 }
 	
 UIViewPager.prototype.onPointerUpRunning = function(point, beforeChild) {
-	if(!this.slideToChange) {
+	if(!this.slideToChange || beforeChild || !this.pointerDown) {
 		return;
 	}
+
 	if(this.animating) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+		this.setEventHandled();
 		return;
 	}
-	if(this.getLastEventStatus() == UIElement.EVENT_STATUS_HANDLED) {
-		return;
-	}
-	if(beforeChild) {
+	if(this.isEventHandledByChild()) {
 		return;
 	}
 
@@ -253,7 +262,7 @@ UIViewPager.prototype.onPointerUpRunning = function(point, beforeChild) {
 	var currFrame = this.current;
 	var dx = this.getMoveAbsDeltaX();
 	if((currFrame > 0 && dx > 0) || ((currFrame+1) < frames && dx < 0)) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+		this.setEventHandled();
 	}
 	else {
 		return;
@@ -378,3 +387,6 @@ function UIViewPagerCreator() {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIViewPagerCreator());
+

@@ -75,6 +75,10 @@ WWindow.prototype.onPointerMove = function(point) {
 }
 
 WWindow.prototype.onPointerUp = function(point) {
+	if(!this.pointerDown) {
+		return;
+	}
+
 	if(this.grabWidget) {
 		this.grabWidget.onPointerUp(point);
 	}
@@ -137,8 +141,7 @@ WWindow.prototype.close = function(retInfo) {
 
 	this.manager.ungrab(this);
 	this.manager.removeWindow(this);
-	this.destroyChildren();
-	WWidget.putWidget(this);
+	this.destroy();
 
 	return;
 }

@@ -96,3 +96,5 @@ function UIVScrollImageCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIVScrollImageCreator());

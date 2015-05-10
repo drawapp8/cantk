@@ -122,14 +122,8 @@ WImage.prototype.setImageSrc = function(src, onLoad) {
 
 	if(src.indexOf("data:") === 0) {	
 		this.src = src;
-		this.image = new Image();
-		this.image.src = src;
 		this.rect = null;
-
-		if(onLoad) {
-			onLoad(this.image);
-		}
-		WImage.onload();
+		this.image = CantkRT.createImage(src, onLoad);
 
 		return;
 	}
@@ -185,14 +179,13 @@ WImage.prototype.setImageSrc = function(src, onLoad) {
 }
 
 WImage.prototype.getImageRect = function() {
-	if(!this.rect && this.image && this.image.width) {
-		this.rect = {x:0, y:0};
+	if(!this.rect) {
+		this.rect = {x:0, y:0, w:0, h:0};
+	}
+	
+	if((!this.rect.w) && this.image) {
 		this.rect.w = this.image.width;
 		this.rect.h = this.image.height;
-	}
-
-	if(this.rect && !this.rect.w && !this.rect.h) {
-		return null;
 	}
 
 	return this.rect;
@@ -308,11 +301,13 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			dx = x;
 			dy = y;
 
-			while(dy < dh) {
+			var maxDx = x + dw;
+			var maxDy = y + dh;
+			while(dy < maxDy) {
 				dx = x;
-				h = Math.min(dh-dy, imageHeight);
-				while(dx < dw) {
-					w = Math.min(dw-dx, imageWidth);
+				h = Math.min(maxDy-dy, imageHeight);
+				while(dx < maxDx) {
+					w = Math.min(maxDx-dx, imageWidth);
 					canvas.drawImage(image, sx, sy, w, h, dx, dy, w, h);
 					dx = dx + w;
 				}
@@ -321,20 +316,22 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			break;
 		}
 		case WImage.DISPLAY_TILE_H: {
+			var maxDx = x + dw;
 			dx = x;
 			h = Math.min(dh, imageHeight);
-			while(dx < dw) {
-				w = Math.min(dw-dx, imageWidth);
+			while(dx < maxDx) {
+				w = Math.min(maxDx-dx, imageWidth);
 				canvas.drawImage(image, sx, sy, w, h, dx, y, w, h);
 				dx = dx + w;
 			}
 			break;
 		}
 		case WImage.DISPLAY_TILE_V: {
+			var maxDy = y + dh;
 			dy = y;
 			w = Math.min(dw, imageWidth);
-			while(dy < dh) {
-				h = Math.min(dh-dy, imageHeight);
+			while(dy < maxDy) {
+				h = Math.min(maxDy-dy, imageHeight);
 				canvas.drawImage(image, sx, sy, w, h, x, dy, w, h);
 				dy = dy + h;
 			}

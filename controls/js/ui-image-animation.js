@@ -36,7 +36,24 @@ UIImageAnimation.prototype.setCurrent = function(current) {
 
 	this.currFrame = current;
 
-	return;
+	return this;
+}
+
+UIImageAnimation.prototype.setValue = function(src) {
+	for(var i = 0; i < this.cachedImages.length; i++) {
+		var iter = this.cachedImages[i];
+		if(iter.src.indexOf(src) >= 0 || src.indexOf(iter.src) >= 0) {
+			return this.setCurrent(i);
+		}
+	}
+	
+	return this;
+}
+
+UIImageAnimation.prototype.getCurrentImage = function() {
+	var image = this.cachedImages[this.currFrame];
+
+	return image;
 }
 
 UIImageAnimation.prototype.onInit = function() {
@@ -103,4 +120,6 @@ function UIImageAnimationCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIImageAnimationCreator());
 

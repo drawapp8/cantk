@@ -81,3 +81,6 @@ function UIPageCreator(bg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIPageCreator(null));
+

@@ -1,12 +1,3 @@
-/*
- * File: browser.js
- * Author: Li XianJing <xianjimli@hotmail.com>
- * Brief:  functions to detect browser type.
- * 
- * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
- * 
- */
-
 var browser = {    
 	versions:function(){            
 		var u = navigator.userAgent, app = navigator.appVersion;            
@@ -131,6 +122,22 @@ browser.versions.number = getBrowserVersionNumber();
 
 function browserVersion() {
 	return browser.versions.number;
+}
+
+console.logStr = "";
+console.logR = console.log;
+
+console.getLog = function() {
+	return  console.logStr;
+}
+
+if(isMobile()) {
+	console.log = function(str) {
+		console.logStr += str + "\n";
+		console.logR(str);
+
+		return;
+	}
 }
 
 console.log(navigator.userAgent + " version number=" + browserVersion()); 

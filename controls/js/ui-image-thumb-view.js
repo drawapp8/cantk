@@ -25,8 +25,9 @@ UIImageThumbView.prototype.initUIImageThumbView = function(w, h) {
 	this.setItemSize = UIImageThumbView.prototype.setItemSize;
 	this.getCacheCanvas        = UIImageThumbView.prototype.getCacheCanvas;
 	this.getCacheCanvasContext = UIImageThumbView.prototype.getCacheCanvasContext;
+	this.setValue              = UIImageThumbView.prototype.setValue;
 	this.getCurrentImage       = UIImageThumbView.prototype.getCurrentImage;
-	this.getCurrentImageSrc       = UIImageThumbView.prototype.getCurrentImageSrc;
+	this.getCurrentImageSrc    = UIImageThumbView.prototype.getCurrentImageSrc;
 
 	imageThumbViewInitCustomProp(this);
 	this.errorImage = UIImageView.createImage("drawapp8/images/common/failed.png", null);
@@ -86,6 +87,18 @@ UIImageThumbView.prototype.getCurrentImageSrc = function() {
 
 UIImageThumbView.prototype.getCurrentImage = function() {
 	return this.currentImageProxy ? this.currentImageProxy.image : null;
+}
+
+UIImageThumbView.prototype.setValue = function(src) {
+	for(var i = 0; i < this.imageProxies.length; i++) {
+		var iter = this.imageProxies[i];
+		if(iter.src.indexOf(src) >= 0 || src.indexOf(iter.src) >= 0) {
+			this.currentImageProxy = iter;
+			return this;
+		}
+	}
+
+	return this;
 }
 
 UIImageThumbView.createImageProxy = function(thumbview, src, loadingImage, errorImage, ctxToDraw, x, y, w, h) {
@@ -453,6 +466,9 @@ UIImageThumbViewGrid.prototype.onClick = function(point, beforeChild) {
 		this.currentImageProxy = this.imageProxies[i];
 	}
 
+	this.callOnClickHandler(point);
+	this.callOnChangedHandler(this.getCurrentImageSrc());
+
 	return this.callOnClickHandler(point);
 }
 
@@ -508,3 +524,7 @@ function UIUIImageThumbViewGridCreator() {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIUIImageThumbViewTapeCreator());
+ShapeFactoryGet().addShapeCreator(new UIUIImageThumbViewGridCreator());
+

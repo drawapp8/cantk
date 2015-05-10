@@ -95,3 +95,5 @@ function UIVideoCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIVideoCreator());
+

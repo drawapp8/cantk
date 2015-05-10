@@ -140,7 +140,7 @@ UIContextMenu.prototype.afterChildAppended = function(shape) {
 UIContextMenu.prototype.shapeCanBeChild = function(shape) {
 	return shape.isUIButton || shape.isUIGroup || shape.isUIImage || shape.isUILabel 
 		|| shape.isUIViewPager || shape.isUILayout || shape.isUIImageView 
-		|| shape.isUIGrid;
+		|| shape.isUIGrid || shape.isUIImageButton;
 }
 
 UIContextMenu.prototype.relayoutChildren = function() {
@@ -207,4 +207,6 @@ function UIContextMenuCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIContextMenuCreator());
 

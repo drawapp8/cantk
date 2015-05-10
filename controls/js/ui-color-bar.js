@@ -110,3 +110,5 @@ function UIColorBarCreator(w, h) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIColorBarCreator(100, 10));
+

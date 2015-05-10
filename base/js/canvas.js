@@ -144,58 +144,10 @@ var C_EVT_SCALE = 7;
 
 var gCancelDefaultAction = false;
 
-function canvasMaxizeIt(canvas, inlineEdit) {
-	var view = cantkGetViewPort();
-	
-	canvas.style.position = "absolute";
-	canvas.style.top = 0;
-	canvas.style.left = 0;
-	canvas.style.zIndex = 0;
-
-	if(inlineEdit || isMobile()) {
-		canvas.width  = view.width;
-		canvas.height = view.height;
-	}
-	else {
-		canvas.width  = view.width - 20;
-		canvas.height = Math.max(view.height * 1.8, 600);
-	}
-
-	console.log("canvas size:" + canvas.width + "x" + canvas.height);
-
-	if(canvas.height < 200) {
-		canvas.height = 600;
-	}
-
-	if(canvas.width < 300) {
-		canvas.width = 600;
-	}
-	
-	return;
-}
-
-function canvasCreate(id) {
-	var canvas = null;
-	
-	if("string" === typeof id) {
-		canvas = document.getElementById(id);
-		if(!canvas) {
-			canvas = document.createElement("canvas"); 
-			canvas.style.zIndex = 0;
-			canvas.id = id;
-
-			document.body.appendChild(canvas); 
-		}
-	}
-	else {
-		canvas = id;
-	}
-
-	return canvas;
-}
-
 function canvasAttachManager(canvas, manager, app) {
-	window.pointer.emitPointers(canvas);
+	if(!canvas.isNative) {
+		window.pointer.emitPointers(canvas);
+	}
 
 	function getEvent(e) {
 		return e ? e: window.event;
@@ -303,9 +255,13 @@ function canvasAttachManager(canvas, manager, app) {
 		cantkAddEventListener('keydown', onKeyDown);
 		
 		function onWheelEvent(event) {
+			event = window.event || event ;
 			if(EditorElement.imeOpen) return true;
 
-			event = window.event || event ;
+			if(event && event.target && event.target.localName !== "canvas"){
+				return cancelDefaultAction(event);
+			}
+
 			var delta = event.wheelDelta ? event.wheelDelta : 0;
 			if(delta) {
 				if(manager.onWheel(delta)) {
@@ -360,7 +316,7 @@ function canvasAttachManager(canvas, manager, app) {
 			manager.onPointerDown(point);
 		}
 	
-		console.log("onPointerDown.");
+//		console.log("onPointerDown.");
 		return cancelDefaultAction(e);
 	}
 
@@ -406,7 +362,7 @@ function canvasAttachManager(canvas, manager, app) {
 			}
 		}
 		
-		console.log("onPointerUp.");
+//		console.log("onPointerUp.");
 		return cancelDefaultAction(e);
 	}
 
@@ -481,11 +437,11 @@ function canvasAttachManager(canvas, manager, app) {
 	var gScreenHeight = screen.height;
 
 	function handleInputMethodShow() {
-		console.log("input method show");
+//		console.log("input method show");
 	}
 
 	function handleInputMethodHide() {
-		console.log("input method hide");
+//		console.log("input method hide");
 	}
 
 	function handleScreenSizeChanged() {

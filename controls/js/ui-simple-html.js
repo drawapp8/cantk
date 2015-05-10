@@ -543,3 +543,5 @@ function UISimpleHTMLCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UISimpleHTMLCreator());
+

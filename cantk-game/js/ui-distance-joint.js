@@ -34,3 +34,5 @@ function UIDistanceJointCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIDistanceJointCreator());
+

@@ -11,22 +11,11 @@ function UICircle() {
 	return;
 }
 
-UICircle.prototype = new UIElement();
+UICircle.prototype = new UIBody();
 UICircle.prototype.isUICircle = true;
-UICircle.prototype.isUIPhysicsShape = true;
 
 UICircle.prototype.initUICircle = function(type, w, h) {
-	this.initUIElement(type);	
-
-	this.setDefSize(w, h);
-	this.setTextType(Shape.TEXT_NONE);
-	this.setImage(UIElement.IMAGE_DEFAULT, null);
-	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
-
-	this.density = 1;
-	this.friction = 0;
-	this.restitution = 0;
-	this.addEventNames(["onBeginContact", "onEndContact", "onMoved"]);
+	this.initUIBody(type, w, h);	
 
 	return this;
 }
@@ -39,23 +28,30 @@ UICircle.prototype.shapeCanBeChild = function(shape) {
 	return !shape.isUIPhysicsShape;
 }
 
+UICircle.prototype.setSize = function(w, h) {
+	this.w = Math.max(Math.floor(w), 2);
+	this.h = Math.max(Math.floor(h), 2);
+
+	this.onSized();
+
+	return this;
+}
+
 UICircle.prototype.onSized = function() {
 	var win = this.getWindow();
 	this.updateLayoutParams();
 	if(this.body && win && win.isUIScene) {
+		var x = this.x;
+		var y = this.y;
 		var r = win.toMeter(Math.min(this.getWidth(true)>>1, this.getHeight(true)>>1));
 		var shape = this.body.GetFixtureList().GetShape();
 		shape.SetRadius(r);
 		this.body.SynchronizeFixtures();
-		this.setPosition(this.x, this.y);
+		this.setPosition(x, y);
 	}
 }
 
 UICircle.prototype.paintSelfOnly = function(canvas) {
-	if(this.isStrokeColorTransparent()) {
-		return;
-	}
-
 	var x = this.w >> 1;
 	var y = this.h >> 1;
 	var r = Math.min(this.getWidth(true)>>1, this.getHeight(true)>>1);
@@ -65,7 +61,14 @@ UICircle.prototype.paintSelfOnly = function(canvas) {
 
 	canvas.beginPath();
 	canvas.arc(x, y, r, 0, Math.PI * 2);
-	canvas.stroke();
+
+	if(!this.isFillColorTransparent()) {
+		canvas.fill();
+	}
+
+	if(!this.isStrokeColorTransparent()) {
+		canvas.stroke();
+	}
 
 	return;
 }
@@ -81,3 +84,6 @@ function UICircleCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UICircleCreator());
+

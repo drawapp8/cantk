@@ -125,3 +125,16 @@ WebStorage.removeSession = function(key) {
 
 	return;
 }
+
+WebStorage.reset = function() {
+	for(var key in localStorage) {
+		delete localStorage[key];
+	}
+}
+
+WebStorage.dump = function() {
+	for(var key in localStorage) {
+		console.log(key + ":" + localStorage[key]);
+	}
+}
+

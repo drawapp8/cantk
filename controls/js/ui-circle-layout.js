@@ -158,3 +158,6 @@ function UICircleLayoutCreator(w, h, img) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UICircleLayoutCreator(400, 400));
+

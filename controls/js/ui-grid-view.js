@@ -56,3 +56,5 @@ function UIGridViewCreator(border, itemSize, bg) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIGridViewCreator(5, 114, null));
+

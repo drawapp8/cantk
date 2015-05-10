@@ -35,9 +35,11 @@ EditorElement.prototype.removeBorder = function() {
 
 EditorElement.prototype.setOnChangedHandler = function(onChanged) {
 	var me = this;
-	this.element.onchange = function() {
-		if(onChanged) {
-			onChanged(me, this.value);
+	this.onChanged = onChanged;
+
+	this.element.onblur = function() {
+		if(me.onChanged) {
+			me.onChanged(this.value);
 		}
 	}
 
@@ -46,9 +48,17 @@ EditorElement.prototype.setOnChangedHandler = function(onChanged) {
 
 EditorElement.prototype.setOnChangeHandler = function(onChange) {
 	var me = this;
+	this.onChange = onChange;
+
+	this.element.onchange = function() {
+		if(me.onChange) {
+			me.onChange(this.value);
+		}
+	}
+
 	this.element.onkeyup = function() {
-		if(onChange) {
-			onChange(me, this.value);
+		if(me.onChange) {
+			me.onChange(this.value);
 		}
 	}
 
@@ -151,42 +161,40 @@ EditorElement.prototype.setShape = function(shape) {
 	return;
 }
 
-EditorElement.create = function(element, id, x, y, w, h) {
+EditorElement.create = function(element, id) {
 	var edit = new EditorElement();
 
 	element.id = id;
 	edit.setElement(element);
-	edit.move(x, y);
-	edit.resize(w, h);
 	edit.setFontSize(14);
-	edit.show();
+	edit.removeBorder();
 
 	return edit;
 }
 
 var gCanTkInput = null;
-function cantkShowInput(x, y, w, h) {
-	var id = "cantk_input";
-
+function cantkShowInput(inputType, fontSize, text, x, y, w, h) {
 	x = Math.round(x);
 	y = Math.round(y);
 	w = Math.round(w);
 	h = Math.round(h);
 
 	if(!gCanTkInput) {
-		gCanTkInput = createSingleLineEdit(id, x, y, w, h);
+		gCanTkInput = createSingleLineEdit();
 	}
-	else {
-		gCanTkInput.move(x, y);
-		gCanTkInput.resize(w, h);
-		gCanTkInput.show();
-	}
+
+	gCanTkInput.setInputType(inputType);
+	gCanTkInput.setFontSize(fontSize);
+	gCanTkInput.setText(text);
+	gCanTkInput.move(x, y);
+	gCanTkInput.resize(w, h);
+	gCanTkInput.show();
 
 	return gCanTkInput;
 }
 
 var gCanTkTextArea = null;
-function cantkShowTextArea(x, y, w, h) {
+function cantkShowTextArea(text, fontSize, x, y, w, h) {
 	var id = "cantk_textarea";
 	
 	x = Math.round(x);
@@ -197,11 +205,12 @@ function cantkShowTextArea(x, y, w, h) {
 	if(!gCanTkTextArea) {
 		gCanTkTextArea = createMultiLineEdit(id, x, y, w, h);
 	}
-	else {
-		gCanTkTextArea.move(x, y);
-		gCanTkTextArea.resize(w, h);
-		gCanTkTextArea.show();
-	}
+	
+	gCanTkTextArea.move(x, y);
+	gCanTkTextArea.resize(w, h);
+	gCanTkTextArea.setFontSize(fontSize);
+	gCanTkTextArea.setText(text);
+	gCanTkTextArea.show();
 
 	return gCanTkTextArea;
 }
@@ -268,25 +277,27 @@ function cantkHideAllInput() {
 	return;
 }
 
-function createSingleLineEdit(id, x, y, w, h) {
-	var element = document.getElementById(id);
-
-	if(!element) {
-		element = document.createElement("input");
-		document.body.appendChild(element);
+function createSingleLineEdit() {
+	var id = "singlelineedit";
+	if(CantkRT.isNative()) {
+		return CantkRT.createSingleLineTextEditor();
 	}
-
-	return EditorElement.create(element, id, x, y, w, h);
+	else {
+		var element = document.createElement("input");
+		document.body.appendChild(element);
+		return EditorElement.create(element, id);
+	}
 }
 
-function createMultiLineEdit(id, x, y, w, h) {
-	var element = document.getElementById(id);
-
-	if(!element) {
-		element = document.createElement("textarea");
-		document.body.appendChild(element);
+function createMultiLineEdit(id) {
+	var id = "multilineedit";
+	if(CantkRT.isNative()) {
+		return CantkRT.createMultiLineTextEditor();
 	}
-
-	return EditorElement.create(element, id, x, y, w, h);
+	else {
+		var element = document.createElement("textarea");
+		document.body.appendChild(element);
+		return EditorElement.create(element, id);
+	}
 }
 

@@ -147,3 +147,6 @@ function UILoadingWindowCreator(bg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UILoadingWindowCreator(null));
+

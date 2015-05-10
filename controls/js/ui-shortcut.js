@@ -153,3 +153,5 @@ function UIShortcutCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIShortcutCreator());
+

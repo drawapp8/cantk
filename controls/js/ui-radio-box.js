@@ -69,3 +69,5 @@ function UIRadioBoxCreator(w, h) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIRadioBoxCreator(50, 50, null, null, null, null, null, null));
+

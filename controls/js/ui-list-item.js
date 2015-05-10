@@ -14,17 +14,17 @@ function UIListItem() {
 UIListItem.prototype = new UIElement();
 UIListItem.prototype.isUIListItem = true;
 
-UIListItem.prototype.initUIListItem = function(type, focusedImg, activeImg, normalImg, disableImg) {
+UIListItem.prototype.initUIListItem = function(type) {
 	this.initUIElement(type);	
 
 	this.setDefSize(200, 120);
 	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
 	this.setTextType(Shape.TEXT_NONE);
 	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
-	this.setImage(UIElement.IMAGE_FOCUSED, focusedImg);
-	this.setImage(UIElement.IMAGE_ACTIVE, activeImg);
-	this.setImage(UIElement.IMAGE_NORMAL, normalImg);
-	this.setImage(UIElement.IMAGE_DISABLE, disableImg);
+	this.setImage(UIElement.IMAGE_FOCUSED, null);
+	this.setImage(UIElement.IMAGE_ACTIVE, null);
+	this.setImage(UIElement.IMAGE_NORMAL, null);
+	this.setImage(UIElement.IMAGE_DISABLE, null);
 	this.setImage(UIElement.IMAGE_POINTER_OVER, null);
 	this.setImage(UIElement.IMAGE_DELETE_ITEM, null);
 	this.addEventNames(["onLongPress", "onRemoved"]);
@@ -285,17 +285,19 @@ UIListItem.prototype.afterChildAppended = function(shape) {
 	return true;
 }
 
-function UIListItemCreator(focusedImg, activeImg, normalImg, disableImg) {
+function UIListItemCreator() {
 	var args = ["ui-list-item", "ui-list-item", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIListItem();
-		g.initUIListItem(this.type, focusedImg, activeImg, normalImg, disableImg);
+		g.initUIListItem(this.type);
 	
 		return g;
 	}
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIListItemCreator(null, null, null, null));
 

@@ -144,6 +144,22 @@ WViewBase.prototype.getMetaInfo = function() {
 	return this.meta;
 }
 
+WViewBase.prototype.getAppIcon = function() {
+	return this.meta.general.appIcon;
+}
+
+WViewBase.prototype.getAppName = function() {
+	return this.meta.general.appname;
+}
+
+WViewBase.prototype.getAppDesc = function() {
+	return this.meta.general.appdesc;
+}
+
+WViewBase.prototype.getAppID = function() {
+	return this.meta.general.appID;
+}
+
 WViewBase.prototype.getDocID = function() {
 	return this.docid ? this.docid : (Math.round(Math.random() * 100) + "" + Date.now());
 }
@@ -238,12 +254,6 @@ WViewBase.prototype.loadJson = function(js) {
 	this.currentPage = 0;
 	this.loading = true;
 	this.showCurrentPage();
-	
-	if(js.scale) {
-		this.xscale = js.scale;
-		this.yscale = js.scale;
-	}
-
 	this.afterLoad(js);
 	this.loading = false;
 
@@ -273,7 +283,6 @@ WViewBase.prototype.showCurrentPage = function() {
 	this.allShapes.clear();
 
 	if(shapes) {
-		var maxhOfShape = 0;
 		var factory = ShapeFactory.getInstance();
 		for(var i = 0; i < shapes.length; i++) {
 			var jsShape = shapes[i];
@@ -282,9 +291,6 @@ WViewBase.prototype.showCurrentPage = function() {
 			if(shape) {
 				shape.fromJson(jsShape);
 				this.addShape(shape);
-				if(shape.h > maxhOfShape) {
-					maxhOfShape = shape.h;
-				}
 			}
 			else {
 				console.log("createShape " + jsShape.type + " fail.");
@@ -299,34 +305,6 @@ WViewBase.prototype.showCurrentPage = function() {
 }
 
 WViewBase.prototype.autoScale = function() {
-	var maxShape = null;
-
-	for(var i = 0; i < this.allShapes.length; i++) {
-		var shape = this.allShapes[i];
-		if(!maxShape) {
-			maxShape = shape;
-		}
-		else if((shape.h + shape.w) > (maxShape.h + maxShape.w)) {
-			maxShape = shape;
-		}
-	}
-
-	if(maxShape) {
-		var xscale = maxShape.w / this.rect.w;
-		var yscale = maxShape.h / this.rect.h;
-		if(xscale > 0.8 || yscale > 1.4) {
-			if(xscale > 1.2 || yscale > 2) {
-				this.zoomTo(0.5);
-			}
-			else {
-				this.zoomTo(0.7);
-			}
-		}
-		else {
-			this.zoomTo(1.0);
-		}
-	}
-
 	return;
 }
 
@@ -395,65 +373,6 @@ WViewBase.prototype.translatePoint = function(p) {
 	point.y = Math.round(point.y/this.yscale);
 
 	return point; 
-}
-
-WViewBase.prototype.canZoomIn = function() {
-	return this.xscale < 2 && this.yscale < 2;
-}
-
-WViewBase.prototype.canZoomOut = function() {
-	return this.xscale > 0.5 && this.yscale > 0.5;
-}
-
-WViewBase.prototype.onZoomed = function() {
-	return;
-}
-
-WViewBase.prototype.zoomTo = function(scale) {
-	var maxShape = null;
-	
-	for(var i = 0; i < this.allShapes.length; i++) {
-		var shape = this.allShapes[i];
-		if(!maxShape) {
-			maxShape = shape;
-		}
-		else if((shape.h + shape.w) > (maxShape.h + maxShape.w)) {
-			maxShape = shape;
-		}
-	}
-
-	if(!this.loading && maxShape && maxShape.isUIDevice) {
-		var delta = this.xscale - scale;
-		maxShape.x = Math.floor(maxShape.x + maxShape.x * delta);
-		maxShape.y = Math.floor(maxShape.y + maxShape.y * delta);
-	}
-
-	this.xscale = scale;
-	this.yscale = scale;
-	this.onZoomed();
-	this.postRedraw();
-
-	return;
-}
-
-WViewBase.prototype.zoomIn = function() {
-	if(this.canZoomIn()) {
-		this.zoomTo(this.xscale * 1.25);
-	}
-
-	return;
-}
-
-WViewBase.prototype.zoomOut = function() {
-	if(this.canZoomOut()) {
-		this.zoomTo(this.xscale * 0.75);
-	}
-	
-	return;
-}
-
-WViewBase.prototype.getCreatingShape = function() {
-	return this.creatingShape;
 }
 
 WViewBase.prototype.addShape = function(shape) {
@@ -677,7 +596,7 @@ WViewBase.prototype.onDoubleClick = function(p) {
 	return;
 }
 
-WViewBase.prototype.onLongPress = function(p) {
+WViewBase.prototype.onContextMenu = WViewBase.prototype.onLongPress = function(p) {
 	var point = this.translatePoint(p);
 	var shape = this.targetShape;
 
@@ -731,5 +650,9 @@ WViewBase.notifyAfterLoad = function(view, js) {
 	}
 
 	return;
+}
+
+WViewBase.prototype.getCreatingShape = function() {
+	return null;
 }
 

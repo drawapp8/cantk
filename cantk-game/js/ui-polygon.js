@@ -11,46 +11,56 @@ function UIPolygon() {
 	return;
 }
 
-UIPolygon.prototype = new UIElement();
+UIPolygon.prototype = new UIBody();
 UIPolygon.prototype.isUIPolygon = true;
-UIPolygon.prototype.isUIPhysicsShape = true;
 
 UIPolygon.prototype.initUIPolygon = function(type, w, h) {
-	this.initUIElement(type);	
-
-	this.setDefSize(w, h);
-	this.setTextType(Shape.TEXT_NONE);
-	this.setImage(UIElement.IMAGE_DEFAULT, null);
-	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
-	this.density = 1;
-	this.friction = 0;
-	this.restitution = 0;
-	this.setCanRectSelectable(false, false);
-	this.addEventNames(["onBeginContact", "onEndContact", "onMoved"]);
+	this.initUIBody(type, w, h);	
 
 	return this;
 }
 
 UIPolygon.prototype.shapeCanBeChild = function(shape) {
-	return shape.isUIPoint;
+	if(!UIGroup.prototype.shapeCanBeChild.call(this, shape) || (shape.isUIJoint && !shape.isUIMouseJoint)) {
+		return false;
+	}
+
+	if(shape.isUIPoint) {
+		return true;
+	}
+
+	return !shape.isUIPhysicsShape;
 }
 
 UIPolygon.prototype.paintChildren = function(canvas) {
+	if(!this.isIcon) {
+		this.defaultPaintChildren(canvas);
+	}
+
+	if(this.isStrokeColorTransparent()) {
+		return;
+	}
+
 	var x0 = 0;
 	var y0 = 0;
-
-	this.defaultPaintChildren(canvas);
 
 	canvas.beginPath();
 	canvas.strokeStyle = this.style.lineColor;
 	for(var i = 0; i < this.children.length; i++) {
 		var iter = this.children[i];
+		if(!iter.isUIPoint) {
+			continue;
+		}
+
 		var x = iter.x + (iter.w >> 1);
 		var y = iter.y + (iter.h >> 1);
 
-		if(!i) {
+		if(i%5 === 0) {
 			x0 = x;
 			y0 = y;
+			if(i > 0) {
+				canvas.closePath();
+			}
 			canvas.moveTo(x, y);
 		}
 		else {
@@ -58,6 +68,7 @@ UIPolygon.prototype.paintChildren = function(canvas) {
 		}
 	}
 	canvas.lineTo(x0, y0);
+	canvas.lineWidth = 1;
 	canvas.stroke();
 
 	return;
@@ -86,3 +97,6 @@ function UIPolygonCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIPolygonCreator());
+

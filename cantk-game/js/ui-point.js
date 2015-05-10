@@ -26,17 +26,22 @@ UIPoint.prototype.initUIPoint = function(type, w, h, bg) {
 }
 
 UIPoint.prototype.paintSelfOnly = function(canvas) {
-	var x = this.w >> 1;
-	var y = this.h >> 1;
+	var fillIt = !this.isFillColorTransparent();
+	var strokeIt = !this.isStrokeColorTransparent();
 
-	canvas.beginPath();
-	canvas.arc(x, y, 10, 0, 2 * Math.PI);
+	if(fillIt || strokeIt) {
+		var x = this.w >> 1;
+		var y = this.h >> 1;
+		canvas.beginPath();
+		canvas.arc(x, y, 10, 0, 2 * Math.PI);
+		
+		if(fillIt) {
+			canvas.fill();
+		}
 
-	if(!this.isFillColorTransparent()) {
-		canvas.fill();
-	}
-	if(!this.isStrokeColorTransparent()) {
-		canvas.stroke();
+		if(strokeIt) {
+			canvas.stroke();
+		}
 	}
 
 	return;
@@ -57,3 +62,6 @@ function UIPointCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIPointCreator());
+

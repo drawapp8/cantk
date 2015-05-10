@@ -136,6 +136,7 @@ Shape.prototype.editText = function(point) {
 		var cookie = this.getTextCookie(point);
 		var shape = this;
 		var editor = null;
+		var text = this.text;
 		var inputType = this.inputType ? this.inputType : "text";
 
 		if(this.textType === Shape.TEXT_INPUT) {
@@ -145,29 +146,30 @@ Shape.prototype.editText = function(point) {
 				w = 60;
 			}
 
-			editor = cantkShowInput(x, y, w, 18);
-			editor.setInputType(inputType);
+			editor = cantkShowInput(inputType, 12, text, x, y, w, 24);
 		}
 		else {
 			var y = p.y * scale + oy;
 			if(h < 60) {
 				h = 60;
 			}
-			editor = cantkShowTextArea(x, y, w, h);
+			editor = cantkShowTextArea(text, 12, x, y, w, h);
 		}
 
 		shape.editing = true;
-		editor.setText(this.getText(cookie));
-		editor.element.onchange= function() {
-			if(shape.text !== this.value) {
-				shape.exec(new SetTextCommand(shape, this.value, cookie));
+		function onChanged(text) {
+			if(shape.text !== text) {
+				shape.exec(new SetTextCommand(shape, text, 0));
 				shape.postRedraw();
 			}
 			editor.hide();
 			shape.editing = false;
+			editor.setOnChangedHandler(null);
 
 			return;
 		}
+
+		editor.setOnChangedHandler(onChanged);
 	}
 
 	return;
@@ -368,21 +370,17 @@ Shape.prototype.fixPosition = function() {
 	return;
 }
 
-Shape.prototype.move = function(dx, dy) {
-	dx = Math.floor(dx);
-	dy = Math.floor(dy);
-
-	if(this.x != dx || this.y != dy) {
-		this.x = dx;
-		this.y = dy;
+Shape.prototype.move = function(x, y) {
+	if(this.x != x || this.y != y) {
+		this.x = x;
+		this.y = y;
 
 		if(!this.isIcon) {
 			this.fixPosition();
 			this.onMoved();
 		}
 		
-		this.x = Math.floor(this.x);
-		this.y = Math.floor(this.y);
+		this.setPosition(x, y);
 	}
 
 	return;
@@ -600,23 +598,8 @@ Shape.prototype.toText = function(value) {
 	}
 }
 
-Shape.prototype.setText = function(text, cookie) {
-	cookie = cookie ? cookie : 0;
-	text = (text != null && text != undefined) ? text+"" : "";
-
-	switch(cookie)	 {
-		case 2: {
-			this.text2 = text;
-			break;
-		}
-		case 3:  {
-			this.text3 = text;
-			break;
-		}
-		default: {
-			this.text = text;
-		}
-	}
+Shape.prototype.setText = function(text) {
+	this.text = this.toText(text);
 	this.textNeedRelayout = true;
 	
 	return this;
@@ -634,19 +617,7 @@ Shape.prototype.setText3 = function(text) {
 	return this;
 }
 
-Shape.prototype.getText = function(cookie) {
-	cookie = cookie ? cookie : 0;
-
-	switch(cookie)	 {
-		case 2: {
-			return this.text2;
-		}
-		case 3:  {
-			return this.text3;
-		}
-		default:break;
-	}
-
+Shape.prototype.getText = function() {
 	return this.text;
 }
 
@@ -898,46 +869,6 @@ Shape.prototype.fromJson = function(js) {
 	return this;
 }
 
-Shape.prototype.extractFormat = function() {
-	var o = new Object();
-	
-	o.type = "";
-	o.name = "";
-
-	for(var key in this) {
-		var value = this[key];
-		var type = typeof value;
-		if(type === "function" || type === "object" || type === "undefined") {
-			continue;
-		}
-
-		if(type === "number" || type === "string" || type === "boolean") {
-			o[key] = value;
-		}
-	}
-
-	if(this.images) {
-		o.images = this.images;
-	}
-
-	delete o.x;
-	delete o.y;
-	delete o.name;
-	delete o.text;
-	delete o.state;
-	delete o.mode;
-	delete o.selected;
-	delete o.pointerDown;
-	delete o.xAttr;
-	delete o.yAttr;
-	delete o.xParam;
-	delete o.yParam;
-
-	o.style = this.style.toJson();
-
-	return o;
-}
-
 Shape.prototype.afterApplyFormat = function() {
 	return;
 }
@@ -946,8 +877,6 @@ Shape.prototype.applyFormat = function(js) {
 	if(!js) {
 		return;
 	}
-
-	var isSameType = js.type === this.type;
 
 	for(var key in js) {
 		var value = js[key];
@@ -960,29 +889,21 @@ Shape.prototype.applyFormat = function(js) {
 			continue;
 		}
 
-		if(!isSameType && (key === "w" || key === "h")) {
-			continue;
-		}
-
 		if(type === "number" || type === "string" || type === "boolean") {
-			if(isSameType || this[key] != undefined) {
-				this[key] = value;
-			}
+			this[key] = value;
 		}
 	}
 
-	if(isSameType) {
-		if(js.images) {
-			for(var key in js.images) {
-				var value = js.images[key];
-				
-				if(key === "display") {
-					this.images[key] = value;
-				}
-				else {
-					var src = value.getImageSrc();
-					this.setImage(key, src);
-				}
+	if(js.images) {
+		for(var key in js.images) {
+			var value = js.images[key];
+			
+			if(key === "display") {
+				this.images[key] = value;
+			}
+			else {
+				var src = value.getImageSrc();
+				this.setImage(key, src);
 			}
 		}
 	}
@@ -1010,7 +931,7 @@ Shape.prototype.setUserResizable = function(value) {
 }
 
 Shape.prototype.isUserMovable = function() {
-	return this.userMovable;
+	return this.userMovable && !this.isLocked();
 }
 
 Shape.prototype.isUserResizable = function() {
@@ -1360,7 +1281,7 @@ Shape.prototype.canCopy = function() {
 Shape.prototype.onDestroy = function() {
 }
 
-Shape.prototype.onRemoved = function() {
+Shape.prototype.onRemoved = function(parent) {
 }
 
 Shape.prototype.destroy = function() {
@@ -1401,6 +1322,7 @@ Shape.prototype.destroy = function() {
 
 	this.onDestroy();
 	this.isInvalid = true;
+	this.jsonData = null;
 
 	return;
 }

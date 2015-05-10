@@ -74,3 +74,6 @@ function UIDraggerCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIDraggerCreator());
+

@@ -62,3 +62,5 @@ function UILabelCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UILabelCreator());
+

@@ -158,3 +158,6 @@ function UISwitchCreator(w, h, maskWidth, img) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISwitchCreator(154, 54, 154, null));
+

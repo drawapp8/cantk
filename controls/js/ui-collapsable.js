@@ -243,3 +243,7 @@ function UIHCollapsableCreator(w, h, img) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIVCollapsableCreator(100, 100, null));
+ShapeFactoryGet().addShapeCreator(new UIHCollapsableCreator(100, 100, null));
+

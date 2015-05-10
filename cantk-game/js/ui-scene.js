@@ -24,10 +24,12 @@ UIScene.prototype.initUIScene = function(type, w, h, bg) {
 	this.yOffset = 0;
 	this.virtualWidth = 0;
 	this.virtualHeight = 0;
+	this.autoClearForce = true;
 	this.setAnimHint("none");
 	this.setCanRectSelectable(false, true);
 	this.addEventNames(["onPointerDown", "onPointerMove", "onPointerUp", "onDoubleClick"]);
 	this.addEventNames(["onSwipeLeft", "onSwipeRight", "onSwipeUp", "onSwipeDown"]);
+	this.setCameraFollowParams(0.5, 0.5, 0.5, 0.5);
 
 	return this;
 }
@@ -84,13 +86,25 @@ UIScene.prototype.doInit = function() {
 
 UIScene.prototype.onInit = function() {
 	if(!this.getSavedState()) {
-		this.saveState();
+		if(this.mode === Shape.MODE_RUNNING) {
+			this.saveState(this.jsonData);
+		}
+		else {
+			this.saveState();
+		}
 	}
 
 	this.doInit();
 	this.play();
 	this.updateStickyChildren();
-	
+
+	var me = this;
+
+	setTimeout(function() {
+		WWindowManager.getInstance().showFPS(me.showFPS);
+		WWindowManager.getInstance().setMaxFPSMode(me.maxFPSMode);
+	}, 1000);
+
 	return;
 }
 
@@ -101,13 +115,6 @@ UIScene.prototype.onDeinit = function() {
 		this.world = null;
 	}
 
-//	var me = this;
-//	setTimeout(function() {
-//		me.restoreState();
-//	}, 1000);
-//
-//	this.restoreState();
-//	this.clearState();	
 	this.stop();
 
 	return;
@@ -185,26 +192,29 @@ UIScene.prototype.defaultPaintChildren = function(canvas) {
 	var right = this.xOffset + this.w;
 	var bottom = this.yOffset + this.h;
 
+	var k = 0;
+	var children = this.children;
 	var n = this.children.length;
 	for(var i = 0; i < n; i++) {
-		var shape = this.children[i];
-		var inVisible = !shape.visible ;
-		var outOfView = shape.x > right || shape.y > bottom || (shape.x + shape.w) < left || (shape.y + shape.h) < top;
-		if(shape.rotation) {
-			outOfView = outOfView && Math.abs(shape.w/shape.h - 1) <  0.2;
+		var shape = children[i];
+		if(!shape.rotation) {
+			if(shape.x > right || shape.y > bottom || (shape.x + shape.w) < left || (shape.y + shape.h) < top) {
+				continue;
+			}
 		}
-
-		if(shape.body) {
-			shape.body.SetAwake(!inVisible);
+		else {
+			var s = Math.max(shape.w, shape.h);
+			if((shape.x - s) > right || (shape.y - s) > bottom || (shape.x + s) < left || (shape.y + s) < top) {
+				continue;
+			}
 		}
+		if(!shape.visible) continue;
 
-		if(inVisible || outOfView) {
-			continue;
-		}
-
+//		k++;
 		shape.paintSelf(canvas);
 	}
-	
+//	console.log("UIScene.prototype.defaultPaintChildren:" + k + "/" + n);
+
 	this.paintTargetShape(canvas);
 
 	return;
@@ -275,7 +285,103 @@ UIScene.prototype.drawBgImageHTile = function(canvas, image) {
 	return;
 }
 
+UIScene.prototype.showTrace = function(start, velocity, style, damping) {
+	if(!start || !velocity) {
+		this.traceInfo = null;
+	}
+
+	if(!style) {
+		style = {};
+	}
+
+	if(!damping) {
+		damping = {};
+		damping.x = 0;
+		damping.y = 0;
+	}
+
+	var ti = {};
+	ti.sx = start.x;
+	ti.sy = start.y;
+
+	ti.vX = this.toPixel(velocity.x);
+	ti.vY = this.toPixel(velocity.y);
+
+	ti.dampingX = this.toPixel(damping.x);
+	ti.dampingY = this.toPixel(damping.y);
+
+	ti.lineColor = style.lineColor ? style.lineColor : "Black";
+	ti.lineWidth = style.lineWidth ? style.lineWidth : 2;
+	ti.deltaT = 0.02;
+	ti.points = [];
+
+	this.traceInfo = ti;
+
+	this.computeTrace(ti);
+
+	return this;
+}
+
+UIScene.prototype.computeTrace = function(ti) {
+	var x = ti.sx;
+	var y = ti.sy;
+	var sx = x;
+	var sy = y;
+	var vX = ti.vX;
+	var vY = ti.vY;
+	var gX = this.toPixel(this.gravityX ? this.gravityX : 0);
+	var gY = this.toPixel(this.gravityY ? this.gravityY : 0);
+	var dt = ti.deltaT;
+	var vMax = Math.max(Math.max(vX, vY), Math.max(gX, gY));
+
+	var top = this.yOffset;
+	var bottom = top + this.h;
+	var left = this.xOffset;
+	var right = left + this.w;
+
+	ti.points.push({x:x, y:y});
+
+	for(var i = 0; i < 50; i++) {
+		var t = dt * i;
+		x = Math.round(sx + vX * t + 0.5 * gX * t * t);
+		y = Math.round(sy + vY * t + 0.5 * gY * t * t);
+
+		ti.points.push({x:x, y:y});
+		if(x < left || x > right || y < top || y > bottom) break;
+	}
+
+	return this;
+}
+
+UIScene.prototype.drawTrace = function(canvas) {
+	var ti = this.traceInfo;
+	if(!ti) return;
+
+	canvas.beginPath();
+	canvas.lineWidth = ti.lineWidth;
+	canvas.strokeStyle = ti.lineColor;
+
+	var n = ti.points.length;
+	for(var i = 0; i < n; i++) {
+		var p = ti.points[i];
+		if(i%2) {
+			canvas.moveTo(p.x, p.y);
+		}
+		else {
+			canvas.lineTo(p.x, p.y);
+		}
+	}
+
+	canvas.stroke();
+
+	return this;
+}
+
 UIScene.prototype.afterPaintChildren = function(canvas) {
+	if(this.mode !== Shape.MODE_EDITING) {
+		this.drawTrace(canvas);
+	}
+	
 	if(!this.selected || this.mode !== Shape.MODE_EDITING) {
 		return;
 	}
@@ -472,6 +578,48 @@ UIScene.prototype.replay = function() {
 	return;
 }
 
+UIScene.pauseElement = function(el) {
+	if(el.isUISkeletonAnimation || el.isUITimer || el.isUIFrameAnimation || el.isUITransformAnimation) {
+		el.pause();
+	}
+	
+	for(var i = 0; i < el.children.length; i++) {
+		var iter = el.children[i];
+		UIScene.pauseElement(iter);	
+	}
+
+	return;
+}
+
+UIScene.prototype.pause = function() {
+	this.playing = false;
+
+	UIScene.pauseElement(this);
+
+	return this;
+}
+
+UIScene.resumeElement = function(el) {
+	if(el.isUISkeletonAnimation || el.isUITimer || el.isUIFrameAnimation || el.isUITransformAnimation) {
+		el.resume();
+	}
+	
+	for(var i = 0; i < el.children.length; i++) {
+		var iter = el.children[i];
+		UIScene.resumeElement(iter);	
+	}
+
+	return;
+}
+
+UIScene.prototype.resume = function() {
+	this.playing = true;
+
+	UIScene.resumeElement(this);
+
+	return this;
+}
+
 UIScene.prototype.play = function() {
 	this.playing = true;
 
@@ -496,6 +644,74 @@ UIScene.prototype.toPixel = function(meter) {
 	return Math.round(meter * pixelsPerMeter);
 }
 
+UIScene.prototype.getFPS = function() {
+	return this.fps ? this.fps : 30;
+}
+
+UIScene.prototype.setFPS = function(fps) {
+	this.fps = Math.max(5, Math.min(50, fps));
+
+	return this;
+}
+
+UIScene.prototype.setVelocityIterations = function(velocityIterations) {
+	this.velocityIterations = velocityIterations;
+
+	return this;
+}
+
+UIScene.prototype.setPositionIterations = function(positionIterations) {
+	this.positionIterations = positionIterations;
+
+	return this;
+}
+
+UIScene.prototype.setAutoClearForce = function(autoClearForce) {
+	this.autoClearForce = autoClearForce;
+
+	return this;
+}
+
+UIScene.prototype.setCameraFollowParams = function(xMin, xMax, yMin, yMax) {
+	this.cameraFollowParams = {};
+	this.cameraFollowParams.xMin = xMin;
+	this.cameraFollowParams.xMax = xMax;
+	this.cameraFollowParams.yMin = yMin;
+	this.cameraFollowParams.yMax = yMax;
+
+	return this;
+}
+
+UIScene.prototype.cameraFollow = function(element) {
+	var w = this.w;
+	var h = this.h;
+	var x = element.x;
+	var y = element.y;
+	var dx = x - this.xOffset;
+	var dy = y - this.yOffset;
+	var params = this.cameraFollowParams;
+
+	var xOffset = this.xOffset;
+	if(dx > params.xMax * w) {
+		xOffset = Math.round(x - params.xMax * w) + (element.w >> 1);
+	}
+	else if(dx < params.xMin * w){
+		xOffset = Math.round(x - params.xMin * w) + (element.w >> 1);
+	}
+
+	var yOffset = this.yOffset;
+	if(dy > params.yMax * h) {
+		yOffset = Math.round(y - params.yMax * h) + (element.h >> 1);
+	}
+	else if(dy < params.yMin * h) {
+		yOffset = Math.round(y - params.yMin * h) + (element.h >> 1);
+	}
+
+	this.setOffset(xOffset, yOffset);
+
+	return;
+}
+
 function UISceneCreator() {
 	var args = ["ui-scene", "ui-scene", null, 1];
 	
@@ -507,3 +723,6 @@ function UISceneCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISceneCreator());
+

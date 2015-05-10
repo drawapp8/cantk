@@ -2,15 +2,6 @@ UIElement.prototype.getScence= function() {
 	return this.getWindow();
 }
 
-UIElement.prototype.setEnable = function(enable) {
-	this.enable = enable;
-	if(this.body) {
-		this.body.SetActive(enable);
-	}
-
-	return this;
-}
-
 UIElement.prototype.getFootprints = function(name) {
 	var x = 0;
 	var y = 0;
@@ -159,8 +150,8 @@ UIElement.prototype.startMove = function(moveInfo) {
 }
 
 UIElement.prototype.setPosition = function(x, y) {
-	this.x = x;
-	this.y = y;
+	this.x = Math.round(x);
+	this.y = Math.round(y);
 
 	if(this.body) {
 		var p = {};
@@ -177,16 +168,16 @@ UIElement.prototype.setPosition = function(x, y) {
 	return this;
 }
 
-UIElement.prototype.setRotation = function(rotation) {
-	this.rotation = rotation;
+UIElement.prototype.setPositionWithSticky = function(x, y) {
+	this.setPosition(x, y);
 
-	if(this.body) {
-		this.body.SetAngle(rotation);
+	if(this.sticky) {
+		this.orgX = this.x;		
+		this.orgY = this.y;	
 	}
 
 	return this;
 }
-
 
 UIElement.prototype.setAngle = UIElement.prototype.setRotation;
 
@@ -195,6 +186,36 @@ UIElement.prototype.setPositionByBody = function(x, y) {
 	this.y = y;
 
 	this.callOnMovedHandler();
+
+	return this;
+}
+
+UIElement.prototype.playSoundEffect = function(name, onDone) {
+	this.getWindowManager().playSoundEffect(name, onDone);
+
+	return this;
+}
+
+UIElement.prototype.playSoundMusic = function(name, onDone) {
+	this.getWindowManager().playSoundMusic(name, onDone);
+
+	return this;
+}
+
+UIElement.prototype.stopSoundMusic = function(name) {
+	this.getWindowManager().stopSoundMusic(name);
+
+	return this;
+}
+
+UIElement.prototype.setVOf = function(name, x, y) {
+	var el = this.getWindow().findChildByName(name, true);
+	if(el) {
+		el.setV(x, y);
+	}
+	else {
+		console.log("not found " + name);
+	}
 
 	return this;
 }
@@ -227,51 +248,27 @@ UIElement.prototype.setV = function(x, y) {
 	return this;
 }
 
-UIElement.prototype.setVOf = function(name, x, y) {
-	var el = this.getWindow().findChildByName(name, true);
-	if(el) {
-		el.setV(x, y);
-	}
-	else {
-		console.log("not found " + name);
+UIElement.prototype.onRemoved = function(parent) {
+	if(!parent) {
+		return;
 	}
 
-	return this;
-}
-
-UIElement.prototype.getV = function() {
-	return this.body ? this.body.GetLinearVelocity() : {x:0, y:0};
-}
-
-UIElement.prototype.addV = function(dx, dy) {
-	var v = this.getV();
-
-	if(dx !== null && dx !== undefined) {
-		v.x += dx;
-	}
-	
-	if(dy !== null && dy !== undefined) {
-		v.y += dy;
+	var win = parent.getWindow();
+	if(!win) {
+		return;
 	}
 
-	return this.setV(v.x, v.y);
-}
+	var world = win.world;
 
+	if(this.body) {
+		Physics.destroyBodyForElement(world, this);
+		this.body = null;
+	}
 
-UIElement.prototype.playSoundEffect = function(name) {
-	this.getWindowManager().playSoundEffect(name);
-
-	return this;
-}
-
-UIElement.prototype.playSoundMusic = function(name) {
-	this.getWindowManager().playSoundMusic(name);
-
-	return this;
-}
-
-UIElement.prototype.stopSoundMusic = function(name) {
-	this.getWindowManager().stopSoundMusic(name);
+	if(this.joint) {
+		Physics.destroyJointForElement(world, this);
+		this.joint = null;
+	}
 
 	return this;
 }

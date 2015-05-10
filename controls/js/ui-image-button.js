@@ -19,6 +19,7 @@ UIImageButton.prototype.initUIImageButton = function(type, w, h) {
 	this.setImage(UIElement.IMAGE_NORMAL, null);
 	this.setImage(UIElement.IMAGE_ACTIVE, null);
 	this.setImage(UIElement.IMAGE_DISABLE, null);
+	this.addEventNames(["onUpdateTransform"]); 
 
 	return this;
 }
@@ -38,4 +39,6 @@ function UIImageButtonCreator(w, h) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIImageButtonCreator(120, 90));
 

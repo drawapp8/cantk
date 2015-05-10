@@ -130,3 +130,6 @@ function UISpriteCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISpriteCreator());
+

@@ -19,7 +19,10 @@ UITwoPoints.prototype.initUITwoPoints = function(type, w, h) {
 	this.setDefSize(w, h);
 	this.setTextType(Shape.TEXT_NONE);
 	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
-
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
+	this.setImage(UIElement.IMAGE_POINT1, null);
+	this.setImage(UIElement.IMAGE_POINT2, null);
+	
 	this.points = [{x:0, y:0}, {x:80, y:80}];
 	this.regSerializer(this.twoPointsToJson, this.twoPointsFromJson);
 
@@ -206,19 +209,52 @@ UITwoPoints.prototype.paintSelf = function(canvas) {
 		this.translate(canvas);
 	}
 
+	var image = null;
+	var srcRect = null;
+	var p1 = this.points[0];
+	var p2 = this.points[1];
+	var bg = this.getImageByType(UIElement.IMAGE_DEFAULT);
+	var p1Img = this.getImageByType(UIElement.IMAGE_POINT1);
+	var p2Img = this.getImageByType(UIElement.IMAGE_POINT2);
+	var r = this.anchorSize ? this.anchorSize : 5;
+
 	canvas.lineWidth = this.style.lineWidth;
 	canvas.fillStyle = this.style.fillColor;
 	canvas.strokeStyle = this.style.lineColor;
 
-	canvas.moveTo(this.points[0].x, this.points[0].y);
-	canvas.lineTo(this.points[1].x, this.points[1].y);
-	canvas.stroke();
+	if(bg && bg.getImage()) {
+		image = bg.getImage();
+		srcRect = bg.getImageRect();
+		UIElement.drawImageLine(canvas, image, this.images.display, p1, p2, srcRect);
+	}
+	else {
+		canvas.beginPath();
+		canvas.moveTo(p1.x, p1.y);
+		canvas.lineTo(p2.x, p2.y);
+		canvas.stroke();
+	}
 
-	var r = this.anchorSize ? this.anchorSize : 5;
-	canvas.beginPath();
-	canvas.arc(this.points[0].x, this.points[0].y, r, 0, Math.PI * 2);
-	canvas.arc(this.points[1].x, this.points[1].y, r, 0, Math.PI * 2);
-	canvas.fill();
+	if(p1Img && p1Img.getImage()) {
+		image = p1Img.getImage();
+		srcRect = p1Img.getImageRect();
+		this.drawImageAt(canvas, image, WImage.DISPLAY_CENTER , p1.x-r, p1.y-r, r+r, r+r, srcRect);
+	}
+	else {
+		canvas.beginPath();
+		canvas.arc(p1.x, p1.y, r, 0, Math.PI * 2);
+		canvas.fill();
+	}
+
+	if(p2Img && p2Img.getImage()) {
+		image = p2Img.getImage();
+		srcRect = p2Img.getImageRect();
+		this.drawImageAt(canvas, image, WImage.DISPLAY_CENTER , p2.x-r, p2.y-r, r+r, r+r, srcRect);
+	}
+	else {
+		canvas.beginPath();
+		canvas.arc(p2.x, p2.y, r, 0, Math.PI * 2);
+		canvas.fill();
+	}
 
 	canvas.restore();
 	
@@ -304,14 +340,14 @@ UITwoPoints.prototype.onPointerUpCreating = function(point) {
 	}
 }
 
-UITwoPoints.prototype.onPointerDownNormal = function(point) {
+UITwoPoints.prototype.onPointerDownEditing = function(point) {
 	this.hitTestResult = this.hitTest(point);
 	this.selected = this.hitTestResult != Shape.HIT_TEST_NONE;
 
 	return this.hitTestResult;
 }
 
-UITwoPoints.prototype.onPointerMoveNormal = function(point) {
+UITwoPoints.prototype.onPointerMoveEditing = function(point) {
 	 if(this.hitTestResult > 0) {
 	 	var index = this.hitTestResult - 1;
 	 	this.points[index].x = point.x;
@@ -319,9 +355,13 @@ UITwoPoints.prototype.onPointerMoveNormal = function(point) {
 	 }
 }
 
-UITwoPoints.prototype.onPointerUpNormal = function(point) {
+UITwoPoints.prototype.onPointerUpEditing = function(point) {
 	this.hitTestResult = Shape.HIT_TEST_NONE;
 
 	return;
+}
+
+UITwoPoints.prototype.getSupportedImageDisplay = function() {
+	return ["incenter", "scale", "tile"]; 
 }
 

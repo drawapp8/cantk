@@ -64,3 +64,6 @@ function UIButtonCreator(w, h) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIButtonCreator(120, 60));
+

@@ -11,11 +11,6 @@ function UIGrid() {
 	return;
 }
 
-UIGrid.ITEM_FIXED_HEIGHT = 0;
-UIGrid.ITEM_FIXED_ROWS   = 1;
-UIGrid.ITEM_FIXED_WIDTH = 0;
-UIGrid.ITEM_FIXED_COLS  = 1;
-
 UIGrid.prototype = new UIElement();
 UIGrid.prototype.isUIGrid = true;
 UIGrid.prototype.isUILayout = true;
@@ -24,8 +19,6 @@ UIGrid.prototype.gridToJson = function(o) {
 	o.spacer = this.spacer;
 	o.itemWidth = this.itemWidth;
 	o.itemHeight = this.itemHeight;
-	o.itemWidthType = this.itemWidthType;
-	o.itemHeightType = this.itemHeightType;
 	o.scrollDirection = this.scrollDirection;
 
 	return;
@@ -34,12 +27,10 @@ UIGrid.prototype.gridToJson = function(o) {
 UIGrid.prototype.gridFromJson = function(js) {
 	if(js.itemWidth) {
 		this.itemWidth = js.itemWidth;
-		this.itemWidthType = js.itemWidthType;
 	}
 	
 	if(js.itemHeight) {
 		this.itemHeight = js.itemHeight;
-		this.itemHeightType = js.itemHeightType;
 	}
 
 	if(js.spacer) {
@@ -68,8 +59,6 @@ UIGrid.prototype.initUIGrid = function(type, border, itemSize, bg) {
 	this.itemSize = itemSize;
 	this.itemWidth = itemSize;
 	this.itemHeight = itemSize;
-	this.itemWidthType = UIGrid.ITEM_FIXED_WIDTH;
-	this.itemHeightType = UIGrid.ITEM_FIXED_HEIGHT;
 	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
 	this.setTextType(Shape.TEXT_NONE);
 	this.setImage(UIElement.IMAGE_DEFAULT, bg);
@@ -86,48 +75,25 @@ UIGrid.prototype.initUIGrid = function(type, border, itemSize, bg) {
 }
 
 UIGrid.prototype.setRows = function(value) {
-	if(value < 20) {
-		this.itemHeightType = UIGrid.ITEM_FIXED_ROWS;
-	}
-	else {
-		this.itemHeightType = UIGrid.ITEM_FIXED_HEIGHT;
-	}
 	this.itemHeight = value;
+	this.calcItemSize();
 
 	return;
 }
 
 UIGrid.prototype.getRows = function() {
-	if(this.itemHeightType === UIGrid.ITEM_FIXED_ROWS) {
-		return this.itemHeight;
-	}
-	else {
-		return Math.floor(this.getHeight(true)/(this.itemHeight+this.spacer));
-	}
-
-	return;
+	return this.calcItemSize().rows;
 }
 
 UIGrid.prototype.setCols = function(value) {
-	if(value < 20) {
-		this.itemWidthType = UIGrid.ITEM_FIXED_COLS;
-	}
-	else {
-		this.itemWidthType = UIGrid.ITEM_FIXED_WIDTH;
-	}
-
 	this.itemWidth = value;
+	this.calcItemSize();
 
 	return;
 }
 
 UIGrid.prototype.getCols = function() {
-	if(this.itemWidthType === UIGrid.ITEM_FIXED_COLS) {
-		return this.itemWidth;
-	}
-	else {
-		return Math.floor(this.getWidth(true)/(this.itemWidth+this.spacer));
-	}
+	return this.calcItemSize().cols;
 }
 
 UIGrid.prototype.getChildAt = function(row, col) {
@@ -152,31 +118,34 @@ UIGrid.prototype.afterPaintChildren =function(canvas) {
 	if(this.mode !== Shape.MODE_EDITING) {
 		return;
 	}
-	
-	var rows = 0;
-	var cols = 0;
+
 	var offset = 0;
-	var x = this.vMargin;
-	var y = this.hMargin;
-	var w = this.w;
-	var h = this.h;
+	var w = this.getWidth(true);
+	var h = this.getHeight(true);
+	var spacer = this.spacer;
+	var itemSize = this.calcItemSize();
+	var itemW = itemSize.w + spacer;
+	var itemH = itemSize.h + spacer;
+	var cols = Math.floor(w/itemW);
+	var rows = Math.floor(h/itemH);
+	var vMargin = (this.h - rows * itemH) >> 1;
+	var hMargin = (this.w - cols * itemW) >> 1;
 
-	rows = this.rows ? this.rows : 3;
-	cols = this.cols ? this.cols : 3;
-
-	drawDashedRect(canvas, x, y, w, h);
-	for(var i = 1; i < rows; i++) {
-		offset = (h * i)/rows;
-		drawDashedLine(canvas, {x:x, y:offset}, {x:w, y:offset}, 8, 4);
-	}
-	
-	for(var i = 1; i < cols; i++) {
-		offset = (w * i)/cols;
-		drawDashedLine(canvas, {x:offset, y:y}, {x:offset, y:h}, 8, 4);
-	}
-
-	canvas.lineWidth = this.style.lineWidth;
+	canvas.lineWidth = 1;
 	canvas.strokeStyle = this.style.lineColor;
+	
+	canvas.rect(hMargin, vMargin, w, h);
+	canvas.rect(hMargin, vMargin, this.w-2*hMargin, this.h-2*vMargin);
+	canvas.stroke();
+
+	for(offset = itemH+vMargin; (offset+itemH) <= this.h; offset+=itemH) {
+		drawDashedLine(canvas, {x:hMargin, y:offset}, {x:w, y:offset}, 8, 4);
+	}
+
+	for(offset = itemW + hMargin; (offset+itemW) < this.w; offset+=itemW) {
+		drawDashedLine(canvas, {x:offset, y:vMargin}, {x:offset, y:h}, 8, 4);
+	}
+
 	canvas.stroke();
 
 	return;
@@ -185,40 +154,33 @@ UIGrid.prototype.afterPaintChildren =function(canvas) {
 UIGrid.prototype.calcItemSize = function() {
 	var iw = 0;
 	var ih = 0;
+	var cols = 0;
+	var rows = 0;
 	var w = this.getWidth(true);
 	var h = this.getHeight(true);
 
 	if(this.itemWidth < 20) {
-		this.itemWidthType = UIGrid.ITEM_FIXED_COLS;
-	}
-	else {
-		this.itemWidthType = UIGrid.ITEM_FIXED_WIDTH;
-	}
-
-	if(this.itemWidthType === UIGrid.ITEM_FIXED_COLS) {
 		iw = w/this.itemWidth - this.spacer;
+		cols = Math.floor(w/iw);	
 	}
 	else {
-		var cols = Math.floor(w/this.itemWidth);
+		cols = Math.floor(w/this.itemWidth);
 		iw = Math.floor(w/cols);
 	}
 
-	if(this.itemHeight < 20) {
-		this.itemHeightType = UIGrid.ITEM_FIXED_ROWS;
+	if(this.itemHeight < 1) {
+		ih = iw * this.itemHeight;
+	}
+	else if(this.itemHeight < 20) {
+		ih = Math.floor(h/this.itemHeight - this.spacer);
 	}
 	else {
-		this.itemHeightType = UIGrid.ITEM_FIXED_HEIGHT;
-	}
-
-	if(this.itemHeightType === UIGrid.ITEM_FIXED_ROWS) {
-		ih = h/this.itemHeight - this.spacer;
-	}
-	else {
-		var rows = Math.floor(h/this.itemHeight);
+		rows = Math.floor(h/this.itemHeight);
 		ih = Math.floor(h/rows);
 	}
+	rows = Math.floor(h/ih);
 
-	return {w:Math.floor(iw), h:Math.floor(ih)};
+	return {w:Math.floor(iw), h:Math.floor(ih), cols:cols, rows:rows};
 }
 
 UIGrid.prototype.sortChildren = function() {
@@ -292,27 +254,22 @@ UIGrid.prototype.relayoutChildren = function(animHint) {
 		return;
 	}
 
-	var spacer = this.spacer;
-	var border = this.getHMargin();
-	var itemSize = this.calcItemSize();
-
 	var r = 0;
 	var c = 0;
-	var vborder = 0;
-	var hborder = 0;
-	var x = border;
-	var y = border;
-	var pageIndex = 0;
+	var x = 0;
+	var y = 0;
+
 	var w = this.getWidth(true);
 	var h = this.getHeight(true);
-
+	var spacer = this.spacer;
+	var itemSize = this.calcItemSize();
 	var itemW = itemSize.w + spacer;
 	var itemH = itemSize.h + spacer;
 	var cols = Math.floor(w/itemW);
 	var rows = Math.floor(h/itemH);
 
-	vborder = border;
-	hborder = (this.w - cols * itemW)/2;
+	var vMargin = (this.h - rows * itemH) >> 1;
+	var hMargin = (this.w - cols * itemW) >> 1;
 
 	this.cols = cols;
 	this.rows = rows;
@@ -323,8 +280,8 @@ UIGrid.prototype.relayoutChildren = function(animHint) {
 		r = Math.floor(i/cols);
 		c = Math.floor(i%cols);
 	
-		x = hborder + c * itemW;
-		y = vborder + r * itemH;
+		x = hMargin + c * itemW;
+		y = vMargin + r * itemH;
 
 		if(animHint || this.mode === Shape.MODE_EDITING) {
 			child.animMove(x, y, animHint);
@@ -437,4 +394,5 @@ function UIGridCreator(border, itemSize, bg) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIGridCreator(5, 150, null));
 

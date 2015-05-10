@@ -175,3 +175,6 @@ function UISuggestionCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISuggestionCreator());
+

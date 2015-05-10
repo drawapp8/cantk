@@ -114,3 +114,6 @@ function UITimerCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UITimerCreator());
+

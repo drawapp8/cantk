@@ -18,10 +18,14 @@ UISkeletonAnimation.startTimerIfNot = function() {
 	if(UISkeletonAnimation.timerID) {
 		return;			
 	}
-
+	UISkeletonAnimation.lastUpdateTime = Date.now();
 	function stepIt() {
 		if(WWindowManager.getInstance().getPaintEnable()) {
-			dragonBones.animation.WorldClock.clock.advanceTime(0.04);
+			var now = Date.now();
+			var dt = (now - UISkeletonAnimation.lastUpdateTime)/1000;
+
+			UISkeletonAnimation.lastUpdateTime = now;
+			dragonBones.animation.WorldClock.clock.advanceTime(Math.min(0.04, dt));
 		}
 	}
 
@@ -49,6 +53,22 @@ UISkeletonAnimation.prototype.afterChildAppended = function(shape) {
 	shape.yAttr = UIElement.Y_MIDDLE_IN_PARENT;
 
 	return;
+}
+
+UISkeletonAnimation.prototype.pause = function() {
+	if(this.armature) {
+		this.armature.animation.stop();
+	}
+
+	return this;
+}
+
+UISkeletonAnimation.prototype.resume = function() {
+	if(this.armature) {
+		this.armature.animation.play();
+	}
+
+	return this;
 }
 
 UISkeletonAnimation.prototype.gotoAndPlay = function(animationName) {
@@ -217,15 +237,14 @@ UISkeletonAnimation.prototype.createArmature = function(texture, textureData, sk
 
 UISkeletonAnimation.prototype.loadDragonBoneArmature = function(textureJsonURL, skeletonJsonURL, textureURL, onDone) {
 	var me = this;
-	var texture = new Image();
-
-	texture.onload = function()	{
+	ResLoader.loadImage(textureURL, function(texture) {
 		ResLoader.loadJson(textureJsonURL, function(data) {
 			var textureData = data;
 			if(!data) {
 				console.log("Get Json Failed:" + textureJsonURL);
 				return;
 			}
+
 			ResLoader.loadJson(skeletonJsonURL, function(data) {
 				if(!data) {
 					console.log("Get Json Failed:" + skeletonJsonURL);
@@ -236,15 +255,13 @@ UISkeletonAnimation.prototype.loadDragonBoneArmature = function(textureJsonURL, 
 				me.createArmature(texture, textureData, skeletonData, onDone);
 			});
 		});
-	}
-
-	texture.src = textureURL;
+	});
 
 	return;
 }
 
 
-UISkeletonAnimation.prototype.createSkelentonAnimation = function() {
+UISkeletonAnimation.prototype.createSkelentonAnimation = function(onDone) {
 	var me = this;
 	var x = this.w >> 1;
 	var y = this.h >> 1;
@@ -268,6 +285,10 @@ UISkeletonAnimation.prototype.createSkelentonAnimation = function() {
 		var animationName = armature.animation.animationNameList[0];
 		if(me.animationName && armature.animation.animationNameList.indexOf(me.animationName) >= 0) {
 			animationName = me.animationName;
+		}
+
+		if(onDone) {
+			onDone(armature.animation.animationNameList);
 		}
 
 		me.callOnLoadDoneHandler();
@@ -347,4 +368,6 @@ function UISkeletonAnimationCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISkeletonAnimationCreator());
 

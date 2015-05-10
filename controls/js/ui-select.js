@@ -22,7 +22,7 @@ UISelect.prototype.initUISelect = function(type, w, h) {
 	this.visibleItems = 5;	
 	this.setDefSize(w, h);
 	this.addEventNames(["onInit", "onChanged"]);
-	this.setTextType(Shape.TEXT_NONE);
+	this.setTextType(Shape.TEXT_TEXTAREA);
 	this.setCanRectSelectable(false, true);
 	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
@@ -46,17 +46,6 @@ UISelect.prototype.setVisibleItems = function(visibleItems) {
 		this.visibleItems = 5;
 	}
 }
-
-UISelect.prototype.setHighlightTextColor = function(color) {
-	this.highlightTextColor = color;
-
-	return;
-}
-
-UISelect.prototype.getHighlightTextColor = function() {
-	return this.highlightTextColor ? this.highlightTextColor : this.style.textColor;
-}
-
 
 UISelect.prototype.scrollTo = function(offsetEnd) {
 	var itemHeight = this.getItemHeight();
@@ -232,6 +221,10 @@ UISelect.prototype.setText =function(text) {
 	return this;
 }
 
+UISelect.prototype.drawText = function(canvas) {
+	return;
+}
+
 UISelect.prototype.drawImage = function(canvas) {
 	var y = 0;
 	var b = 0;
@@ -271,7 +264,7 @@ UISelect.prototype.drawImage = function(canvas) {
 	this.style.setTextB(true);
 	this.style.setFontSize(Math.floor(itemHeight * 0.6));
 	var highlightFont = this.style.getFont();
-	var highlightTextColor = this.getHighlightTextColor();
+	var highlightTextColor = this.style.textColorHighlight;
 
 	canvas.textAlign = "center";
 	canvas.textBaseline = "middle";
@@ -362,4 +355,6 @@ function UISelectCreator(w, h) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISelectCreator("ui-select", 300, 50));
 

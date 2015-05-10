@@ -504,7 +504,7 @@ function Animation(showWin) {
 		this.w = Math.round(w);
 		this.h = Math.round(h);
 		this.onFinish = onFinish;
-		this.canvasImage = canvasImage;
+		this.canvasImage = CantkRT.createImageFromCanvas(canvasImage);
 
 		this.setRectOfFront(0, 0, w, h);
 		if(canvasImage) {
@@ -646,6 +646,10 @@ function Animation(showWin) {
 
 		if(onFinish) {
 			onFinish();
+		}
+
+		if(this.canvasImage && this.canvasImage.unload) {
+			this.canvasImage.unload();
 		}
 	}
 

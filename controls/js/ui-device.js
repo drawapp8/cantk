@@ -140,6 +140,7 @@ UIDevice.prototype.initUIDevice = function(type, w, h, name, bg) {
 	this.setUserResizable(false);
 	this.rectSelectable = false;
 	this.regSerializer(this.deviceToJson, this.deviceFromJson);
+	this.events = {};
 
 	return this;
 }
@@ -179,9 +180,10 @@ UIDevice.prototype.getScreen = function() {
 }
 
 UIDevice.prototype.enterPreview = function(previewCurrentWindow) {
+	var app = this.getApp();
 	var screen = this.getScreen();
 	var windowManager = this.getWindowManager();
-	if(!windowManager || !screen || !this.app) {
+	if(!windowManager || !screen || !app) {
 		return;
 	}
 
@@ -189,24 +191,22 @@ UIDevice.prototype.enterPreview = function(previewCurrentWindow) {
 		return;
 	}
 
-	this.getApp().saveTemp();
+	app.saveTemp();
+	app.clearCommandHistory();
 
 	var button = this.findChildByName("button-preview", false);
 	if(button) {
 		button.setText(dappGetText("Edit"));
 	}
 	
-	if(this.app) {
-		this.app.clearCommandHistory();
-	}
-
 	windowManager.saveState();
 	this.setMode(Shape.MODE_PREVIEW);
 	screen.setMode(Shape.MODE_PREVIEW, true);
 
 	ResLoader.reset();
-	this.getApp().loadUserScripts();
+	app.loadUserScripts();
 	windowManager.systemInit();
+
 	if(previewCurrentWindow) {
 		windowManager.setInitWindow(windowManager.getCurrent());
 	}
@@ -528,4 +528,6 @@ function UIDeviceCreator(name, version, w, h) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIDeviceCreator("android", "", 420, 700));
 

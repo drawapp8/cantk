@@ -128,3 +128,6 @@ function UIPageManagerCreator() {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIPageManagerCreator());
+

@@ -234,10 +234,26 @@ UISlidingMenu.prototype.setOffset = function(offset) {
 	return;
 }
 
+UISlidingMenu.prototype.isEventHandledByChild = function() {
+	var status = UIElement.lastEvent.status;
+	return status & UIElement.EVENT_HSCROLL_HANDLED;
+}
+
+UISlidingMenu.prototype.setEventHandled = function() {
+	this.setLastEventStatus(UIElement.EVENT_HSCROLL_HANDLED);
+	
+	return this;
+}
+
 UISlidingMenu.prototype.onPointerDownRunning = function(point, beforeChild) {
 	if(beforeChild || this.animating) {
 		return;
 	}
+	
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
 
 	if(!this.velocityTracker) {
 		this.velocityTracker = new VelocityTracker();
@@ -250,16 +266,17 @@ UISlidingMenu.prototype.onPointerDownRunning = function(point, beforeChild) {
 
 UISlidingMenu.prototype.onPointerMoveRunning = function(point, beforeChild) {
 	if(this.animating) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
-		return;
-	}
-	if(this.getLastEventStatus() == UIElement.EVENT_STATUS_HANDLED) {
+		this.setEventHandled();
 		return;
 	}
 	if(beforeChild) {
 		return;
 	}
-	this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
 	
 	this.addMovementForVelocityTracker();
 
@@ -275,16 +292,16 @@ UISlidingMenu.prototype.onPointerMoveRunning = function(point, beforeChild) {
 	
 UISlidingMenu.prototype.onPointerUpRunning = function(point, beforeChild) {
 	if(this.animating) {
-		this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
-		return;
-	}
-	if(this.getLastEventStatus() == UIElement.EVENT_STATUS_HANDLED) {
+		this.setEventHandled();
 		return;
 	}
 	if(beforeChild) {
 		return;
 	}
-	this.setLastEventStatus(UIElement.EVENT_STATUS_HANDLED);
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
 
 	var dx = this.getMoveAbsDeltaX();
 	var dy = this.getMoveAbsDeltaY();
@@ -401,4 +418,6 @@ function UISlidingMenuCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISlidingMenuCreator());
 

@@ -287,3 +287,5 @@ function UILedDigitsCreator(w, h) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UILedDigitsCreator(100, 100));
+

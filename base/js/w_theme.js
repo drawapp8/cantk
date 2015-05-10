@@ -136,6 +136,9 @@ WThemeManager.loadTheme = function(themeURL, themeJson) {
 			if(style.bgImage) {
 				style.bgImage = WThemeManager.getBgImage(style.bgImage);
 			}
+			if(style.bgImageTips) {
+				style.bgImageTips = WThemeManager.getBgImage(style.bgImageTips);
+			}
 			if(style.font) {
 				style.fontSize = getFontSizeInFont(style.font);
 				if(style.fontSize) {

@@ -99,3 +99,6 @@ function UIColorButtonCreator(w, h) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIColorTileCreator(80, 80));
+ShapeFactoryGet().addShapeCreator(new UIColorButtonCreator(80, 80));
+

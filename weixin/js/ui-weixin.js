@@ -22,8 +22,6 @@ UIWeixin.prototype.initUIWeixin = function(type, w, h, bg) {
 	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
 	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setCanRectSelectable(false, true);
-	this.addEventNames(["onOperationTrigger", "onOperationComplete", "onOperationSuccess", 
-		"onOperationFail", "onOperationCancel"]);
 
 	return this;
 }
@@ -88,7 +86,7 @@ UIWeixin.prototype.onFromJsonDone = function() {
 	}
 
 	if(!UIWeixin.config) {
-		console.log("To fetch UIWeixin.config:" + configURL);
+//		console.log("To fetch UIWeixin.config:" + configURL);
 		httpGetJSON(configURL, function onDone(data) {
 			UIWeixin.config = data;
 
@@ -96,7 +94,7 @@ UIWeixin.prototype.onFromJsonDone = function() {
 				UIWeixin.config.jsApiList = jsApiList;
 				UIWeixin.config.debug = debug;
 				console.log("Fetch UIWeixin.config success:");
-				console.log(JSON.stringify(UIWeixin.config, null, "\t"));
+//				console.log(JSON.stringify(UIWeixin.config, null, "\t"));
 			}
 			else {
 				console.log("Fetch weixin config failed.");
@@ -133,6 +131,7 @@ UIWeixin.prototype.onInit = function() {
 	var me = this;
 	wx.ready(function () {
 		UIWeixin.ready = true;
+		me.updateShareInfo();
 		console.log("wx.ready");
 	});
 
@@ -302,92 +301,37 @@ UIWeixin.prototype.callOnOperationCancelHandler = function(operation, res) {
 }
 
 UIWeixin.prototype.updateShareInfo = function() { 
-	var weiXin = this;
+	var view = this.view;
+	var title = this.shareTitle ? this.shareTitle : view.getAppName();
+	var desc = this.shareDesc ? this.shareDesc : view.getAppDesc();
+	var link = this.shareLink ? this.shareLink : location.href;
+	var imgUrl = ResLoader.toAbsURL(this.shareImage ? this.shareImage : view.getAppIcon());
 
-	if(!weiXin.shareTitle || !weiXin.shareDesc) {
-		console.log("UIWeixin.prototype.updateShareInfo: not title or desc");
-		return;	
-	}
+	var info = {
+		title: title,
+		desc: desc,
+		link: link,
+		imgUrl: imgUrl,
+		trigger: function (res) {
+			console.log("weixin operation trigger:" + JSON.stringify(res));
+		},
+		success: function (res) {
+			console.log("weixin operation success:" + JSON.stringify(res));
+		},
+		cancel: function (res) {
+			console.log("weixin operation cancel:" + JSON.stringify(res));
+		},
+		fail: function (res) {
+			console.log("weixin operation fail:" + JSON.stringify(res));
+		}
+	};
 
-	console.log("UIWeixin.prototype.updateShareInfo:" + weiXin.shareTitle + ":" + weiXin.shareDesc +
-		":" + weiXin.shareLink + ":" + weiXin.shareImage);
+    wx.onMenuShareAppMessage(info);
+    wx.onMenuShareTimeline(info);
+    wx.onMenuShareQQ(info);
+    wx.onMenuShareWeibo(info);
 
-    wx.onMenuShareAppMessage({
-      title: weiXin.shareTitle,
-      desc: weiXin.shareDesc,
-      link: weiXin.shareLink,
-      imgUrl: weiXin.shareImage,
-      trigger: function (res) {
-      	weiXin.callOnOperationTriggerHandler("share-app-message", res);
-      },
-      success: function (res) {
-      	weiXin.callOnOperationSuccessHandler("share-app-message", res);
-      },
-      cancel: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-app-message", res);
-      },
-      fail: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-app-message", res);
-      }
-    });
-    
-    wx.onMenuShareTimeline({
-      title: weiXin.shareTitle,
-      desc: weiXin.shareDesc,
-      link: weiXin.shareLink,
-      imgUrl: weiXin.shareImage,
-      trigger: function (res) {
-      	weiXin.callOnOperationTriggerHandler("share-time-line", res);
-      },
-      success: function (res) {
-      	weiXin.callOnOperationSuccessHandler("share-time-line", res);
-      },
-      cancel: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-time-line", res);
-      },
-      fail: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-time-line", res);
-      }
-    });
-    
-    wx.onMenuShareQQ({
-      title: weiXin.shareTitle,
-      desc: weiXin.shareDesc,
-      link: weiXin.shareLink,
-      imgUrl: weiXin.shareImage,
-      trigger: function (res) {
-      	weiXin.callOnOperationTriggerHandler("share-qq", res);
-      },
-      success: function (res) {
-      	weiXin.callOnOperationSuccessHandler("share-qq", res);
-      },
-      cancel: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-qq", res);
-      },
-      fail: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-qq", res);
-      }
-    });
-    
-    wx.onMenuShareWeibo({
-      title: weiXin.shareTitle,
-      desc: weiXin.shareDesc,
-      link: weiXin.shareLink,
-      imgUrl: weiXin.shareImage,
-      trigger: function (res) {
-      	weiXin.callOnOperationTriggerHandler("share-weibo", res);
-      },
-      success: function (res) {
-      	weiXin.callOnOperationSuccessHandler("share-weibo", res);
-      },
-      cancel: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-weibo", res);
-      },
-      fail: function (res) {
-      	weiXin.callOnOperationCancelHandler("share-weibo", res);
-      }
-    });
-
+	return;
 }
 
 function UIWeixinCreator() {

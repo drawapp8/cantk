@@ -30,6 +30,14 @@ UIMLEdit.prototype.initUIMLEdit = function(type, w, h, margin, initText, bg, foc
 	return this;
 }
 
+UIMLEdit.prototype.drawText = function(canvas) {
+	if(!this.text || this.editing) {
+		return;
+	}
+
+	return this.defaultDrawText(canvas);
+}
+
 UIMLEdit.prototype.shapeCanBeChild = function(shape) {
 	return false;
 }
@@ -56,18 +64,18 @@ UIMLEdit.prototype.getEditorRect = function() {
 	var ox = vp.x;
 	var oy = vp.y;
 
-	var x = (p.x + this.hMargin) * scale + ox;
-	var y = (p.y + this.vMargin) * scale + oy;
-	var w = this.getWidth(true) * scale;
-	var h = this.getHeight(true) * scale;
+	var x = (p.x) * scale + ox;
+	var y = (p.y) * scale + oy;
+	var w = this.getWidth() * scale;
+	var h = this.getHeight() * scale;
 	
 	var rect = {};
 
 	scale = UIElement.getMainCanvasScale();
-	rect.x = x / scale.x;
-	rect.y = y / scale.y;
-	rect.w = Math.max(60, w) / scale.x;
-	rect.h = h / scale.y;
+	rect.x = Math.round(x/scale.x);
+	rect.y = Math.round(y/scale.y);
+	rect.w = Math.round(w/scale.x);
+	rect.h = Math.round(h/scale.y);
 
 	return rect;
 }
@@ -75,37 +83,37 @@ UIMLEdit.prototype.getEditorRect = function() {
 UIMLEdit.prototype.editText = function(point) {
 	if(this.textType && this.textEditable(point)) {
 		var shape = this;
-		var editor = null;
 		var rect = this.getEditorRect();
 		var scale = this.getRealScale() / UIElement.getMainCanvasScale().y;
 		var inputType = this.inputType ? this.inputType : "text";
-
-		var text = this.getText();
+		var fontSize = this.style.fontSize * scale; 
+		var editor = cantkShowTextArea(this.getText(), fontSize, rect.x, rect.y, rect.w, rect.h);
 		
-		editor = cantkShowTextArea(rect.x, rect.y, rect.w, rect.h);
-		editor.setShape(shape);
-		editor.setInputType(inputType);
-		editor.removeBorder();
-		editor.setFontSize(this.style.fontSize * scale);
-		editor.setText(text);
-		
-		editor.element.onchange= function() {
-			if(text !== this.value) {
-				shape.setText(this.value);
-				shape.callOnChangedHandler(shape.text);
+		shape.editing = true;
+		function onChanged(text) {
+			if(text !== shape.text) {
+				shape.setText(text, true);
 				shape.postRedraw();
 			}
 			else {
-				shape.setText(text);
+				shape.text = text;
 			}
-
-			editor.element.onchange = null;
-			editor.hide();
 			
+			editor.setOnChangedHandler(null);
+	        editor.setOnChangeHandler(null);
+			editor.hide();
+			delete shape.editing;
 			shape.callOnFocusOutHandler();
 
 			return;
 		}
+
+		function onChange(text) {
+			shape.callOnChangingHandler(this.value);
+		}
+
+		editor.setOnChangedHandler(onChanged);
+		editor.setOnChangeHandler(onChange);
 		
 		this.callOnFocusInHandler();
 	}
@@ -135,4 +143,6 @@ function UIMLEditCreator(w, h, margin, bg, focusedBg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIMLEditCreator(300, 300, 12, null, null));
 

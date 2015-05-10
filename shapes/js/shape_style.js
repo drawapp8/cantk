@@ -21,7 +21,6 @@ function resetShapeStyle(style) {
 	style.textU = 0;
 	style.enableShadow = false;
 	style.shadow = {x: 0, y: 0, blur: 8, color:"Black"};
-	style.enableGradient = false;
 	style.listener = null;
 	
 	return style;
@@ -84,23 +83,7 @@ ShapeStyle.prototype.setLineColor=function(value) {
 }
 
 ShapeStyle.prototype.setFillColor=function(value) {
-	if("string" != typeof value) {
-		this.fillColor = value;
-		this.enableGradient = true;
-	}
-	else {
-		if(value.length > 12 && value.indexOf("rgb") < 0) {
-			try {
-				this.fillColor = JSON.parse(value);
-				this.enableGradient = true;
-			}catch(e) {
-				console.log(e.message);
-			}
-		}
-		else {
-			this.fillColor = value;
-		}
-	}
+	this.fillColor = value;
 
 	return;
 }
@@ -184,33 +167,12 @@ ShapeStyle.prototype.getGradFillStyle = function(canvas, x, y, w, h) {
 	if(typeof color === "string") {
 		return color;
 	}
-
-	var x0 = x;
-	var y0 = y;
-	var x1 = x + (color.x1 < 0 ? w : color.x1);
-	var y1 = y + (color.y1 < 0 ? h : color.y1);
-
-	if(isNaN(x1) || isNaN(y1) || isNaN(x0) || isNaN(y0)) {
-		return this.fillColor;
+	else if(color.data) {
+		return color.data[0];
 	}
-
-	var gradientStyle = canvas.createLinearGradient(x0, y0, x1, y1);
-
-	try {
-		for(var i = 0; i < color.data.length; i++) {
-			var data = color.data[i];
-			gradientStyle.addColorStop(data.o, data.c);
-		}
-	}
-	catch(e) {
-		this.enableGradient = false;
-		this.fillColor = "White";
-		console.log(e.message);
-
+	else {
 		return "White";
 	}
-
-	return gradientStyle;
 }
 
 ShapeStyle.prototype.copy = function(other) {
@@ -243,12 +205,7 @@ ShapeStyle.prototype.toJson = function() {
 		delete o.enableShadow;
 	}
 
-	if(this.enableGradient) {
-		o.fillColor = this.fillColor;
-	}
-	else {
-		delete o.enableGradient;
-	}
+	delete o.enableGradient;
 
 	if(!this.textI) {
 		delete o.textI;
@@ -305,10 +262,6 @@ ShapeStyle.prototype.fromJson = function(js) {
 		if(!this.shadow) {
 			this.enableShadow = false;
 		}
-	}
-	
-	if(this.enableGradient) {
-		this.setFillColor(this.fillColor);
 	}
 	
 	return;

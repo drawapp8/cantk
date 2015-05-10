@@ -51,16 +51,8 @@ UIWindow.prototype.initUIWindow = function(type, x, y, w, h, bg) {
 	if(!bg) {
 		this.style.setFillColor("White");
 	}
-	this.addEventNames(["onLoad"]);
-	this.addEventNames(["onUnload"]);
-	this.addEventNames(["onOpen"]);
-	this.addEventNames(["onBeforeOpen"]);
-	this.addEventNames(["onClose"]);
-	this.addEventNames(["onSwitchToBack"]);
-	this.addEventNames(["onSwitchToFront"]);
-	this.addEventNames(["onGesture"]);
-	this.addEventNames(["onKeyDown"]);
-	this.addEventNames(["onKeyUp"]);
+	this.addEventNames(["onSystemInit", "onLoad", "onUnload", "onOpen", "onBeforeOpen", "onClose", "onSwitchToBack",
+		"onSwitchToFront", "onGesture", "onKeyDown", "onKeyUp"]);
 
 	this.setAnimHint("htranslate");
 	this.oldHitTest = this.hitTest;
@@ -494,17 +486,23 @@ UIWindow.prototype.callOnClose = function(retInfo) {
 	this.deinit();
 	this.hide();
 
+	if(this.destroyWhenClose) {
+		this.getWindowManager().removeChild(this, true);
+	}
+
 	return true;
 }
 
-UIWindow.prototype.callOnSwitchToBack = function() {
+UIWindow.prototype.callOnSwitchToBack = function(topIsPopup) {
 	this.callOnSwitchToBackHandler();
-	this.hide();
+	if(!topIsPopup) {
+		this.hide();
+	}
 
 	return true;
 }
 
-UIWindow.prototype.callOnSwitchToFront = function() {
+UIWindow.prototype.callOnSwitchToFront = function(topIsPopup) {
 	if(this.isUINormalWindow && (this.w != this.parentShape.w || this.h != this.parentShape.h)) {
 		this.relayout();
 		console.log("WindowManager Size Changed, Relayout Current Window.");
@@ -521,10 +519,9 @@ UIWindow.prototype.relayout = function() {
 		console.log("UIWindow.prototype.relayout Reject Relayout");
 		return;
 	}
-	else {
-		console.log("UIWindow.prototype.relayout Accept Relayout");
-	}
 
 	return UIElement.prototype.relayout.call(this);
 }
+
+ShapeFactoryGet().addShapeCreator(new UINormalWindowCreator(null));
 

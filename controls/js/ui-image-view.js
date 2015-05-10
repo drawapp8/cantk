@@ -33,7 +33,7 @@ imageSlideViewInitCustomProp = function(me) {
 
 
 UIImageView.prototype.imageViewToJson = function(o) {
-	o.userImages = this.getValue();
+	o.userImages = this.getImages();
 
 	return o;
 }
@@ -64,6 +64,8 @@ UIImageView.prototype.initUIImageView = function(w, h) {
 	
 	this.onSized               = UIImageView.prototype.onSized;
 	this.afterRelayout         = UIImageView.prototype.afterRelayout;
+	this.setImages             = UIImageView.prototype.setImages;
+	this.getImages             = UIImageView.prototype.getImages;
 	this.setValue              = UIImageView.prototype.setValue;
 	this.getValue              = UIImageView.prototype.getValue;
 	this.ensureImages          = UIImageView.prototype.ensureImages;
@@ -233,29 +235,42 @@ UIImageView.prototype.getCurrentImage = function() {
 	return this.curentImage;
 }
 
-UIImageView.prototype.setValue = function(srcs) {
+UIImageView.prototype.getValue = function() {
+	var image = this.getCurrentImage();
+
+	return image ? image.src : null;
+}
+
+UIImageView.prototype.setValue = function(value) {
+	//TODO
+	return this;
+}
+
+UIImageView.prototype.setImages = function(srcs) {
+	var display = this.images.display;
 	var arr = srcs.split("\n");
 
 	this.userImages = [];
 	this.images = {};
-	this.images.display = 0;
+	this.images.display = display;
 
 	for(var i = 0; i < arr.length; i++) {
-		if(arr[i]) {
-			this.addUserImage(arr[i]);
+		var iter = arr[i];
+		if(iter) {
+			this.addUserImage(iter);
 		}
 	}
 
 	return;
 }
 
-UIImageView.prototype.getValue = function() {
+UIImageView.prototype.getImages = function() {
 	var srcs = "";
+	var hostname = location.protocol + "//" + location.host + "/";
 
 	for(var i = 0; i < this.userImages.length; i++) {
 		var src = this.userImages[i];
-		src = src.replace(/http:\/\/www.drawapp8.net/, "");
-		src = src.replace(/http:\/\/www.drawapp8.com/, "");
+		src = src.replace(hostname, "");
 		srcs = srcs + src + "\n";	
 	}
 

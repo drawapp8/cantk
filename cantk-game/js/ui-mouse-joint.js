@@ -14,8 +14,8 @@ function UIMouseJoint() {
 UIMouseJoint.prototype = new UIOneJoint();
 UIMouseJoint.prototype.isUIMouseJoint = true;
 
-UIMouseJoint.prototype.initUIMouseJoint = function(type, w, h, bg) {
-	this.initUIOneJoint(type, w, h, bg);	
+UIMouseJoint.prototype.initUIMouseJoint = function(type) {
+	this.initUIOneJoint(type);	
 	this.speedScale = 1;
 	this.enableTop = true;
 	this.enableLeft = true;
@@ -125,8 +125,11 @@ function UIMouseJointCreator() {
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIMouseJoint();
-		return g.initUIMouseJoint(this.type, 20, 20, null);
+		return g.initUIMouseJoint(this.type);
 	}
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIMouseJointCreator());
+

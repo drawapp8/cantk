@@ -87,3 +87,6 @@ function UIBulletCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIBulletCreator());
+

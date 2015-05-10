@@ -11,21 +11,11 @@ function UIBox() {
 	return;
 }
 
-UIBox.prototype = new UIElement();
+UIBox.prototype = new UIBody();
 UIBox.prototype.isUIBox = true;
-UIBox.prototype.isUIPhysicsShape = true;
 
 UIBox.prototype.initUIBox = function(type, w, h) {
-	this.initUIElement(type);	
-
-	this.setDefSize(w, h);
-	this.setTextType(Shape.TEXT_NONE);
-	this.setImage(UIElement.IMAGE_DEFAULT, null);
-	this.images.display = UIElement.IMAGE_DISPLAY_CENTER;
-	this.density = 1;
-	this.friction = 0;
-	this.restitution = 0;
-	this.addEventNames(["onBeginContact", "onEndContact", "onMoved"]);
+	this.initUIBody(type, w, h);	
 
 	return this;
 }
@@ -38,17 +28,28 @@ UIBox.prototype.shapeCanBeChild = function(shape) {
 	return !shape.isUIPhysicsShape;
 }
 
+UIBox.prototype.setSize = function(w, h) {
+	this.w = Math.max(Math.floor(w), 2);
+	this.h = Math.max(Math.floor(h), 2);
+
+	this.onSized();
+
+	return this;
+}
+
 UIBox.prototype.onSized = function() {
 	var win = this.getWindow();
 	this.updateLayoutParams();
 	if(this.body && win && win.isUIScene) {
+		var x = this.x;
+		var y = this.y;
 		var shape = this.body.GetFixtureList().GetShape();
 		var hw = this.getWidth(true) >> 1;
 		var hh = this.getHeight(true) >> 1;
 		shape.SetAsBox(Physics.toMeter(hw), Physics.toMeter(hh));
 
 		this.body.SynchronizeFixtures();
-		this.setPosition(this.x, this.y);
+		this.setPosition(x, y);
 	}
 }
 
@@ -70,7 +71,6 @@ UIBox.prototype.paintSelfOnly = function(canvas) {
 		canvas.stroke();
 	}
 
-
 	return;
 }
 
@@ -85,3 +85,6 @@ function UIBoxCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIBoxCreator());
+

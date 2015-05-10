@@ -53,10 +53,10 @@ UIStatus.prototype.getValue = function() {
 UIStatus.prototype.paintSelfOnly = function(canvas) {
 	var value = this.value;
 	var r = this.roundRadius;
-	var bh = value * this.h;
-	var th = (1-value) * this.h;
-	var lw = value * this.w;
-	var rw = (1-value) * this.w;
+	var bh = Math.round(value * this.h);
+	var th = Math.round((1-value) * this.h);
+	var lw = Math.round(value * this.w);
+	var rw = Math.round((1-value) * this.w);
 
 	if(!this.isFillColorTransparent()) {
 		canvas.fillStyle = this.style.fillColor;
@@ -107,3 +107,6 @@ function UIStatusCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIStatusCreator());
+

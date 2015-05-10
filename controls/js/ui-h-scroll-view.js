@@ -48,6 +48,11 @@ UIHScrollView.prototype.onPointerUpRunning = function(point, beforeChild) {
 	if(beforeChild) {
 		return;
 	}
+	
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
 
 	var pageOffset = 0;
 	var velocity = this.getVelocity();
@@ -150,3 +155,6 @@ function UIHScrollViewCreator(border, bg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIHScrollViewCreator(0, null));
+

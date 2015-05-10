@@ -44,3 +44,5 @@ function UIFlashCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIFlashCreator());
+

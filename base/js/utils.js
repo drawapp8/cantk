@@ -7,115 +7,154 @@
  * 
  */
 
-Array.prototype.remove = function(obj, all) {
-    for (var i=0; i < this.length; ++i ) {
-        if ( this[i] === obj ) {
-            this.splice(i, 1); 
+Object.defineProperty(Array.prototype, 'remove', 
+{
+	enumerable: false,
+	value: function(obj, all){
+		for (var i=0; i < this.length; ++i ) {
+			if ( this[i] === obj ) {
+				this.splice(i, 1); 
 
-            if(!all) 
-	           break;
-        }
-    }
-    
-    return;
-}
-
-Array.prototype.insert = function(index, obj) {
-	if(index >= 0 && index < this.length) {
-		this.splice(index, 0, obj);
+				if(!all) 
+				   break;
+			}
+		}
+		
+		return this;
 	}
-	else {
-		this.push(obj);
-	}
+});
 
-	return;
-}
-
-Array.prototype.indexOf = function(obj) {
-	var n = this.length;
-    for (var i=0; i < n; ++i ) {
-        if ( this[i] === obj ) {
-        	return i;
-        }
-    }
-    
-    return -1;
-}
-
-Array.prototype.find = function(check) { 
-	var n = this.length;
-    for (var i=0; i < n; ++i ) {
-    	var  iter = this[i];
-        if (check(iter)) {
-        	return iter;
-        }
-    }
-
-    return null;
-}
-
-Array.prototype.binarySearch = function(find, comparator) {
-	var i = 0;
-    var low = 0;
-	var comparison = 0; 
-	var high = this.length - 1;
-
-    while (low <= high) {
-        i = (low + high) >> 1;
-        comparison = comparator(this[i], find);
-        if (comparison < 0) { low = i + 1; continue; };
-        if (comparison > 0) { high = i - 1; continue; };
-
-        return i;
-    }
-
-    return -1;
-};
-
-Array.prototype.has = function(obj) {
-    return this.indexOf(obj) >= 0;
-}
-
-Array.prototype.destroyData = function() {  
-	for(var i = 0; i < this.length; i++) {
-		var iter = this[i];
-
-		if(!iter || typeof iter != "object") {
-			continue;
+Object.defineProperty(Array.prototype, 'insert', 
+{
+	enumerable: false,
+	value: function(index, obj){
+		if(index >= 0 && index < this.length) {
+			this.splice(index, 0, obj);
+		}
+		else {
+			this.push(obj);
 		}
 
-		if(iter.destroy && typeof iter.destroy == "function") {
-			iter.destroy();
+		return this;
+	}
+});
+
+Object.defineProperty(Array.prototype, 'indexOf', 
+{
+	enumerable: false,
+	value: function(obj){
+		var n = this.length;
+		for (var i=0; i < n; ++i ) {
+			if ( this[i] === obj ) {
+				return i;
+			}
 		}
+		
+		return -1;
 	}
+});
 
-    this.length = 0;  
-} 
+Object.defineProperty(Array.prototype, 'find', 
+{
+	enumerable: false,
+	value: function(checkIf){
+		var n = this.length;
+		for (var i=0; i < n; ++i ) {
+			var  iter = this[i];
+			if (checkIf(iter)) {
+				return iter;
+			}
+		}
 
-Array.prototype.clear = function(destroyData) {
-	if(destroyData) {
-		this.destroyData();
+		return null;
 	}
-    this.length = 0;  
+});
 
-    return this;
-}
 
-Array.prototype.copy = function(src) {  
-	this.clear();
+Object.defineProperty(Array.prototype, 'binarySearch', 
+{
+	enumerable: false,
+	value: function(find, comparator){
+		var i = 0;
+		var low = 0;
+		var comparison = 0; 
+		var high = this.length - 1;
 
-    for (var i= 0 ; i < src.length ; ++i ) {
-    	var obj = src[i];
+		while (low <= high) {
+			i = (low + high) >> 1;
+			comparison = comparator(this[i], find);
+			if (comparison < 0) { low = i + 1; continue; };
+			if (comparison > 0) { high = i - 1; continue; };
 
-    	if(obj && obj.dup) {
-    		obj = obj.dup();
-    	}
+			return i;
+		}
 
-    	this.push(obj);	
-    }
+		return -1;
+	}
+});
 
-	return;
-} 
+Object.defineProperty(Array.prototype, 'has', 
+{
+	enumerable: false,
+	value: function(obj){
+    	return this.indexOf(obj) >= 0;
+	}
+});
+
+Object.defineProperty(Array.prototype, 'destroyData', 
+{
+	enumerable: false,
+	value: function(){
+		for(var i = 0; i < this.length; i++) {
+			var iter = this[i];
+
+			if(!iter || typeof iter != "object") {
+				continue;
+			}
+
+			if(iter.destroy && typeof iter.destroy == "function") {
+				iter.destroy();
+			}
+		}
+
+		this.length = 0;  
+
+		return this;
+	}
+});
+
+Object.defineProperty(Array.prototype, 'clear', 
+{
+	enumerable: false,
+	value: function(destroyData){
+		if(destroyData) {
+			this.destroyData();
+		}
+		this.length = 0;  
+
+		return this;
+	}
+});
+
+Object.defineProperty(Array.prototype, 'copy', 
+{
+	enumerable: false,
+	value: function(src){
+		this.clear();
+
+		for (var i= 0 ; i < src.length ; ++i ) {
+			var obj = src[i];
+
+			if(obj && obj.dup) {
+				obj = obj.dup();
+			}
+
+			this.push(obj);	
+		}
+
+		return this;
+	}
+});
 
 function makeUniqRandArray(start, end) {
 	if(start >= end) {
@@ -591,14 +630,14 @@ function drawRoundRect(canvas, w, h, r, which) {
 	if(w < 0 || h < 0) {
 		return;
 	}
-
-	if(r >= hw || r >= hh) {
-		canvas.arc(hw, hh, Math.min(hh, hw), 0, Math.PI * 2);
-		return;
-	}
-
+	
 	if(!which) {
 		which = RoundRect.TL | RoundRect.TR | RoundRect.BL | RoundRect.BR;
+	}
+
+	if((r >= hw || r >= hh) && which === (RoundRect.TL | RoundRect.TR | RoundRect.BL | RoundRect.BR)) {
+		canvas.arc(hw, hh, Math.min(hh, hw), 0, Math.PI * 2);
+		return;
 	}
 
 	if(r) {
@@ -648,31 +687,11 @@ function drawRoundRect(canvas, w, h, r, which) {
 }
 
 function cantkGetViewPort() {
-	 var viewportwidth;
-	 var viewportheight;
-		
-	 if (typeof window.innerWidth != 'undefined'){
-	  viewportwidth = window.innerWidth;
-	  viewportheight = window.innerHeight;
-	 }
-	 else if (typeof document.documentElement != 'undefined'
-	  && typeof document.documentElement.clientWidth !=
-	  'undefined' && document.documentElement.clientWidth != 0)
-	 {
-	  viewportwidth = document.documentElement.clientWidth;
-	  viewportheight = document.documentElement.clientHeight;
-	 }
-	 else{
-	  viewportwidth = document.getElementsByTagName('body')[0].clientWidth;
-	  viewportheight = document.getElementsByTagName('body')[0].clientHeight;
-	 }
-
-	 return {width:viewportwidth, height:viewportheight};
+	return CantkRT.getViewPort();
 }
 
 if(!window.orgViewPort) {
 	window.orgViewPort = cantkGetViewPort();
-	//console.log("OrgViewPort: " + window.orgViewPort.width + "x" + window.orgViewPort.height);
 }
 
 function layoutText(canvas, fontSize, str, width, flexibleWidth) {
@@ -924,17 +943,12 @@ function httpDoRequest(info) {
 	var data = info.data;
 	var method = info.method ? info.method : "GET";
 
-	//cross domain via proxy.
-	if(!info.noProxy && url.indexOf("http") === 0 && url.indexOf(window.location.hostname) < 0) {
-		url = '/proxy.php?url=' + window.btoa(encodeURI(url)) + '&mode=native&full_headers=1&send_cookies=1&send_session=0';
-
-		if(info.headers && info.headers["User-Agent"]) {
-			var ua = info.headers["User-Agent"];
-			url = url + "&ua="+ encodeURI(ua);
-			delete info.headers["User-Agent"];
-		}
+	if(info.forceProxy && url.indexOf("http") === 0 && url.indexOf(window.location.hostname) < 0) {
+		url = '/proxy.php?url=' + window.btoa(encodeURI(url));
+		console.log("use proxy:" + url);
 	}
-	
+
+	xhr.crossOrigin = "Anonymous";
 	xhr.open(method, url, true);
 
 	if(info.noCache) {
@@ -991,17 +1005,18 @@ function httpDoRequest(info) {
 	return true;
 }
 
-function httpGetURL(url, onDone) {
+function httpGetURL(url, onDone, forceProxy) {
 	var rInfo = {};
 	rInfo.url = url;
 	rInfo.onDone = onDone;
+	rInfo.forceProxy = forceProxy;
 
 	httpDoRequest(rInfo);
 
 	return;
 }
 
-function httpGetJSON(url, onDone) {
+function httpGetJSON(url, onDone, forceProxy) {
 	httpGetURL(url, function(result, xhr, data) {
 		var json = null;
 		if(result) {
@@ -1012,7 +1027,7 @@ function httpGetJSON(url, onDone) {
 			}
 		}
 		onDone(json);
-	})
+	}, forceProxy);
 
 	return;
 }
@@ -1023,14 +1038,31 @@ function cantkRestoreViewPort() {
 	return;
 }
 
+function cantkSetViewPortWidth(width) {
+	var value = "";
+	var head = document.getElementsByTagName('head')[0];
+	var meta = document.querySelector("meta[name=viewport]");
+
+	if(!meta) {
+		meta = document.createElement('meta');
+		meta.name = 'viewport';
+		head.appendChild(meta);
+	}
+	
+	var content = 'width='+ width +'; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;';
+	meta.setAttribute('content', content);
+
+	return;
+}
+
 function cantkInitViewPort(scale) {
 	var value = "";
 	var meta = document.createElement('meta');
 	var head = document.getElementsByTagName('head')[0];
 	
-	if(window.devicePixelRatio && window.devicePixelRatio > 1.5) {
+	if(window.devicePixelRatio && window.devicePixelRatio > 2) {
 		window.realDevicePixelRatio = window.devicePixelRatio;
-		window.devicePixelRatio = 1.5;
+		window.devicePixelRatio = 2;
 	}
 
 	var defaultRatio = window.devicePixelRatio ? window.devicePixelRatio : 1;
@@ -1042,14 +1074,14 @@ function cantkInitViewPort(scale) {
 	  value = 'width=device-width, ' + scaleValues;
 	}
 	else if(isAndroid()) {
-	  var ver = browserVersion();
-	  if(ver < 535.00) {
-	  	window.devicePixelRatio = window.realDevicePixelRatio;
-	  	value = 'target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
-	  }
-	  else { //target-densitydpi is not supported any longer in new version.
-	  	value =  'width=device-width, ' + scaleValues; 
-	  }
+		var ver = browserVersion();
+		if(ver < 537.00 || isWeiXin() || isWeiBo()) {
+			window.devicePixelRatio = window.realDevicePixelRatio;
+			value = 'target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+		}
+		else { //target-densitydpi is not supported any longer in new version.
+			value =  'width=device-width, ' + scaleValues; 
+		}
 	}
 	else if(isFirefoxMobile()) {
       var vp = cantkGetViewPort();
@@ -1183,16 +1215,7 @@ function cantkGetLocale() {
 	return Locales.getLanguageName();
 }
 	
-var requestAnimFrame = (function(){
-	return window.requestAnimationFrame ||
-		window.webkitRequestAnimationFrame ||
-		window.mozRequestAnimationFrame ||
-		window.oRequestAnimationFrame ||
-		window.msRequestAnimationFrame ||
-		function(callback) {
-			return window.setTimeout(callback, 5);
-		};
-})();
+var requestAnimFrame = CantkRT.requestAnimFrame;
 
 function getQueryParameter(key) {
   var key = key + "=";
@@ -1218,18 +1241,20 @@ function cantkGetQueryParam(key) {
 }
 
 function getFontSizeInFont(str) {
-	var a = str.split(" ");
-	for(var i = 0; i < a.length; i++) {
-		var iter = a[i];
-		if(iter.indexOf("pt") > 0 || iter.indexOf("px") > 0) {
-			var str = iter.replace(/pt/, "");
-			str = str.replace(/px/, "");
+	var fontSize = 12;
+	var px = str.match(/\d+px/g);
 
-			return parseInt(str);
+	if(px) {
+		fontSize = parseInt(px[0]);
+	}
+	else {
+		var pt = str.match(/\d+pt/g);
+		if(pt) {
+			fontSize = parseInt(pt[0]) * 1.5;
 		}
 	}
 
-	return 0;
+	return fontSize;
 }
 
 function basename(path) {
@@ -1243,7 +1268,25 @@ function dirname(path) {
 String.prototype.basename = function(withoutExt) {
 	var filename = this.replace(/\\/g,'/').replace( /.*\//, '' );
 
-	return withoutExt ? filename.replace(/\.[a-z|A-Z|0-9]+/g, "") : filename;
+	if(withoutExt) {
+		var index = filename.lastIndexOf('.');
+		if(index >= 0) {
+			filename = filename.substr(0, index);
+		}
+	}
+
+	return filename;
+}
+
+String.prototype.extname = function() {	
+	var extName = "";
+	var index = this.lastIndexOf('.');
+
+	if(index >= 0) {
+		extName = this.substr(index+1);	
+	}
+
+	return extName;
 }
 
 String.prototype.dirname = function() {
@@ -1350,7 +1393,125 @@ function readLocalTextFile(onSuccess, onFail) {
 	return;
 }
 
+Math.distanceBetween = function(p1, p2) {
+	var dx = p2.x - p1.x;
+	var dy = p2.y - p1.y;
+
+	var d = Math.sqrt(dx * dx + dy * dy);
+
+	return d;
+}
+
+Math.lineAngle = function(from, to) {
+	var dx = to.x - from.x;
+	var dy = to.y - from.y;
+	var d = Math.sqrt(dx * dx + dy * dy);
+
+	if(dx == 0 && dy == 0) {
+		return 0;
+	}
+	
+	if(dx == 0) {
+		if(dy < 0) {
+			return 1.5 * Math.PI;
+		}
+		else {
+			return 0.5 * Math.PI;
+		}
+	}
+
+	if(dy == 0) {
+		if(dx < 0) {
+			return Math.PI;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	if(dx > 0) {
+		if(dy > 0) {
+			return Math.asin(dy/d);
+		}
+		else {
+			return 2 * Math.PI - Math.asin(Math.abs(dy)/d);
+		}
+	}
+	else {
+		if(dy > 0) {
+			return Math.PI - Math.asin(Math.abs(dy)/d);
+		}
+		else {
+			return Math.PI + Math.asin(Math.abs(dy)/d);
+		}
+	}
+}
+
+Math.translatePoint = function(point, angle, distance) {
+	var x = point.x;
+	var y = point.y;
+
+	if(angle < 0.5 * Math.PI) {
+		x = x + distance * Math.cos(angle);
+		y = y + distance * Math.sin(angle);
+	}
+	else if(angle < Math.PI) {
+		var a = Math.PI - angle;
+		x = x - distance * Math.cos(a);
+		y = y + distance * Math.sin(a);
+	}
+	else if(angle < 1.5 * Math.PI) {
+		var a = angle - Math.PI;
+		x = x - distance * Math.cos(a);
+		y = y - distance * Math.sin(a);
+	}
+	else {
+		var a = 2 * Math.PI - angle;
+		x = x + distance * Math.cos(a);
+		y = y - distance * Math.sin(a);
+	}
+	return {x:x, y:y};
+
+}
+
+Math.rotatePoint = function(point, angle) {
+	var p = {};
+
+	p.x = point.x * Math.cos(angle) + point.y * Math.sin(angle);
+	p.y = point.y * Math.cos(angle) - point.x * Math.sin(angle);
+
+	return p;
+}
+
+function dataURLToBlob(dataURL) {
+    var BASE64_MARKER = ';base64,';
+    if (dataURL.indexOf(BASE64_MARKER) == -1) {
+      var parts = dataURL.split(',');
+      var contentType = parts[0].split(':')[1];
+      var raw = decodeURIComponent(parts[1]);
+
+      return new Blob([raw], {type: contentType});
+    }
+
+    var parts = dataURL.split(BASE64_MARKER);
+    var contentType = parts[0].split(':')[1];
+    var raw = window.atob(parts[1]);
+    var rawLength = raw.length;
+
+    var uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], {type: contentType});
+ }
+
 window.makeUniqRandArray = makeUniqRandArray;
+  
+function isWebAudioSupported() {
+	return typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined';
+}
 
 console.log("Build At " + gBuildDate);
 

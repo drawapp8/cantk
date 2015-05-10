@@ -248,3 +248,6 @@ function UIMenuCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIMenuCreator());
+

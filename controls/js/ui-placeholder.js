@@ -76,3 +76,7 @@ function UIHPlaceholderCreator(w, h) {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIVPlaceholderCreator(100, 20));
+ShapeFactoryGet().addShapeCreator(new UIHPlaceholderCreator(20, 100));
+

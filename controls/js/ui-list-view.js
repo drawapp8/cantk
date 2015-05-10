@@ -39,7 +39,6 @@ UIListView.prototype.beginUpdate = function() {
 		var waitBox = statusItem.findChildByName("ui-wait-box");
 		if(waitBox) {
 			waitBox.show();
-			waitBox.start();
 		}
 
 		var loading = statusItem.findChildByName("ui-label-loading");
@@ -55,12 +54,9 @@ UIListView.prototype.endUpdate = function() {
 	this.updateStatus = UIListView.UPDATE_STATUS_NONE;
 	var statusItem = this.findChildByName("ui-list-item-update-status");
 	if(statusItem) {
-		var waitBox = statusItem.findChildByName("ui-wait-box");
-		if(waitBox) {
-			waitBox.stop();
-		}
 		this.setLastUpdateTime(new Date());
 	}
+	this.relayoutChildren(true);
 
 	return;
 }
@@ -69,7 +65,7 @@ UIListView.prototype.initUIListView = function(type, border, itemHeight, bg) {
 	this.initUIList(type, border, itemHeight, bg);
 	this.initUIVScrollView(type, 0, bg, null);	
 	this.updateStatus = UIListView.UPDATE_STATUS_NONE;
-	this.addEventNames(["onUpdateData"]);
+	this.addEventNames(["onUpdateData", "onScrollOutOfRange"]);
 	this.setTextType(Shape.TEXT_INPUT);
 
 	return this;
@@ -187,12 +183,14 @@ UIListView.prototype.onDrag = function(offset) {
 	return;
 }
 
-UIListView.prototype.onOutOfRange = function(offset) {
+UIListView.prototype.whenScrollOutOfRange = function(offset) {
 
 	if(offset < -115) {
 		this.callOnUpdateData();
 		this.relayoutChildren();
 	}
+
+	this.callOnScrollOutOfRangeHandler(offset);
 
 	return;
 }
@@ -202,11 +200,12 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 		return;
 	}
 
-	var border = this.getHMargin();
+	var hMargin = this.getHMargin();
+	var vMargin = this.getVMargin();
 
-	var x = border;
-	var y = border;
-	var w = this.w - 2 * border;
+	var x = hMargin;
+	var y = vMargin;
+	var w = this.getWidth(true);
 	var h = this.itemHeight;
 	var n = this.children.length;
 	var itemHeightVariable = this.itemHeightVariable;
@@ -265,6 +264,8 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 
 		animatable =  child.isVisible() && !isBuiltin && (y < this.h) && (animHint || this.mode === Shape.MODE_EDITING);
 		if(animatable && (x != child.x || y != child.y || w != child.w || h != child.h)) {
+			child.setSize(w, h);
+
 			config.xStart = child.x;
 			config.yStart = child.y;
 			config.wStart = child.w;
@@ -324,4 +325,6 @@ function UIListViewCreator(border, itemHeight, bg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIListViewCreator(5, 114, null));
 

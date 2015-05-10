@@ -96,7 +96,7 @@ function ResProxy(src, onSuccess, onFail) {
 	if(src) {
 		ResLoader.toLoadInc();
 		ResLoader.addToCache(src, this);
-		console.log("to load: " + src);
+//		console.log("to load: " + src);
 	}
 	else {
 		console.log("WARNNING: load null url.");
@@ -112,7 +112,7 @@ ResProxy.prototype.onDone = function(obj) {
 
 	if(obj) {
 		this.callOnSuccess();
-		console.log("load " + this.src + " done.");
+//		console.log("load " + this.src + " done.");
 	}
 	else {
 		this.callOnFail();
@@ -181,29 +181,18 @@ ResLoader.loadImage = function(url, onSuccess, onFail) {
 		return proxy.onHitCache(onSuccess, onFail);
 	}
 
-	var image = new Image();
-	if(src.indexOf("data:") === 0) {	
-		image.src = src;
-		onSuccess(image);
-
-		return;
-	}
-
 	proxy = new ResProxy(src, onSuccess, onFail);
 
-	image.onload = function (e) {
-		proxy.onDone(image);
-	};
 
-	image.onerror = function (e) {
-		proxy.onDone(null);
-	};
-
-	image.src = src;
-	if(image.width && image.height) {
-		image.onload = image.onerror = null;
-		proxy.onDone(image);
+	function onLoad(img) {
+		proxy.onDone(img);
 	}
+
+	function onError(img) {
+		proxy.onDone(null);
+	}
+
+	var image = CantkRT.createImage(src, onLoad, onError);
 
 	return image;
 }
@@ -221,15 +210,22 @@ ResLoader.loadAudio = function(url, onSuccess, onFail) {
 
 	proxy = new ResProxy(src, onSuccess, onFail);
 
-	//audio.addEventListener('loadeddata', function (e) {
-	//audio.addEventListener('canplaythrough', function (e) {
-	//audio.addEventListener('canplay', function (e) {
-
+	audio.volume = 0.8;
 	audio.addEventListener('loadstart', function (e) {
+		console.log("load start:" + url);
+	});
+	
+	audio.addEventListener('canplay', function (e) {
+		console.log("canplay:" + url);
+	});
+
+	audio.addEventListener('canplaythrough', function (e) {
+		console.log("canplaythrough:" + url);
 		proxy.onDone(audio);
 	});
 
 	audio.addEventListener('error', function (e) {
+		console.log("error:" + url);
 		proxy.onDone(null);
 	});
 

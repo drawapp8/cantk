@@ -24,8 +24,9 @@ UISoundEffects.prototype.initUISoundEffects = function(type, w, h, bg) {
 }
 
 UISoundEffects.prototype.onInit = function() {
-	this.setValue(true);
-	wm.setSoundEffectsEnable(true);
+//	this.setValue(true);
+//	var wm = this.getWindowManager();
+//	wm.setSoundEffectsEnable(true);
 
 	return;
 }
@@ -65,4 +66,6 @@ function UISoundEffectsCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UISoundEffectsCreator());
 

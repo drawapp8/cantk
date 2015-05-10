@@ -63,6 +63,10 @@ RShape.prototype.onPointerDown = function(point) {
 }
 
 RShape.prototype.onPointerMove = function(point) {
+	if(this.isLocked()) {
+		return false;
+	}
+
 	if(this.onPointerMoveCreating(point)) {
 		return true;
 	}
@@ -266,15 +270,15 @@ RShape.prototype.resizeDelta =function(dw, dh) {
 }
 
 RShape.prototype.setPosition = function(x, y) {
-	this.x = x;
-	this.y = y;
+	this.x = Math.round(x);
+	this.y = Math.round(y);
 
 	return this;
 }
 
 RShape.prototype.setSize = function(w, h) {
-	this.w = Math.max(Math.floor(w), 20);
-	this.h = Math.max(Math.floor(h), 20);
+	this.w = Math.max(Math.floor(w), 2);
+	this.h = Math.max(Math.floor(h), 2);
 
 	return this;
 }
@@ -288,8 +292,8 @@ RShape.prototype.resize = function(w, h) {
 }
 
 RShape.prototype.realResize=function(w, h) {
-	w = Math.max(Math.floor(w), 20);
-	h = Math.max(Math.floor(h), 20);
+	w = Math.max(Math.floor(w), 2);
+	h = Math.max(Math.floor(h), 2);
 
 	if(this.w != w || this.h != h) {
 		this.w = w;
@@ -312,10 +316,9 @@ RShape.prototype.translate = function(canvas) {
 }
 
 RShape.prototype.applyTransform = function(canvas) {
-	var hw = this.w >> 1;
-	var hh = this.h >> 1;
-	
-	canvas.globalAlpha =  this.opacity;
+	if(canvas.globalAlpha != this.opacity) {
+		canvas.globalAlpha =  this.opacity;
+	}
 
 	if(this.offsetX) {
 		canvas.translate(this.offsetX, 0);
@@ -324,33 +327,29 @@ RShape.prototype.applyTransform = function(canvas) {
 	if(this.offsetY) {
 		canvas.translate(0, this.offsetY);
 	}
-	
-	canvas.translate(hw, hh);
+
 	var scaleX = this.getScaleX();
 	var scaleY = this.getScaleY();
-	if(scaleX && scaleY) {
-		canvas.scale(scaleX, scaleY);
-	}
-	
-	if(this.rotation) {
-		canvas.rotate(this.rotation);
-	}
-	canvas.translate(-hw, -hh);
+	if(this.rotation || (scaleX && scaleX !== 1) || (scaleY && scaleY !== 1)) {
+		var hw = this.w >> 1;
+		var hh = this.h >> 1;
 
+		canvas.translate(hw, hh);
+		if(scaleX && scaleY) {
+			canvas.scale(scaleX, scaleY);
+		}
+		
+		if(this.rotation) {
+			canvas.rotate(this.rotation);
+		}
+		canvas.translate(-hw, -hh);
+	}
 
 	return;
 }
 
 RShape.prototype.isPointIn = function(canvas, point) {
-	if(canvas) {
-		canvas.beginPath();
-		canvas.rect(0, 0, this.w, this.h);
-
-		return canvas.isPointInPath(point.x, point.y);
-	}
-	else {
-		return isPointInRect(point, this);
-	}
+	return isPointInRect(point, this);
 }
 
 RShape.prototype.getMoreSelectMark = function(type, point) {
@@ -769,24 +768,7 @@ RShape.prototype.prepareStyle = function(canvas) {
 	var style = this.style;
 	canvas.lineWidth = style.lineWidth;			
 	canvas.strokeStyle = style.lineColor;
-	if(style.enableGradient) {
-		canvas.fillStyle = style.getGradFillStyle(canvas, 0, 0, this.w, this.h);
-	}
-	else {
-		canvas.fillStyle = style.fillColor;
-	}
-
-	if(style.enableShadow) {
-		canvas.shadowColor   = style.shadow.color;
-		canvas.shadowOffsetX = style.shadow.x;
-		canvas.shadowOffsetY = style.shadow.y
-		canvas.shadowBlur    = style.shadow.blur;
-	}
-	else {
-		canvas.shadowOffsetX = 0;
-		canvas.shadowOffsetY = 0;
-		canvas.shadowBlur    = 0;
-	}
+	canvas.fillStyle = style.fillColor;
 
 	return;
 }
@@ -957,11 +939,20 @@ RShape.prototype.hitTest = function(point) {
 	return ret;
 }
 
-RShape.prototype.lockPosition = function(isPositionLocked) {
-	this.userMovable = !isPositionLocked;
-	this.isPositionLocked = isPositionLocked;
+RShape.prototype.isLocked = function() {
+	return this.locked;
+}
 
-	return;
+RShape.prototype.lock = function() {
+	this.locked = true;
+
+	return this;
+}
+
+RShape.prototype.unlock = function() {
+	this.locked = false;
+
+	return this;
 }
 
 RShape.prototype.execMoveResize = function(x, y, w, h) {
@@ -1196,6 +1187,16 @@ RShape.prototype.toJson = function() {
 	delete o.editing;
 	delete o.textBaseline;
 	delete o.selectedTime;
+	delete o.animating;
+	delete o.clipW;
+	delete o.clipH;
+	delete o.fixResolution;
+	delete o.forcePortrait;
+	delete o.forceLandscape;
+	delete o.resLoadDone;
+	delete o.saveDx;
+	delete o.saveDy;
+	delete o.initWindowIndex;
 
 	if(!o.textType) {
 		delete o.vTextAlign;
@@ -1394,6 +1395,35 @@ RShape.prototype.setRoundRadius = function(roundRadius) {
 	return this;
 }
 
+RShape.prototype.setFillColor = function(fillColor) {
+	this.style.setFillColor(fillColor);
+
+	return this;
+}
+
+RShape.prototype.setLineColor = function(lineColor) {
+	this.style.setLineColor(lineColor);
+
+	return this;
+}
+
+RShape.prototype.setTextColor = function(textColor) {
+	this.style.setTextColor(textColor);
+
+	return this;
+}
+
+RShape.prototype.getFillColor = function() {
+	return this.style.fillColor;
+}
+
+RShape.prototype.getLineColor = function() {
+	return this.style.lineColor;
+}
+
+RShape.prototype.getTextColor = function() {
+	return this.style.textColor;
+}
 
 function RShapeInit(g, type) {
 	var x = 0;

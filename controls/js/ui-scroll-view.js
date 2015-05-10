@@ -122,10 +122,32 @@ UIScrollView.prototype.scrollToPage = function(pageIndex) {
 	return;
 }
 
+
+UIScrollView.prototype.isEventHandledByChild = function() {
+	var status = UIElement.lastEvent.status;
+	if(this.isUIVScrollView) {
+		return status & UIElement.EVENT_VSCROLL_HANDLED;
+	}
+	else {
+		return status & UIElement.EVENT_HSCROLL_HANDLED;
+	}
+}
+
+UIScrollView.prototype.setEventHandled = function() {
+	var status = this.isUIVScrollView ? UIElement.EVENT_VSCROLL_HANDLED : UIElement.EVENT_HSCROLL_HANDLED;
+	this.setLastEventStatus(status);
+	
+	return this;
+}
+
 UIScrollView.prototype.onPointerDownRunning = function(point, beforeChild) {
 	if(beforeChild) {
 		return;
 	}
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
 
 	this.velocityTracker.clear();
 
@@ -155,6 +177,10 @@ UIScrollView.prototype.onPointerMoveRunning = function(point, beforeChild) {
 	if(beforeChild || !this.isScrollable()) {
 		return;
 	}
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
 
 	this.scrollBarOpacity = 0;
 	var delta = this.getScrollDelta(point);
@@ -224,7 +250,7 @@ UIScrollView.prototype.animScrollTo = function(distance, duration) {
 	return;
 }
 
-UIScrollView.prototype.onOutOfRange = function(offset) {
+UIScrollView.prototype.whenScrollOutOfRange = function(offset) {
 	return;
 }
 
@@ -232,6 +258,10 @@ UIScrollView.prototype.onPointerUpRunning = function(point, beforeChild) {
 	if(beforeChild || !this.isScrollable()) {
 		return;
 	}
+	if(this.isEventHandledByChild()) {
+		return;
+	}
+	this.setEventHandled();
 
 	var delta = this.getScrolledSize();
 
@@ -262,8 +292,14 @@ UIScrollView.prototype.onPointerUpRunning = function(point, beforeChild) {
 	var startOffset = this.offset;
 	var endOffset = startOffset - distance;
 	
-	if(endOffset < 0) {
-		this.onOutOfRange(endOffset);
+	var offset = this.offset;
+	var bottom = offset + this.h;
+	var range = this.getScrollRange();
+	if(offset < 0) {
+		this.whenScrollOutOfRange(offset);
+	}
+	else if(bottom > range) {
+		this.whenScrollOutOfRange(bottom-range);
 	}
 
 	this.animScrollTo(distance, duration * 1000);

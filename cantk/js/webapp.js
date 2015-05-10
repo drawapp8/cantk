@@ -122,7 +122,7 @@ WebApp.prototype.showWindow = function() {
 	var meta = this.view.getMeta();
 
 	if(meta && meta.general) {
-		document.title = "七巧板互动:" + meta.general.appname;
+		document.title = meta.general.appname;
 	}
 
 	return;
@@ -699,6 +699,7 @@ WAppView.prototype.loadJson = function(js) {
 	}
 	this.afterLoad(js);
 
+	return;
 //////////////////////////////////////////////
 	var appid = js.docid;
 	var tag = document.createElement("script"); 

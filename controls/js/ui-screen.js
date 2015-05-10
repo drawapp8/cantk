@@ -145,3 +145,5 @@ function UIScreenCreator(w, h) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIScreenCreator(640, 960));
+

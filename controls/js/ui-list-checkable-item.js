@@ -14,14 +14,13 @@ function UIListCheckableItem() {
 UIListCheckableItem.prototype = new UIListItem();
 UIListCheckableItem.prototype.isUIListCheckableItem = true;
 
-UIListCheckableItem.prototype.initUIListCheckableItem = function(isRadio, type, focusedImg, 
-	activeImg, normalImg, disableImg,checkedImg, uncheckImg) {
+UIListCheckableItem.prototype.initUIListCheckableItem = function(type) {
+	this.initUIListItem(type);
 
-	this.initUIListItem(type, focusedImg, activeImg, normalImg, disableImg);
-
-	this.isRadio = isRadio;
-	this.setImage(UIElement.IMAGE_CHECKED_FG, checkedImg);
-	this.setImage(UIElement.IMAGE_UNCHECK_FG, uncheckImg);
+	this.isUIListRadioBoxItem = (type === "ui-list-radiobox-item");
+	this.isUIListCheckBoxItem = (type === "ui-list-checkbox-item");
+	this.setImage(UIElement.IMAGE_CHECKED_FG, null);
+	this.setImage(UIElement.IMAGE_UNCHECK_FG, null);
 	this.addEventNames(["onChanged"]);
 
 	return this;
@@ -71,7 +70,7 @@ UIListCheckableItem.prototype.onClick = function(point, beforeChild) {
 		return;
 	}
 
-	if(this.isRadio) {
+	if(this.isUIListRadioBoxItem) {
 		this.setChecked();
 	}
 	else {
@@ -94,28 +93,32 @@ UIListCheckableItem.prototype.drawFgImage = function(canvas) {
 	return;
 }
 
-function UIListCheckBoxItemCreator(focusedImg, activeImg, normalImg, disableImg, checkedImg, uncheckImg) {
+function UIListCheckBoxItemCreator() {
 	var args = ["ui-list-checkbox-item", "ui-list-checkbox-item", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIListCheckableItem();
-		g.initUIListCheckableItem(false, this.type, focusedImg, activeImg, normalImg, disableImg, checkedImg, uncheckImg);
+		g.initUIListCheckableItem(this.type);
 		return g;
 	}
 	
 	return;
 }
 
-function UIListRadioBoxItemCreator(focusedImg, activeImg, normalImg, disableImg, checkedImg, uncheckImg) {
+function UIListRadioBoxItemCreator() {
 	var args = ["ui-list-radiobox-item", "ui-list-radiobox-item", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIListCheckableItem();
-		g.initUIListCheckableItem(true, this.type, focusedImg, activeImg, normalImg, disableImg, checkedImg, uncheckImg);
+		g.initUIListCheckableItem(this.type);
 		return g;
 	}
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIListCheckBoxItemCreator());
+ShapeFactoryGet().addShapeCreator(new UIListRadioBoxItemCreator());
+

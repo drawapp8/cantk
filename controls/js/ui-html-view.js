@@ -94,3 +94,6 @@ function UIHtmlViewCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIHtmlViewCreator());
+
+

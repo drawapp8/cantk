@@ -29,8 +29,6 @@ UITips.prototype.initUITips = function(type, bg) {
 	this.setSizeLimit(80, 80);
 	this.autoAdjustHeight = true;
 
-	this.style.setShadow(true, {x:0, y:0, shadowBlur:10, color: "white"});
-
 	return this;
 }
 
@@ -231,22 +229,6 @@ UITips.prototype.drawPath = function(canvas) {
 	return;
 }
 
-UITips.prototype.paintSelfOnlyAndroid =function(canvas) {
-	canvas.beginPath();
-	this.drawPath(canvas);
-	canvas.fill();
-	
-	canvas.lineWidth = (this.pointerDown && this.clickable) ? 6 : 3;
-	canvas.strokeStyle = "Gray";
-	canvas.stroke();
-	
-	canvas.lineWidth = 1;
-	canvas.strokeStyle = this.style.lineColor;
-	canvas.stroke();
-
-	return;
-}
-
 UITips.prototype.paintSelfOnly =function(canvas) {
 	if(this.autoAdjustHeight && (!this.children || !this.children.length)) {
 		var textHeight = this.getTextHeight();
@@ -256,31 +238,14 @@ UITips.prototype.paintSelfOnly =function(canvas) {
 	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
-		if(isAndroid()) {
-			/*Avoid Shadow Bugs on android.*/
-			return this.paintSelfOnlyAndroid(canvas);
-		}
-
-		var style = this.style;
-		canvas.shadowColor   = style.shadow.color;
-		canvas.shadowOffsetX = style.shadow.x;
-		canvas.shadowOffsetY = style.shadow.y;
-		canvas.shadowBlur    = style.shadow.blur;
 		canvas.beginPath();
 		this.drawPath(canvas);
-		canvas.fill();
-
-		if(this.pointerDown && this.clickable) {
-			canvas.lineWidth = 3;
-			canvas.shadowBlur = 2 * canvas.shadowBlur;
-		}
-		else {
-			canvas.lineWidth = 2;
-			canvas.shadowBlur = 0;
-		}
-		canvas.stroke();
 		
-		canvas.shadowBlur = 0;
+		canvas.lineWidth = (this.pointerDown && this.clickable) ? 4 : 2;
+		canvas.strokeStyle = this.style.lineColor;
+		
+		canvas.fill();
+		canvas.stroke();
 	}
 
 	return;
@@ -301,3 +266,6 @@ function UITipsCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UITipsCreator());
+

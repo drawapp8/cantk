@@ -54,6 +54,46 @@ UIImageValue.prototype.dec = function() {
 	return this.setValue(value);	
 }
 
+UIImageValue.prototype.getImages = function() {
+	var str = "";
+	for(var key in this.images) {
+		var iter = this.images[key];
+		if(key.indexOf("option_image_") >= 0 && iter && iter.src) {
+			str += iter.src + "\n";
+		}
+	}
+
+	return str;
+}
+
+UIImageValue.prototype.setImages = function(value) {
+	var display = this.images.display;
+	this.images = {};
+	this.images.display = display;
+
+	if(value) {
+		var i = 0;
+		var k = 0;
+		var arr = value.split("\n");
+
+		for(var i = 0; i < arr.length; i++) {
+			var iter = arr[i];
+			if(!iter) continue;
+
+			if(iter.indexOf("/") === 0) {
+				iter = iter.substr(1);
+			}
+
+			var name = "option_image_" + (k++);
+			this.setImage(name, iter);
+		}
+
+		this.setValue(this.value);
+	}
+	
+	return this;
+}
+
 UIImageValue.prototype.shapeCanBeChild = function(shape) {
 	return false;
 }
@@ -70,3 +110,5 @@ function UIImageValueCreator(w, h, defaultImage) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIImageValueCreator(200, 200, null));

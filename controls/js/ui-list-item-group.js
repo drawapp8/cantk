@@ -186,3 +186,5 @@ function UIListItemGroupCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIListItemGroupCreator());
+

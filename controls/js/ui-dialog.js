@@ -35,3 +35,5 @@ function UIDialogCreator(w, h, bg) {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIDialogCreator(600, 400, null));
+

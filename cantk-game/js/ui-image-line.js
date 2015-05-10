@@ -55,3 +55,5 @@ function UIImageLineCreator() {
 	return;
 }
 
+ShapeFactoryGet().addShapeCreator(new UIImageLineCreator());
+

@@ -121,7 +121,7 @@ UIPageIndicator.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIPageIndicator.prototype.paintOneIndicatorCircle = function(canvas, isCurrent, index, x, y, w, h) {
-	var r = Math.floor(Math.max(10, h/4));
+	var r = Math.floor(Math.max(5, h/4));
 
 	canvas.fillStyle = isCurrent ? this.fillColorOfCurrent : this.style.fillColor;
 	canvas.strokeStyle = isCurrent ? this.lineColorOfCurrent : this.style.lineColor;
@@ -135,7 +135,7 @@ UIPageIndicator.prototype.paintOneIndicatorCircle = function(canvas, isCurrent, 
 }
 
 UIPageIndicator.prototype.paintOneIndicatorNumber = function(canvas, isCurrent, index, x, y, w, h) {
-	var r = Math.floor(Math.max(10, h/4));
+	var r = Math.floor(Math.max(5, h/4));
 	var ox = Math.floor(x+w/2);
 	var oy = Math.floor(y+h/2);
 
@@ -727,4 +727,10 @@ function UIPageIndicatorNormalCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIPageIndicatorNormalCreator());
+ShapeFactoryGet().addShapeCreator(new UIPageIndicatorCircleCreator());
+ShapeFactoryGet().addShapeCreator(new UIPageIndicatorNumberCreator());
+ShapeFactoryGet().addShapeCreator(new UIPageIndicatorRectCreator());
+ShapeFactoryGet().addShapeCreator(new UIPageIndicatorLineCreator());
 

@@ -480,7 +480,7 @@ window.Modernizr = (function( window, document, undefined ) {
       	var listeners = el.listeners[type] ? el.listeners[type] : [];
       	listeners.push(listener);
       	el.listeners[type] = listeners;
-      	console.log("addEventListener: " + type);
+//      	console.log("addEventListener: " + type);
       	return;
       }
 

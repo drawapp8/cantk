@@ -83,6 +83,18 @@ UIFrameAnimation.prototype.setAutoPlay = function(autoPlay) {
 	return this;
 }
 
+UIFrameAnimation.prototype.resume = function() {
+	this.playing = true;
+
+	return this;
+}
+
+UIFrameAnimation.prototype.pause = function() {
+	this.playing = false;
+
+	return this;
+}
+
 UIFrameAnimation.prototype.stop = function() {
 	this.playing = false;
 
@@ -255,15 +267,20 @@ UIFrameAnimation.prototype.setGroupsData = function(groupsData) {
 }
 
 UIFrameAnimation.prototype.getGroupRange = function(name) {
+	var range = null;
+
 	if(this.groups && name) {
-		return this.groups[name];
+		range = this.groups[name];
 	}
-	else {
-		return {start:0, end:this.frames.length-1};
+	
+	if(!range) {
+		range = {start:0, end:this.frames.length-1};
 	}
+
+	return range;
 }
 
-UIFrameAnimation.prototype.getValue = function() {
+UIFrameAnimation.prototype.getImages = function() {
 	var str = "";
 	for(var key in this.images) {
 		var iter = this.images[key];
@@ -275,7 +292,7 @@ UIFrameAnimation.prototype.getValue = function() {
 	return str;
 }
 
-UIFrameAnimation.prototype.setValue = function(value) {
+UIFrameAnimation.prototype.setImages = function(value) {
 	var display = this.images.display;
 	this.images = {};
 	this.images.display = display;
@@ -300,6 +317,16 @@ UIFrameAnimation.prototype.setValue = function(value) {
 	this.syncImageFrames();
 	
 	return this;
+}
+
+UIFrameAnimation.prototype.getValue = function() {
+	return this.current;
+}
+
+UIFrameAnimation.prototype.setValue = function(value) {
+	this.current = Math.min(value, this.frames.length);
+
+	return;
 }
 
 UIFrameAnimation.prototype.startAutoPlay = function() {
@@ -401,4 +428,6 @@ function UIFrameAnimationCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIFrameAnimationCreator());
 

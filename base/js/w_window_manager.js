@@ -207,22 +207,28 @@ WWindowManager.prototype.findTargetWin = function(point) {
 	 var nr = this.grabWindows.length;
 	 
 	 if(nr > 0) {
-		  target = this.grabWindows[nr-1];
-	 }
-	 else {
-		  nr = this.windows.length;
-		  for(var i = nr-1; i >= 0; i--) {
-				var win = this.windows[i];
-				if(!win.visible) {
-					 continue;
-				}
-				
-				if(isPointInRect(point, win.rect)) {
-					 target = win;
-					 break;
-				 }
+	  	for(var i = nr-1; i >= 0; i--) {
+		  target = this.grabWindows[i];
+		  if(!target.visible) {
+		  	continue;
 		  }
+
+		  return target;
+	 	}
 	 }
+	  
+	  nr = this.windows.length;
+	  for(var i = nr-1; i >= 0; i--) {
+			var win = this.windows[i];
+			if(!win.visible) {
+				 continue;
+			}
+			
+			if(isPointInRect(point, win.rect)) {
+				 target = win;
+				 break;
+			 }
+	  }
 		  
 	 return target;
 }
@@ -340,13 +346,18 @@ WWindowManager.prototype.onPointerDown = function(point) {
 
 WWindowManager.prototype.onPointerMove = function(point) {
 	this.translatePoint(point);
-	this.target = this.findTargetWin(point);
+	var target = this.findTargetWin(point);
 	  
 	this.lastPointerPoint.x = point.x;
 	this.lastPointerPoint.y = point.y;
+
+	if(this.target && target != this.target) {
+		 this.target.onPointerMove(point);
+	}
+	this.target = target;
 	if(this.target) {
 		 this.target.onPointerMove(point);
-	 }
+	}
 	
 	return;
 }
@@ -456,11 +467,16 @@ WWindowManager.prototype.getFrameRate = function() {
 	return Math.round(1000  * this.drawCount / duration);
 }
 
-WWindowManager.prototype.showFPS = function(maxFpsMode) {
-	this.shouldShowFPS = true;
-	this.drawCount = 0;
-	this.startTime = Date.now();
+WWindowManager.prototype.setMaxFPSMode = function(maxFpsMode) {
 	this.maxFpsMode = maxFpsMode;
+
+	return this;
+}
+
+WWindowManager.prototype.showFPS = function(shouldShowFPS) {
+	this.drawCount = 1;
+	this.startTime = Date.now();
+	this.shouldShowFPS = shouldShowFPS;
 
 	return this;
 }
@@ -480,22 +496,24 @@ WWindowManager.prototype.setPaintEnable = function(enablePaint) {
 	return this;
 }
 
+WWindowManager.onDraw = function() {
+	var manager = WWindowManager.getInstance();
+
+	manager.drawCount++;
+	manager.requestCount = 0;
+	manager.draw();
+
+	return;
+}
+
 WWindowManager.prototype.postRedraw = function(rect) {
 	if(!this.enablePaint) {
 		return;
 	}
-
+	
 	this.requestCount++;
-
-	var manager = this;
-	function redrawAll() {
-		manager.drawCount++;
-		manager.requestCount = 0;
-		manager.draw();
-	}
-
 	if(this.requestCount < 2) {
-		requestAnimFrame(redrawAll);
+		requestAnimFrame(WWindowManager.onDraw);
 	}
 
 	return;
@@ -546,7 +564,9 @@ WWindowManager.prototype.draw = function() {
 			this.postRedraw();
 		}
 	}
-	
+
+	this.canvas.flush();
+
 	return;
 }
 

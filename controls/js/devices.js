@@ -21,22 +21,6 @@ function cantkGetAllDeviceConfig() {
 }
 
 function cantkLoadDefaultDeviceConfigs() {
-
-	var firefoxOSEmulator = {
-		name : "firefox-QVGA-Emulator",
-		bg: "/drawapp8/images/devices/device_firefoxos.png",
-		platform:"firefox",
-		version: "4",
-		lcdDensity:"mdpi",
-		width:390,
-		height:754,
-		screenX: 34,
-		screenY: 138,
-		screenW: 320,
-		screenH: 480,
-		hasMenuBar:false
-	};
-
 	var androidWVGA800 = {
 		name : "android-WVGA800",
 		bg: "/drawapp8/images/devices/device_800x480.png",
@@ -246,19 +230,18 @@ function cantkLoadDefaultDeviceConfigs() {
 		hasMenuBar:false
 	};
 	
-	var pcLandscape = {
-		name : "PC-Landscape",
-		bg: "/drawapp8/images/pc-800x600.png",
+	var pcGeneral = {
+		name : "PC-General",
+		bg: "/drawapp8/images/pc-general.png",
 		platform: "android",
 		version: "4",
 		lcdDensity:"hdpi",
-		width:860,
-		height:720,
-		screenX: 32,
-		screenY: 78,
+		width:856,
+		height:668,
+		screenX: 30,
+		screenY: 32,
 		screenW: 800,
-		screenH: 600,
-		hasMenuBar:false
+		screenH: 600
 	};
 	
 	var pcPortrait = {
@@ -276,23 +259,49 @@ function cantkLoadDefaultDeviceConfigs() {
 		hasMenuBar:false
 	};
 
-	cantkRegisterDevice(iphone4s);
-	cantkRegisterDevice(iphone5);
-	cantkRegisterDevice(androidWVGA800);
-	cantkRegisterDevice(androidWXGA720);
-	cantkRegisterDevice(androidWXGA800);
-	cantkRegisterDevice(androidWSVGA);
-	cantkRegisterDevice(tizenWVGA800);
-	cantkRegisterDevice(tizenWXGA720);
-	cantkRegisterDevice(firefoxOSEmulator);
-	cantkRegisterDevice(blackberryQ10);
-	cantkRegisterDevice(blackberryZ10);
-	cantkRegisterDevice(lumia800);
-	cantkRegisterDevice(lumia920);
-	cantkRegisterDevice(ipadmini);
-	cantkRegisterDevice(ipad4);
-	cantkRegisterDevice(pcLandscape);
-	cantkRegisterDevice(pcPortrait);
+	var device480x720 = {
+		name : "480x720",
+		bg: "/drawapp8/images/device.png",
+		platform: "android",
+		lcdDensity:"hdpi",
+		width:552,
+		height:878,
+		screenX: 36,
+		screenY: 80,
+		screenW: 480,
+		screenH: 720 
+	};
+
+	var device480x800 = {
+		name : "480x800",
+		bg: "/drawapp8/images/device.png",
+		platform: "android",
+		lcdDensity:"hdpi",
+		width:552,
+		height:974,
+		screenX: 36,
+		screenY: 88,
+		screenW: 480,
+		screenH: 800 
+	};
+
+	var device320x480 = {
+		"name": "320x480",
+		"bg": "/drawapp8/images/device.png",
+		"platform": "android",
+		"lcdDensity": "mdpi",
+		"width": 370,
+		"height": 590,
+		"screenX": 25,
+		"screenY": 55,
+		"screenW": 320,
+		"screenH": 480
+	};
+	
+	cantkRegisterDevice(device480x720);
+	cantkRegisterDevice(device480x800);
+	cantkRegisterDevice(device320x480);
+	cantkRegisterDevice(pcGeneral);
 
 	return;
 }

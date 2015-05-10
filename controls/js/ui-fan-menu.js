@@ -37,15 +37,10 @@ UIFanMenu.prototype.getOriginElement = function() {
 	return null;
 }
 
-UIFanMenu.prototype.onModeChanged = function() {
-	if(this.mode === Shape.MODE_EDITING) {
-		this.restoreState();
-	}
-	else {
-		this.relayout();
-		this.saveState();
-		this.collapse();
-	}
+UIFanMenu.prototype.onInit = function() {
+	this.relayout();
+	this.saveState();
+	this.collapse();
 
 	return;
 }
@@ -152,6 +147,25 @@ UIFanMenu.prototype.showOrHideMenu = function() {
 	}
 }
 
+UIFanMenu.prototype.animateShowOne = function(iter, origin) {
+	var config = {};
+	iter.x = origin.x;
+	iter.y = origin.y;
+
+	config.xStart = origin.x;
+	config.yStart = origin.y;
+	config.xEnd = iter.save.x;
+	config.yEnd = iter.save.y;
+	config.scaleStart = 0.5;
+	config.scaleEnd = 1;
+	config.opacityStart = 0.1;
+	config.opacityEnd = 1;
+	config.delay = 0;
+	config.duration = 1000;
+	
+	iter.animate(config);
+}
+
 UIFanMenu.prototype.showMenu = function() {
 	var origin = this.getOriginElement();
 
@@ -169,7 +183,6 @@ UIFanMenu.prototype.showMenu = function() {
 	}
 	this.relayout();
 
-	var config = {};
 	for(var i = 0; i < this.children.length; i++) {
 		var iter = this.children[i];
 		iter.setVisible(true);
@@ -177,25 +190,31 @@ UIFanMenu.prototype.showMenu = function() {
 		iter.save.y = iter.y;
 		
 		if(iter != origin) {
-			iter.x = origin.x;
-			iter.y = origin.y;
-
-			config.xStart = origin.x;
-			config.yStart = origin.y;
-			config.xEnd = iter.save.x;
-			config.yEnd = iter.save.y;
-			config.scaleStart = 0.5;
-			config.scaleEnd = 1;
-			config.opacityStart = 0.1;
-			config.opacityEnd = 1;
-			config.delay = 0;
-			config.duration = 1000;
-			
-			iter.animate(config);
+			this.animateShowOne(iter, origin);
 		}
 	}
 
 	delete this.collapsed;
+
+	return;
+}
+
+UIFanMenu.prototype.animateHideOne = function(iter, origin) {
+	var config = {};
+	config.xStart = iter.x;
+	config.yStart = iter.y;
+	config.xEnd = origin.x;
+	config.yEnd = origin.y;
+	config.opacityStart = 1;
+	config.opacityEnd = 0.1;
+	config.scaleStart = 1;
+	config.scaleEnd = 0.5;
+	config.delay = 0;
+	config.duration = 1000;
+	
+	iter.animate(config, function onDone() {
+		iter.setVisible(false);
+	});
 
 	return;
 }
@@ -207,22 +226,10 @@ UIFanMenu.prototype.hideMenu = function() {
 		return;
 	}
 
-	var config = {};
 	for(var i = 0; i < this.children.length; i++) {
 		var iter = this.children[i];
 		if(iter != origin) {
-			config.xStart = iter.x;
-			config.yStart = iter.y;
-			config.xEnd = origin.x;
-			config.yEnd = origin.y;
-			config.opacityStart = 1;
-			config.opacityEnd = 0.1;
-			config.scaleStart = 1;
-			config.scaleEnd = 0.5;
-			config.delay = 0;
-			config.duration = 1000;
-			
-			iter.animate(config);
+			this.animateHideOne(iter, origin);
 		}
 	}
 
@@ -315,3 +322,6 @@ function UIFanMenuCreator() {
 	
 	return;
 }
+	
+ShapeFactoryGet().addShapeCreator(new UIFanMenuCreator());
+

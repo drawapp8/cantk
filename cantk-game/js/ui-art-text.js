@@ -66,3 +66,6 @@ function UIArtTextCreator() {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIArtTextCreator());
+

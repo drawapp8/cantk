@@ -93,7 +93,7 @@ UIVScrollView.prototype.paintChildren = function(canvas) {
 
 	canvas.save();
 	canvas.beginPath();
-	canvas.rect(0, 0, this.w, this.h);
+	canvas.rect(this.getHMargin(), this.getVMargin(), this.getWidth(true), this.getHeight(true));
 	canvas.closePath();
 	canvas.clip();
 
@@ -169,3 +169,6 @@ function UIVScrollViewCreator(border, bg, scrollBarImg) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIVScrollViewCreator(0, null, null));
+
