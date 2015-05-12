@@ -33,7 +33,7 @@ Features
 
 6. Game engine integration, cocos2d, panda.js, phaser.js, pixi.js, etc.
 
-7. Easy to use, you can create application with [Gamebuilder](http://gamebuilder.duapp.com/gamebuilder.php)/[AppBuilder](http://gamebuilder.duapp.com/appbuilder.php) by drag & drop.
+7. Easy to use, you can create application with [Gamebuilder](http://www.tangide.com/gamebuilder.php)/[AppBuilder](http://www.tangide.com/appbuilder.php) by drag & drop.
 
 8. Easy to extension, there are several ways to extend existed controls to get different appearance or function.
 
@@ -42,9 +42,9 @@ Features
 Online Design Tools
 ==============================================
 
-#### To develop HTML5 Apps Click Here [App Builder](http://gamebuilder.duapp.com/appbuilder.php)
+#### To develop HTML5 Apps Click Here [App Builder](http://www.tangide.com/gamebuilder.php)
 
-#### To develop HTML5 Games Click Here [Game Builder](http://gamebuilder.duapp.com/gamebuilder.php)
+#### To develop HTML5 Games Click Here [Game Builder](http://www.tangide.com/appbuilder.php)
 
 
 Documentation
