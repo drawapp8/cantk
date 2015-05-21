@@ -39,6 +39,13 @@ Features
 
 9. Support the main stream mobile platform, iOS, android, windows phone, firefox, blackberry, tizen, etc.
 
+
+Make cantk app fast as native app
+==============================================
+
+[CanTK Runtime](https://github.com/drawapp8/cantk-runtime)
+
+
 Online Design Tools
 ==============================================
 
