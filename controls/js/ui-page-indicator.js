@@ -69,6 +69,10 @@ UIPageIndicator.prototype.getViewPager = function() {
 		return;
 	}
 
+	if(this.viewPager && !this.viewPager.parentShape) {
+		this.viewPager = null
+	}
+
 	if(!this.viewPager) {
 		this.viewPager = this.getParent().findChildByType("ui-view-pager", true);
 		if(!this.viewPager && this.isUIPageIndicatorSimple) { 
@@ -123,6 +127,7 @@ UIPageIndicator.prototype.shapeCanBeChild = function(shape) {
 UIPageIndicator.prototype.paintOneIndicatorCircle = function(canvas, isCurrent, index, x, y, w, h) {
 	var r = Math.floor(Math.max(5, h/4));
 
+	canvas.lineWidth = this.style.lineWidth;
 	canvas.fillStyle = isCurrent ? this.fillColorOfCurrent : this.style.fillColor;
 	canvas.strokeStyle = isCurrent ? this.lineColorOfCurrent : this.style.lineColor;
 
@@ -139,6 +144,7 @@ UIPageIndicator.prototype.paintOneIndicatorNumber = function(canvas, isCurrent, 
 	var ox = Math.floor(x+w/2);
 	var oy = Math.floor(y+h/2);
 
+	canvas.lineWidth = this.style.lineWidth;
 	canvas.fillStyle = isCurrent ? this.fillColorOfCurrent : this.style.fillColor;
 	canvas.strokeStyle = isCurrent ? this.lineColorOfCurrent : this.style.lineColor;
 
@@ -166,6 +172,7 @@ UIPageIndicator.prototype.paintOneIndicatorRect = function(canvas, isCurrent, in
 	}
 	size = Math.floor(size);
 
+	canvas.lineWidth = this.style.lineWidth;
 	canvas.fillStyle = isCurrent ? this.fillColorOfCurrent : this.style.fillColor;
 	canvas.strokeStyle = isCurrent ? this.lineColorOfCurrent : this.style.lineColor;
 	
@@ -190,6 +197,7 @@ UIPageIndicator.prototype.paintOneIndicatorLine = function(canvas, isCurrent, in
 	}
 	size = Math.floor(size);
 
+	canvas.lineWidth = this.style.lineWidth;
 	canvas.fillStyle = isCurrent ? this.fillColorOfCurrent : this.style.fillColor;
 	canvas.strokeStyle = isCurrent ? this.lineColorOfCurrent : this.style.lineColor;
 	
@@ -261,6 +269,13 @@ UIPageIndicator.prototype.onClick = function(point, beforeChild) {
 }
 
 UIPageIndicator.prototype.paintBackground = function(canvas) {
+	var n = this.getPages();
+	if(!n) {
+		canvas.lineWidth = 1;
+		canvas.strokeStyle = "Red";
+		canvas.rect(0, 0, this.w, this.h)
+		canvas.stroke();
+	}
 }
 
 UIPageIndicator.prototype.paintSelfOnly = function(canvas) {
@@ -431,29 +446,24 @@ UIPageIndicatorNormal.prototype.initUIPageIndicatorNormal = function(type, w, h)
 	return this;
 }
 
-UIPageIndicatorNormal.prototype.fixImagePath = function(oldConfig, newConfig) {
-	var oldVersion	= oldConfig.version;
-	var oldPlatform = oldConfig.platform;
-	var oldDensity	= oldConfig.lcdDensity;
-	var newVersion	= newConfig.version;
-	var newPlatform = newConfig.platform;
-	var newDensity	= newConfig.lcdDensity;
-	
-	UIElement.prototype.fixImagePath.call(this, oldConfig, newConfig);
+UIPageIndicatorNormal.prototype.onInit = function() {
+	this.syncImages();
+}
 
-	function srcReplace(src) {
-		src = src.replaceAll("/" + oldVersion + "/", "/" + newVersion + "/");
-		src = src.replaceAll("/" + oldPlatform + "/", "/" + newPlatform + "/");
-		src = src.replaceAll("/" + oldDensity + "/", "/" + newDensity + "/");
+UIPageIndicatorNormal.prototype.syncImages = function() {
+	this.itemImages = [];
+	this.itemImagesOfCurrent = [];
 
-		return src;
+	for(var key in this.images) {
+		if(key === "display") continue;
+		var image = this.images[key];
+		if(key.indexOf("current-item-images-") === 0) {
+			this.itemImagesOfCurrent.push(image);	
+		}
+		else if(key.indexOf("item-images-") === 0) {
+			this.itemImages.push(image);	
+		}
 	}
-
-	var str = srcReplace(this.strItemImages);
-	this.setItemImagesByStr(str);
-
-	str = srcReplace(this.strItemImagesOfCurrent);
-	this.setItemImagesOfCurrentByStr(str);
 
 	return;
 }
@@ -465,36 +475,44 @@ UIPageIndicatorNormal.prototype.setEnableAnimatePage = function(value) {
 }
 
 UIPageIndicatorNormal.prototype.setItemImagesByStr = function(str) {
-	this.itemImages = [];
 	var arr = str.split("\n");
 	var name = "item-images-";
+
+	var n = this.itemImages.length;
+	for(var i = 0; i < n; i++) {
+		this.setImage(name + i, null);
+	}
 
 	for(var i = 0; i < arr.length; i++) {
 		var iter = arr[i];
 		if(iter) {
-			this.itemImages.push(new WImage(iter));
 			this.setImage(name + i, iter);
 		}
 	}
 
+	this.syncImages();
 	this.strItemImages = str;
 
 	return;
 }
 
 UIPageIndicatorNormal.prototype.setItemImagesOfCurrentByStr = function(str) {
-	this.itemImagesOfCurrent = [];
 	var arr = str.split("\n");
 	var name = "current-item-images-";
+
+	var n = this.itemImagesOfCurrent.length;
+	for(var i = 0; i < n; i++) {
+		this.setImage(name + i, null);
+	}
 
 	for(var i = 0; i < arr.length; i++) {
 		var iter = arr[i];
 		if(iter) {
-			this.itemImagesOfCurrent.push(new WImage(iter));
 			this.setImage(name + i, iter);
 		}
 	}
 
+	this.syncImages();
 	this.strItemImagesOfCurrent = str;
 
 	return;
@@ -522,16 +540,16 @@ UIPageIndicatorNormal.prototype.getItemImagesStrOfCurrent = function() {
 }
 
 UIPageIndicatorNormal.prototype.getItemImages = function() {
-	if(!this.itemImages.length && this.strItemImages) {
-		this.setItemImagesByStr(this.strItemImages);
+	if(!this.itemImages.length) {
+		this.syncImages();
 	}
 
 	return this.itemImages;
 }
 
 UIPageIndicatorNormal.prototype.getItemImagesOfCurrent = function() {
-	if(!this.itemImagesOfCurrent.length && this.strItemImagesOfCurrent) {
-		this.setItemImagesOfCurrentByStr(this.strItemImagesOfCurrent);
+	if(!this.itemImagesOfCurrent.length) {
+		this.syncImages();
 	}
 
 	return this.itemImagesOfCurrent;
@@ -572,17 +590,15 @@ UIPageIndicatorNormal.prototype.getBackgroundImage = function(index, isCurrent) 
 }
 
 UIPageIndicatorNormal.prototype.paintOneIndicatorBackground = function(canvas, isCurrent, index, x, y, w, h) {
-	var image = this.getBackgroundImage(index, isCurrent);
-
-	if(!image || !image.getImage()) {
+	var wImage = this.getBackgroundImage(index, isCurrent);
+	if(!wImage || !wImage.getImage()) {
 		return;
 	}
 
-	image = image.getImage();
-	var imageW = image.width;
-	var imageH = image.height;
+	var image = wImage.getImage();
+	var srcRect = wImage.getImageRect();
 
-	this.drawImageAt(canvas, image, this.images.display, x, y, w, h);
+	this.drawImageAt(canvas, image, this.images.display, x, y, w, h, srcRect);
 
 	return;
 }
@@ -624,70 +640,45 @@ UIPageIndicatorNormal.prototype.getItemLocaleText= function(index) {
 }
 
 UIPageIndicatorNormal.prototype.paintOneIndicator = function(canvas, isCurrent, index, x, y, w, h) {
-	var image = this.getItemImage(index, isCurrent);
+	var wImage = this.getItemImage(index, isCurrent);
 	this.paintOneIndicatorBackground(canvas, isCurrent, index, x, y, w, h);
 
-	if(image) {
-		image = image.getImage();
-	}
-
-	var gapBetweenTextImage = 4;
+	var gap = 8;
 	var fontSize = this.style.fontSize;
 	var str = this.getItemLocaleText(index);
 
 	canvas.font = this.style.getFont();
 	canvas.fillStyle = isCurrent ? this.getItemTextColorOfCurrent() : this.style.textColor; 
 	
-	if(image) {
-		var imageW = image.width;
-		var imageH = image.height;
+	if(wImage && wImage.getImage()) {
+		var image = wImage.getImage();
+		var srcRect = wImage.getImageRect();
+
 		var hMargin = this.hMargin;
+		var vMargin = this.vMargin;
 
 		if(str) {
-			var textW = w;
-			if(this.imagePosition === "left") {
-				var dx = x + hMargin;
-				var dy = Math.floor(y + (h-imageH)/2);
-				canvas.drawImage(image, 0, 0, imageW, imageH, dx, dy, imageW, imageH);
+			var fontSize = this.style.fontSize;
+			var dx = x + hMargin;
+			var dy = y + vMargin;
+			var dw = w - 2 * hMargin;
+			var dh = h - fontSize - 2 * vMargin - gap;
 
-				dy = Math.floor(y + h/2);
-				dx = Math.floor(x + (w-imageW)/2 + imageW);
-				textW = w - imageW - 2 * hMargin;
+			this.drawImageAt(canvas, image,UIElement.IMAGE_DISPLAY_AUTO, dx, dy, dw, dh, srcRect);
 
-				canvas.textAlign = "center";
-				canvas.textBaseline = "middle";
-				canvas.fillText(str, dx, dy, textW);
-			}
-			else if(this.imagePosition === "middle") {
-				this.drawImageAt(canvas, image, UIElement.IMAGE_DISPLAY_9PATCH, x, y, w, h);
-
-				var dy = Math.floor(y + h/2);
-				var dx = Math.floor(x + w/2);
-				textW = w - 2 * hMargin;
-	
-				canvas.font = this.style.getFont();
-				canvas.textAlign = "center";
-				canvas.textBaseline = "middle";
-				canvas.fillText(str, dx, dy, textW);
-			}
-			else {
-				var dx = Math.floor(x + (w-imageW)/2);
-				var dy = Math.floor(y + (h-imageH-fontSize-gapBetweenTextImage)/2);
-				canvas.drawImage(image, 0, 0, imageW, imageH, dx, dy, imageW, imageH);
-
-				dx = Math.floor(x + w/2);
-				dy = dy + imageH + gapBetweenTextImage;
-				textW = w - 2 * hMargin;
-
-				canvas.textAlign = "center";
-				canvas.textBaseline = "top";
-				canvas.fillText(str, dx, dy, textW);
-			}
+			dx = x + (w >> 1);
+			dy = y + h - vMargin; 
+			canvas.textAlign = "center";
+			canvas.textBaseline = "bottom";
+			canvas.fillText(str, dx, dy);
 		}
 		else {
-			var dx = Math.floor(x + (w-imageW)/2);
-			var dy = Math.floor(y + (h-imageH)/2);
-			canvas.drawImage(image, 0, 0, imageW, imageH, dx, dy, imageW, imageH);
+			var dx = x + hMargin;
+			var dy = y + vMargin;
+			var dw = w - 2 * hMargin;
+			var dh = h - 2 * vMargin;
+
+			this.drawImageAt(canvas, image,UIElement.IMAGE_DISPLAY_AUTO, dx, dy, dw, dh, srcRect);
 		}
 	}
 	else {

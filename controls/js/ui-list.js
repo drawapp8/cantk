@@ -125,13 +125,18 @@ UIList.prototype.relayoutChildren = function(animHint) {
 	var w = this.getWidth(true);
 	var itemHeight = this.getItemHeight();
 	var h = itemHeight;
-	var n = this.children.length;
 	var itemHeightVariable = this.itemHeightVariable;
 
-	for(var i = 0; i < n; i++) {
+	var i = 0;
+	var n = this.children.length;
+	var children = this.children;
+	for(var k = 0; k < n; k++) {
+		var child = children[k];
+
 		var config = {};
 		var animatable = false;
-		var child = this.children[i];
+		
+		if(child.removed || !child.visible) continue;
 
 		if(itemHeightVariable || child.isHeightVariable()) {
 			h = child.measureHeight(itemHeight);
@@ -171,10 +176,10 @@ UIList.prototype.relayoutChildren = function(animHint) {
 			config.hEnd = h;
 
 			config.delay = 10;
-			config.duration = 1000;
+			config.duration = 500;
 			config.element = child;
-			config.onDone = function (el) {
-				el.relayoutChildren();
+			config.onDone = function (name) {
+				this.relayoutChildren();
 			}
 			
 			child.animate(config);
@@ -197,6 +202,7 @@ UIList.prototype.relayoutChildren = function(animHint) {
 		}
 
 		y += h;
+		i++;
 	}
 
 	return;

@@ -83,8 +83,10 @@ UIListView.prototype.updateDone = function() {
 
 	list.endUpdate();
 	setTimeout(function() {
-		list.relayoutChildren();
-		list.postRedraw();
+		if(list.parentShape) {
+			list.relayoutChildren();
+			list.postRedraw();
+		}
 	}, 1000);
 
 	return;
@@ -96,7 +98,9 @@ UIListView.prototype.callOnUpdateData = function() {
 	this.beginUpdate();
 	var listView = this;
 	setTimeout(function() {
-		listView.updateDone();
+		if(listView.parentShape) {
+			listView.updateDone();
+		}
 	}, 10000);
 
 	return true;
@@ -207,17 +211,21 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 	var y = vMargin;
 	var w = this.getWidth(true);
 	var h = this.itemHeight;
-	var n = this.children.length;
 	var itemHeightVariable = this.itemHeightVariable;
 	var range = this.getScrollRange();
 	var pageSize = this.getPageSize();
 	var userMovable = true;
 
 	
-	for(var i = 0; i < n; i++) {
+	var i = 0;
+	var n = this.children.length;
+	var children = this.children;
+	for(var k = 0; k < n; k++) {
+		var child = children[k];
+		
 		var config = {};
 		var isBuiltin = false;
-		var child = this.children[i];
+		if(child.removed || !child.visible) continue;
 		
 		if(itemHeightVariable || child.isHeightVariable()) {
 			h = child.measureHeight(this.itemHeight);
@@ -278,8 +286,8 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 			config.delay = 10;
 			config.duration = 1000;
 			config.element = child;
-			config.onDone = function (el) {
-				el.relayoutChildren();
+			config.onDone = function (name) {
+				this.relayoutChildren();
 			}
 			child.animate(config);
 		}
@@ -297,6 +305,7 @@ UIListView.prototype.relayoutChildren = function(animHint) {
 		child.setUserResizable(itemHeightVariable || child.isHeightVariable());
 
 		y += h;
+		i++;
 	}
 
 	return;

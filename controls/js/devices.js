@@ -284,6 +284,19 @@ function cantkLoadDefaultDeviceConfigs() {
 		screenW: 480,
 		screenH: 800 
 	};
+	
+	var device720x1280 = {
+		name : "720x1280",
+		bg: "/drawapp8/images/device.png",
+		platform: "android",
+		lcdDensity:"hdpi",
+		width:832,
+		height:1500,
+		screenX: 56,
+		screenY: 112,
+		screenW: 720,
+		screenH: 1280 
+	};
 
 	var device320x480 = {
 		"name": "320x480",
@@ -299,6 +312,7 @@ function cantkLoadDefaultDeviceConfigs() {
 	};
 	
 	cantkRegisterDevice(device480x720);
+	cantkRegisterDevice(device720x1280);
 	cantkRegisterDevice(device480x800);
 	cantkRegisterDevice(device320x480);
 	cantkRegisterDevice(pcGeneral);

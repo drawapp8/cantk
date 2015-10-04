@@ -14,10 +14,10 @@ function UICheckBox() {
 UICheckBox.prototype = new UIElement();
 UICheckBox.prototype.isUICheckBox = true;
 
-UICheckBox.prototype.initUICheckBox = function(type, w, h) {
+UICheckBox.prototype.initUICheckBox = function(type) {
 	this.initUIElement(type);	
 
-	this.setDefSize(w, h);
+	this.setDefSize(100, 100);
 	this.setTextType(Shape.TEXT_INPUT);
 	this.images.display = UIElement.IMAGE_DISPLAY_SCALE;
 
@@ -31,7 +31,7 @@ UICheckBox.prototype.initUICheckBox = function(type, w, h) {
 
 	this.addEventNames(["onChanged", "onUpdateTransform"]);
 	this.setRoundRadius(5);
-	this.value = true;
+	this.value = false;
 	this.style.textColor = "Black";
 	this.style.textColorOn = "Black";
 	this.style.fillColor = "White";
@@ -59,7 +59,7 @@ UICheckBox.prototype.setValue = function(value) {
 
 UICheckBox.prototype.getBgImage = function() {
 	var image = null;
-	if(this.value) {
+	if(this.getValue()) {
 		if(this.pointerDown) {
 			image = this.getImageByType(UIElement.IMAGE_ON_ACTIVE);
 		}
@@ -82,11 +82,11 @@ UICheckBox.prototype.getBgImage = function() {
 }
 
 UICheckBox.prototype.getFgImage = function() {
-	return this.getImageByType(this.value ? UIElement.IMAGE_CHECKED_FG : UIElement.IMAGE_UNCHECK_FG);
+	return this.getImageByType(this.getValue() ? UIElement.IMAGE_CHECKED_FG : UIElement.IMAGE_UNCHECK_FG);
 }
 
 UICheckBox.prototype.getTextColor = function(canvas) {
-	return this.value ? this.style.textColorOn : this.style.textColor;
+	return this.getValue() ? this.style.textColorOn : this.style.textColor;
 }
 
 UICheckBox.prototype.drawText = function(canvas) {
@@ -94,7 +94,7 @@ UICheckBox.prototype.drawText = function(canvas) {
 }
 
 UICheckBox.prototype.getBgColor = function(canvas) {
-	return this.value ? this.style.fillColorOn : this.style.fillColor;
+	return this.getValue() ? this.style.fillColorOn : this.style.fillColor;
 }
 
 UICheckBox.prototype.paintSelfOnly = function(canvas) {
@@ -175,23 +175,23 @@ UICheckBox.prototype.onClick = function(point, beforeChild) {
 		return;
 	}
 	
-	this.setValue(!this.value);
+	this.setValue(!this.getValue());
 	this.callOnClickHandler(point);
 
 	return;
 }
 
-function UICheckBoxCreator(w, h) {
+function UICheckBoxCreator() {
 	var args = ["ui-checkbox", "ui-checkbox", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UICheckBox();
-		return g.initUICheckBox(this.type, w, h);
+		return g.initUICheckBox(this.type);
 	}
 	
 	return;
 }
 
-ShapeFactoryGet().addShapeCreator(new UICheckBoxCreator(160, 60, null, null, null, null,null, null));
+ShapeFactoryGet().addShapeCreator(new UICheckBoxCreator());
 

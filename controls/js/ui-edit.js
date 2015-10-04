@@ -137,19 +137,6 @@ UIEdit.prototype.getWidth = function(withoutBorder) {
 	return w;
 }
 
-UIEdit.prototype.setText = function(text, notTriggerChanged) {
-	if(this.text != text) {
-		this.text = this.toText(text);
-		if(!notTriggerChanged) {
-			this.callOnChangedHandler(text);
-		}
-
-		this.textNeedRelayout = true;
-	}
-
-	return;
-}
-
 UIEdit.prototype.getEditorRect = function() {
 	var p = this.getPositionInView();
 	var vp = this.view.getAbsPosition();
@@ -210,7 +197,7 @@ UIEdit.prototype.editText = function(point) {
 		}
 
 		function onChange(text) {
-			shape.callOnChangingHandler(this.value);
+			shape.callOnChangingHandler(text);
 		}
 
 		editor.setOnChangedHandler(onChanged);

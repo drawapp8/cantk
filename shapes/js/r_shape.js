@@ -40,6 +40,8 @@ RShape.prototype.initRShape = function(x, y, w, h, type) {
 	this.enable = true;
 	this.visible = true;
 	this.events = {};
+	this.pivotX = 0.5;
+	this.pivotY = 0.5;
 
 	if(w === 0 || h === 0) {
 		this.w = this.MIN_SIZE;
@@ -118,7 +120,6 @@ RShape.prototype.onPointerUpCreating = function(point) {
 
 		this.state = Shape.STAT_NORMAL;
 		this.setSelected(true);
-		this.afterCreated();		
 		this.postRedraw();
 	}
 
@@ -315,9 +316,19 @@ RShape.prototype.translate = function(canvas) {
 	return;
 }
 
+RShape.prototype.setPivot = function(x, y) {
+	this.pivotX = x;
+	this.pivotY = y;
+
+	return this;
+}
+
 RShape.prototype.applyTransform = function(canvas) {
-	if(canvas.globalAlpha != this.opacity) {
+	if(!canvas.animating && canvas.globalAlpha !== this.opacity) {
 		canvas.globalAlpha =  this.opacity;
+	}
+	else {
+		canvas.globalAlpha *=  this.opacity;
 	}
 
 	if(this.offsetX) {
@@ -330,19 +341,21 @@ RShape.prototype.applyTransform = function(canvas) {
 
 	var scaleX = this.getScaleX();
 	var scaleY = this.getScaleY();
-	if(this.rotation || (scaleX && scaleX !== 1) || (scaleY && scaleY !== 1)) {
-		var hw = this.w >> 1;
-		var hh = this.h >> 1;
+	var scale = scaleX !== 1 || scaleY !== 1;
 
-		canvas.translate(hw, hh);
-		if(scaleX && scaleY) {
+	if(this.rotation || scale) {
+		var px = Math.round(this.w * this.pivotX);
+		var py = Math.round(this.h * this.pivotY);
+
+		canvas.translate(px, py);
+		if(scale) {
 			canvas.scale(scaleX, scaleY);
 		}
 		
 		if(this.rotation) {
 			canvas.rotate(this.rotation);
 		}
-		canvas.translate(-hw, -hh);
+		canvas.translate(-px, -py);
 	}
 
 	return;
@@ -843,7 +856,6 @@ RShape.prototype.drawSelectMark = function(canvas, type, point, hightlight) {
 
 RShape.prototype.drawSelectMarks = function(canvas) {
 	canvas.save();
-	this.applyTransform(canvas);
 	canvas.beginPath();
 	
 	if(this.selected && !this.hideSelectMark) {
@@ -1077,6 +1089,7 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 			
 			if(this.isUserMovable()) {
 				this.execMoveResize(x, y);
+				this.onUserMoved();
 			}
 		}
 		
@@ -1091,7 +1104,6 @@ RShape.prototype.handlePointerEvent = function(point, type) {
 				this.onUserResized();
 			}
 		}
-		this.hitTestResult = Shape.HIT_TEST_NONE;
 	}
 	else {
 		if(newDx || newDy) {
@@ -1197,6 +1209,7 @@ RShape.prototype.toJson = function() {
 	delete o.saveDx;
 	delete o.saveDy;
 	delete o.initWindowIndex;
+	delete o.timerID;
 
 	if(!o.textType) {
 		delete o.vTextAlign;
@@ -1252,6 +1265,15 @@ RShape.prototype.toJson = function() {
 	if(this.handle) {
 		o.handle = this.handle;
 	}
+
+	if(this.settings) {
+		o.settings = this.settings;
+	}
+
+	if(this.propertySheetDesc) {
+		o.propertySheetDesc = this.propertySheetDesc;
+	}
+
 	this.toJsonMore(o)
 
 	return o;
@@ -1318,8 +1340,16 @@ RShape.prototype.fromJson = function(js) {
 		this.style.fromJson(js.style);
 	}
 
+	if(js.propertySheetDesc) {
+		this.propertySheetDesc = js.propertySheetDesc;
+	}
+
 	if(js.handle) {
 		this.handle = js.handle;
+	}
+
+	if(js.settings) {
+		this.settings = js.settings;
 	}
 
 	/*for comptable purpose*/
@@ -1335,7 +1365,7 @@ RShape.prototype.fromJson = function(js) {
 	this.state = Shape.STAT_NORMAL;
 	delete this.isUnpacking;
 
-	this.onFromJsonDone();
+	this.onFromJsonDone(js);
 
 	return;
 }

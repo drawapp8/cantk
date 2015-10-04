@@ -191,6 +191,8 @@ UIDevice.prototype.enterPreview = function(previewCurrentWindow) {
 		return;
 	}
 
+	var current = windowManager.getCurrent();
+
 	app.saveTemp();
 	app.clearCommandHistory();
 
@@ -207,11 +209,9 @@ UIDevice.prototype.enterPreview = function(previewCurrentWindow) {
 	app.loadUserScripts();
 	windowManager.systemInit();
 
+	windowManager.setInitWindow(null);
 	if(previewCurrentWindow) {
-		windowManager.setInitWindow(windowManager.getCurrent());
-	}
-	else {
-		windowManager.setInitWindow(0);
+		windowManager.setInitWindow(current);
 	}
 
 	return;
@@ -243,6 +243,7 @@ UIDevice.prototype.exitPreview = function() {
 	windowManager.restoreState();
 	windowManager.clearState();
 	this.setSelected(true);
+	UIElement.timeScale = 1;
 
 	return;
 }

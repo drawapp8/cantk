@@ -21,8 +21,10 @@ UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO  = WImage.DISPLAY_SCALE_KEEP_RATIO;
 UIElement.IMAGE_DISPLAY_TILE_V = WImage.DISPLAY_TILE_V;
 UIElement.IMAGE_DISPLAY_TILE_H = WImage.DISPLAY_TILE_H;
 UIElement.IMAGE_DISPLAY_AUTO_SIZE_DOWN = WImage.DISPLAY_AUTO_SIZE_DOWN;
+UIElement.IMAGE_DISPLAY_FIT_WIDTH = WImage.DISPLAY_FIT_WIDTH;
+UIElement.IMAGE_DISPLAY_FIT_HEIGHT = WImage.DISPLAY_FIT_HEIGHT;
 
-UIElement.IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)", "vtile", "htile", "auto-size-down"];
+UIElement.IMAGE_DISPLAY_NAMES = ["incenter", "tile", "9patch", "scale", "auto", "default", "scale(keep ratio)", "vtile", "htile", "auto-size-down", "fit-width","fit-height"];
 
 UIElement.X_FIX_LEFT = 0;
 UIElement.X_FIX_RIGHT = 1;
@@ -79,12 +81,18 @@ UIElement.IMAGE_ON_ACTIVE	   = "active_on_bg";
 UIElement.IMAGE_OFF_FOCUSED	   = "focused_off_bg";
 UIElement.IMAGE_OFF_ACTIVE	   = "active_off_bg";
 UIElement.IMAGE_NORMAL_DRAG    = "normal_drag";
-UIElement.IMAGE_DELETE_ITEM    = "delete_item";
+UIElement.IMAGE_DELETE_ITEM    = "delete_item_icon";
+UIElement.IMAGE_CHECKED_ITEM   = "checked_item_icon";
 UIElement.IMAGE_POINT          = "point_img";
 UIElement.IMAGE_POINT1         = "point1_img";
 UIElement.IMAGE_POINT2         = "point2_img";
 UIElement.IMAGE_POINT3         = "point3_img";
 UIElement.IMAGE_POINT4         = "point4_img";
+UIElement.IMAGE_TIPS1          = "tips_img_1";
+UIElement.IMAGE_TIPS2          = "tips_img_2";
+UIElement.IMAGE_TIPS3          = "tips_img_3";
+UIElement.IMAGE_TIPS4          = "tips_img_4";
+UIElement.IMAGE_TIPS5          = "tips_img_5";
 
 UIElement.ITEM_BG_NORMAL  = "item_bg_normal";
 UIElement.ITEM_BG_ACTIVE  = "item_bg_active";
@@ -95,6 +103,20 @@ UIElement.TEXT_ALIGN_CENTER = 0;
 UIElement.TEXT_ALIGN_LEFT	= 0;
 UIElement.TEXT_ALIGN_RIGHT = 0;
 UIElement.TEXT_ALIGN_NAMES = ["center", "left", "right"];
+
+UIElement.ORIGIN_UP = 1;
+UIElement.ORIGIN_DOWN = 2;
+UIElement.ORIGIN_LEFT = 3;
+UIElement.ORIGIN_RIGHT = 4;
+UIElement.ORIGIN_UP_LEFT = 5;
+UIElement.ORIGIN_UP_RIGHT = 6;
+UIElement.ORIGIN_DOWN_LEFT = 7;
+UIElement.ORIGIN_DOWN_RIGHT = 8;
+UIElement.ORIGIN_MIDDLE_CENTER = 9;
+
+UIElement.STATE_STOP = 1;
+UIElement.STATE_RUNNING = 2;
+UIElement.STATE_PAUSED = 3;
 
 UIElement.prototype = new RShape();
 
@@ -139,6 +161,7 @@ UIElement.prototype.clone = function() {
 	
 	UIElement.disableGetRelativePathOfURL = true;
 	obj = this.dup();
+	obj.uid = UIElement.uidStart++;
 	UIElement.disableGetRelativePathOfURL = false;
 
 	return obj;
@@ -260,22 +283,20 @@ UIElement.prototype.fixChildSize = function(child) {
 }
 
 UIElement.prototype.onInit = function() {
-	if(this.offset) {
-		this.offset = 0;
-	}
+	this.callOnInitHandler();
 
-	if(this.mode !== Shape.MODE_EDITING) {
-		if(this.dataSourceUrl && this.dataSourceUrl.length > 5) {
-			this.bindDataUrl(this.dataSourceUrl);
-		}
-	
-		this.callOnInitHandler();
+	if(this.dataSourceUrl && this.dataSourceUrl.length > 5) {
+		this.bindDataUrl(this.dataSourceUrl);
 	}
 
 	return;
 }
 
 UIElement.prototype.onDeinit = function() {
+	if(this.animatingInfo) {
+		this.stopAnimation(true);
+	}
+
 	return;
 }
 
@@ -303,8 +324,6 @@ UIElement.prototype.initChildren = function() {
 }
 
 UIElement.prototype.init = function() {
-	this.visible = this.runtimeVisible;
-
 	try {
 		this.onInit();
 	}catch(e) {
@@ -341,19 +360,7 @@ UIElement.prototype.userRemovable = function() {
 
 UIElement.prototype.postRedraw = function() {
 	if(this.view) {
-		if(this.mode === Shape.MODE_RUNNING) {
-			var rect = {};
-			var p = this.getPositionInView();
-			rect.x = p.x;
-			rect.y = p.y;
-			rect.w = this.w;
-			rect.h = this.h;
-
-			this.view.postRedraw(rect);
-		}
-		else {
-			this.view.postRedrawAll();
-		}
+		this.view.postRedrawAll();
 	}
 
 	return this;
@@ -646,11 +653,11 @@ UIElement.prototype.onPointerDownEditing = function(point, beforeChild) {
 }
 
 UIElement.prototype.onPointerDownRunning = function(point, beforeChild) {
-	if(!beforeChild || this.popupWindow || !this.pointerDown) {
+	if(this.popupWindow || !this.pointerDown) {
 		return;
 	}
 
-	return this.callOnPointerDownHandler(point);
+	return this.callOnPointerDownHandler(point, beforeChild);
 }
 
 UIElement.prototype.onPointerMoveEditing = function(point, beforeChild) {
@@ -658,11 +665,11 @@ UIElement.prototype.onPointerMoveEditing = function(point, beforeChild) {
 }
 
 UIElement.prototype.onPointerMoveRunning = function(point, beforeChild) {
-	if(!beforeChild || this.popupWindow) {
+	if(this.popupWindow) {
 		return;
 	}
 
-	return this.callOnPointerMoveHandler(point);
+	return this.callOnPointerMoveHandler(point, beforeChild);
 }
 
 UIElement.prototype.onPointerUpEditing = function(point, beforeChild) {
@@ -670,11 +677,11 @@ UIElement.prototype.onPointerUpEditing = function(point, beforeChild) {
 }
 
 UIElement.prototype.onPointerUpRunning = function(point, beforeChild) {
-	if(!beforeChild || this.popupWindow || !this.pointerDown) {
+	if(this.popupWindow || !this.pointerDown) {
 		return;
 	}
 
-	return this.callOnPointerUpHandler(point);
+	return this.callOnPointerUpHandler(point, beforeChild);
 }
 
 UIElement.prototype.onDoubleClick = function(point) {
@@ -979,26 +986,107 @@ UIElement.prototype.animMove = function(x, y, hint) {
 	return;
 }
 
-UIElement.prototype.animate = function(config, onAnimationDone, onStep) {
+UIElement.getIntFromConfig = function(config, name, defValue) {
+	var value = config[name];
+
+	if(!value && value !== 0) {
+		return defValue;
+	}
+	
+	if(typeof value === "string") {
+		if(value[1] === '+' || value[1] === '-') {
+			value = defValue + parseInt(value.substr(1));
+		} else {
+			value = parseInt(value);
+		}
+	}
+
+	return value;
+}
+
+UIElement.prototype.stopAnimation = function(callOnDone) {
+	if(!this.animatingInfo) {
+		return this;
+	}
+
+	if(callOnDone) {
+		this.stepAnimation({needRedraw:0}, Date.now() + 100000000);
+	}
+	this.animatingInfo = null;
+
+	return this;
+}
+
+UIElement.prototype.animate = function(config, onAnimationDone, onAnimationStep, actionWhenBusy) {
 	if(typeof config === "string") {
 		config = this.animations[config];
 	}
 
-	if(this.animating || this.dragging || !config) {
-		return;
+	if(!this.parentShape) {
+		console.log("%cWarning: animate error - parentShape is null.", "color: red; font-weight: bold");
+		return false;
 	}
 
-	var el = this;
-	var win = this.getWindow();
-	var duration = config.duration || 1000;
-	var xStart = (config.xStart || config.xStart === 0) ? config.xStart : this.x;
-	var xEnd = (config.xEnd || config.xEnd === 0) ? config.xEnd : this.x;
-	var yStart = (config.yStart || config.yStart === 0) ? config.yStart : this.y;
-	var yEnd = (config.yEnd || config.yEnd === 0) ? config.yEnd : this.y;
-	var wStart = (config.wStart || config.wStart === 0) ? config.wStart : this.w;
-	var wEnd = (config.wEnd || config.wEnd === 0) ? config.wEnd : this.w;
-	var hStart = (config.hStart || config.hStart === 0) ? config.hStart : this.h;
-	var hEnd = (config.hEnd || config.hEnd === 0) ? config.hEnd : this.h;
+	if(this.dragging) {
+		console.log("%cWarning: animate error - busy.", "color: red; font-weight: bold");
+		return false;
+	}
+
+	var animatingInfo = this.animatingInfo;
+	if(animatingInfo) {
+		var busyAction = actionWhenBusy || config.actionWhenBusy;
+
+		if(busyAction === "replace") {
+			this.callOnAnimateDone(animatingInfo);
+			console.log("%cNotice: busy action - replace current animation.", "color: green; font-weight: bold");
+		}
+		else if(busyAction === "append") {
+			var c = 0;
+			for(var iter = animatingInfo; iter; iter = iter.next) {
+				if(iter === config) {
+					console.log("%cWarning: animate error - already appended.", "color: red; font-weight: bold");
+					return false;
+				}
+			
+				if(!iter.next || c > 30) {
+					iter.next = config;
+					break;
+				}
+				c++;
+			}
+			console.log("%cNotice: busy action - append animation.", "color: green; font-weight: bold");
+
+			return true;
+		}
+		else {
+			console.log("%cWarning: animate error - busy.", "color: red; font-weight: bold");
+			return false;
+		}
+	}
+
+	if(!config) {
+		console.log("%cWarning: animate error - config is null.", "color: red; font-weight: bold");
+		return false;
+	}
+
+	var x = this.x;
+	var y = this.y;
+	var w = this.w;
+	var h = this.h;
+
+	var duration = config.duration || 800;
+	var xStart = UIElement.getIntFromConfig(config, "xStart", x);
+	var xEnd = UIElement.getIntFromConfig(config, "xEnd", x);
+	var yStart = UIElement.getIntFromConfig(config, "yStart", y);
+	var yEnd = UIElement.getIntFromConfig(config, "yEnd", y);
+
+	var wStart = UIElement.getIntFromConfig(config, "wStart", w);
+	var wEnd = UIElement.getIntFromConfig(config, "wEnd", w);
+	var hStart = UIElement.getIntFromConfig(config, "hStart", h);
+	var hEnd = UIElement.getIntFromConfig(config, "hEnd", h);
+
+	var valueStart = config.valueStart || 0;
+	var valueEnd   = config.valueEnd   || 0;
 	var opacityStart = (config.opacityStart || config.opacityStart === 0) ? config.opacityStart : this.opacity;
 	var opacityEnd = (config.opacityEnd || config.opacityEnd === 0) ? config.opacityEnd : this.opacity;
 	var rotationStart = (config.rotationStart || config.rotationStart === 0) ? config.rotationStart : this.rotation;
@@ -1009,6 +1097,8 @@ UIElement.prototype.animate = function(config, onAnimationDone, onStep) {
 	var scaleYEnd = (config.scaleYEnd || config.scaleYEnd === 0) ? config.scaleYEnd : this.scaleY;
 
 	var onDone = onAnimationDone || config.onDone;
+	var onStep = onAnimationStep || config.onStep;
+
 	var xRange = xEnd - xStart;
 	var yRange = yEnd - yStart;
 	var wRange = wEnd - wStart;
@@ -1017,8 +1107,8 @@ UIElement.prototype.animate = function(config, onAnimationDone, onStep) {
 	var scaleYRange = scaleYEnd - scaleYStart;
 	var opacityRange = opacityEnd - opacityStart;
 	var rotationRange = rotationEnd - rotationStart;
+	var valueRange = valueEnd - valueStart;
 
-	var startTime = Date.now();
 	var interpolator =  null;
 	if(typeof config.interpolator === "string") {
 		interpolator = AnimationFactory.createInterpolator(config.interpolator);
@@ -1028,11 +1118,13 @@ UIElement.prototype.animate = function(config, onAnimationDone, onStep) {
 	}
 
 	if(!xRange) {
-		xEnd = xStart = this.x;
+		this.x = xStart;
+		xEnd = xStart;
 	}
 
 	if(!yRange) {
-		yEnd = yStart = this.y;
+		this.y = yStart;
+		yEnd = yStart;
 	}
 
 	if(!wRange) {
@@ -1043,121 +1135,196 @@ UIElement.prototype.animate = function(config, onAnimationDone, onStep) {
 		hEnd = hStart = this.h;
 	}
 
-	if(wRange || hRange) {
-		el.clipW = this.w;
-		el.clipH = this.h;
-	}
+	var c = {};
 
-	function animStep() {
-		 if(el.dragging || !el.parentShape || !interpolator || !win.visible) {
-		 	el.animating = false;
-			return false;
-		 }
-
-		el.setVisible(true);
-		var timePercent = (Date.now() - startTime)/duration;
-		var percent = interpolator.get(timePercent);
-
-		if(onStep && !onStep(el, timePercent, config)) {
-		 	el.animating = false;
-			
-			if(onDone) {
-				onDone(el);
-			}
-			
-			return false;
-		}
-
-		if(timePercent < 1) {
-			el.animating = true;
-
-			if(xRange) {
-				el.x = Math.floor(xStart + percent * xRange);
-			}
-
-			if(yRange) {
-				el.y = Math.floor(yStart + percent * yRange);
-			}
-		
-			if(xRange || yRange) {
-				el.setPosition(el.x, el.y);
-			}
-
-			if(wRange) {
-				el.clipW = Math.floor(wStart + percent * wRange);
-			}
-			
-			if(hRange) {
-				el.clipH = Math.floor(hStart + percent * hRange);
-			}
-
-			if(opacityRange) {
-				el.opacity = opacityStart + percent * opacityRange;	
-			}
-
-			if(rotationRange) {
-				el.rotation = rotationStart + percent * rotationRange;
-			}
+	c.wRange = wRange;
+	c.hRange = hRange;
+	c.xRange = xRange;
+	c.yRange = yRange;
+	c.scaleXRange = scaleXRange;
+	c.scaleYRange = scaleYRange;
+	c.opacityRange= opacityRange;
+	c.rotationRange = rotationRange;
+	c.valueRange = valueRange;
 	
-			if(scaleXRange) {
-				el.setScaleX(scaleXStart + percent * scaleXRange);
-			}
+	c.wStart = wStart;
+	c.hStart = hStart;
+	c.xStart = xStart;
+	c.yStart = yStart;
+	c.scaleXStart = scaleXStart;
+	c.scaleYStart = scaleYStart;
+	c.opacityStart= opacityStart;
+	c.rotationStart = rotationStart;
+	c.valueStart = valueStart;
 
-			if(scaleYRange) {
-				el.setScaleY(scaleYStart + percent * scaleYRange);
-			}
-
-			el.postRedraw();
-			return true;
-		}
-		else {
-			el.animating = false;
-			if(xRange || yRange) {
-				el.setPosition(xEnd, yEnd);
-			}
-			
-			if(wRange || hRange) {
-				el.clipW = wEnd;
-				el.clipH = hEnd;
-			}
-
-			if(opacityRange) {
-				el.opacity = opacityEnd;
-			}
-
-			if(rotationRange) {
-				el.rotation = rotationEnd;
-			}
-			
-			if(onDone) {
-				onDone(el);
-			}
-			
-			el.callOnAnimateDoneHandler(config.name);
-			
-			if(config.next) {
-				setTimeout(function() {
-					el.animate(config.next);
-				}, 5);
-			}
-
-			startTime = null;
-			interpolator = null;
-			
-			el.postRedraw();
-			return false;
-		}
-	}
+	c.startTime = Date.now();
+	c.duration = duration;
+	c.onDone = onDone;
+	c.onStep = onStep;
+	c.interpolator = interpolator;
+	c.next = config.next;
+	c.name = config.name;
+	c.now = c.startTime;
 
 	if(config.delay) {
-		setTimeout(function() {
-			startTime = Date.now();
-			UIElement.setAnimTimer(animStep);
-		}, config.delay);
+		c.startTime += config.delay;
+	}
+
+	this.animatingInfo = c;
+	this.postRedraw();
+
+	return true;
+}
+
+UIElement.prototype.callOnAnimateDone = function(config) {
+	this.animating = false;
+	this.animatingInfo = null;
+
+	var onDone = config.onDone;
+	if(onDone) {
+		onDone.call(this, config.name);
+	}
+	
+	if(!this.parentShape) return false;
+
+	this.callOnAnimateDoneHandler(config.name);
+
+	if(!this.parentShape) return false;
+
+	var next = config.next;
+
+	if(next) {
+		if(typeof next === "string") {
+			if(!this.animations[next]) {
+				return false;
+			}
+		}
+
+		//this.animate(next, next.onDone || config.onDone || '', 
+		//	next.onStep || config.onStep || '', next.actionWhenBusy || '');
+		this.animate(next);
+
+		return true;
+	}
+
+	return false;
+}
+
+UIElement.prototype.isAnimating = function() {
+	return this.animatingInfo && this.parentShape;
+}
+
+UIElement.prototype.stepAnimation = function(canvas, now) {
+	var c = this.animatingInfo;
+	
+	if(!c || !this.parentShape) return;
+
+	c.now += (canvas.timeStep * UIElement.timeScale);
+	if(!now) {
+		now = c.now;
+	}
+	
+	canvas.needRedraw++;
+	if(c.startTime > now) {
+		return;
+	}
+
+	if(!this.visible) {
+		this.visible = true;
+	}
+
+	var wRange = c.wRange;
+	var hRange = c.hRange;
+	var xRange = c.xRange;
+	var yRange = c.yRange;
+	var valueRange 	  = c.valueRange;
+	var scaleXRange   = c.scaleXRange;
+	var scaleYRange   = c.scaleYRange;
+	var opacityRange  = c.opacityRange;
+	var rotationRange = c.rotationRange;
+	
+	var wStart = c.wStart;
+	var hStart = c.hStart;
+	var xStart = c.xStart;
+	var yStart = c.yStart;
+	var scaleXStart   = c.scaleXStart;
+	var scaleYStart   = c.scaleYStart;
+	var opacityStart  = c.opacityStart;
+	var rotationStart = c.rotationStart;
+	var valueStart 	  = c.valueStart;
+
+	var onStep = c.onStep;
+	var duration = c.duration;
+	var startTime = c.startTime;
+	var interpolator = c.interpolator;
+
+	var timePercent = (now - startTime)/duration;
+	var percent = interpolator.get(timePercent);
+
+	if(valueRange) {
+		c.value = valueStart + percent * valueRange;
+	}
+
+	if(timePercent >= 1) {
+		percent = 1;
+	}
+
+	if(xRange) {
+		this.x = Math.floor(xStart + percent * xRange);
+	}
+
+	if(yRange) {
+		this.y = Math.floor(yStart + percent * yRange);
+	}
+
+	if(xRange || yRange) {
+		this.setPosition(this.x, this.y);
+	}
+
+	if(wRange) {
+		this.clipW = Math.floor(wStart + percent * wRange);
+	}
+	
+	if(hRange) {
+		this.clipH = Math.floor(hStart + percent * hRange);
+	}
+
+	if(wRange || hRange) {
+		if(!this.clipW && this.clipW !== 0) {
+			this.clipW = this.w;
+		}
+		
+		if(!this.clipH && this.clipH !== 0) {
+			this.clipH = this.h;
+		}
+	}
+
+	if(opacityRange) {
+		this.opacity = opacityStart + percent * opacityRange;	
+	}
+
+	if(rotationRange) {
+		this.rotation = rotationStart + percent * rotationRange;
+	}
+
+	if(scaleXRange) {
+		this.setScaleX(scaleXStart + percent * scaleXRange);
+	}
+
+	if(scaleYRange) {
+		this.setScaleY(scaleYStart + percent * scaleYRange);
+	}
+
+	if(onStep && !onStep(this, timePercent, c)) {
+		this.callOnAnimateDone(c);
+		return;
+	}
+
+	if(percent < 1) {
+		this.animating = true;
 	}
 	else {
-		UIElement.setAnimTimer(animStep);
-		animStep();
+		this.callOnAnimateDone(c);
 	}
 
 	return;
@@ -1770,13 +1937,14 @@ UIElement.prototype.afterChildRemoved = function(shape) {
 	return true;
 }
 
-UIElement.prototype.remove = function(destroyIt) {
+UIElement.prototype.remove = function(destroyIt, sync) {
 	var parentShape = this.getParent();
+
 	if(parentShape) {
-		parentShape.removeChild(this, destroyIt);	
+		parentShape.removeChild(this, destroyIt, sync);	
 	}
 
-	return;
+	return this;
 }
 
 UIElement.prototype.removeAll = function() {
@@ -1789,18 +1957,40 @@ UIElement.prototype.removeAll = function() {
 	return;
 }
 
-UIElement.prototype.removeChild = function(child, destroyIt) {
-	return this.removeShape(child, destroyIt);
+UIElement.prototype.removeChild = function(child, destroyIt, sync) {
+	var me = this;
+
+	if(child.animatingInfo) {
+		console.log("%cWarning: removing animating element.", "color: red; font-weight: bold");
+	}
+
+	if(sync) {
+		this.removeShape(child, destroyIt);
+	}
+	else {
+		child.removed = true;
+		setTimeout(function() {
+			me.removeShape(child, destroyIt);
+			child = null;
+			me = null;
+		}, 0);
+	}
+
+	return this;
 }
 
 UIElement.onRemoveShape = function(parentShape, shape) {
 }
 
 UIElement.prototype.removeShape = function(shape, destroyIt) {
-	if(!this.shapeCanBeRemove(shape)) {
+	if(!this.shapeCanBeRemove(shape) || !shape.parentShape) {
 		return false;
 	}
-	
+
+	if(shape.animatingInfo) {
+		console.log("%cWarning: removing animating element.", "color: red; font-weight: bold");
+	}
+
 	if(this.targetShape === shape) {
 		this.targetShape = null;
 	}
@@ -2055,7 +2245,7 @@ UIElement.prototype.afterPaintChild = function(child, canvas) {
 
 UIElement.prototype.paintTargetShape = function(canvas) {
 	var targetShape = this.targetShape;
-	if(targetShape && (this.isUIList || this.isUIGrid)) {
+	if(targetShape && ((this.isUIList && this.mode === Shape.MODE_EDITING) || this.isUIGrid)) {
 		shape = targetShape;
 		this.beforePaintChild(shape, canvas);
 		shape.paintSelf(canvas);
@@ -2072,10 +2262,17 @@ UIElement.prototype.defaultPaintChildren = function(canvas) {
 	var n = this.children.length;
 	for(var i = 0; i < n; i++) {
 		shape = this.children[i];
+		if(!shape) {
+			continue;
+		}
+
 		if(shape.visible) {
 			this.beforePaintChild(shape, canvas);
 			shape.paintSelf(canvas);
 			this.afterPaintChild(shape, canvas);
+		}
+		else if(shape.isAnimating()){
+			shape.stepAnimation(canvas);
 		}
 	}
 	
@@ -2087,11 +2284,11 @@ UIElement.prototype.defaultPaintChildren = function(canvas) {
 }
 
 UIElement.prototype.beforePaintChildren = function(canvas) {
-	if(this.rotateChildren && this.rotation) {
+	if(!this.rotateChildren && this.rotation) {
 		var hw = this.w >> 1;
 		var hh = this.h >> 1;
 		canvas.translate(hw, hh);
-		canvas.rotate(this.rotation);
+		canvas.rotate(-this.rotation);
 		canvas.translate(-hw, -hh);
 	}
 
@@ -2106,9 +2303,6 @@ UIElement.prototype.paintChildren = function(canvas) {
 	this.defaultPaintChildren(canvas);
 
 	return;
-}
-
-UIElement.prototype.clearBackground =function(canvas) {
 }
 
 UIElement.prototype.paintSelfOnly =function(canvas) {
@@ -2281,9 +2475,9 @@ UIElement.prototype.prepareStyle = function(canvas) {
 	return;
 }
 
-UIElement.prototype.updateTransform = function() {
+UIElement.prototype.updateTransform = function(canvas) {
 	
-	this.callOnUpdateTransformHandler();
+	this.callOnUpdateTransformHandler(canvas);
 
 	return;
 }
@@ -2406,24 +2600,26 @@ UIElement.prototype.setHighlightConfig = function(highlightConfig) {
 	return;
 }
 
-UIElement.prototype.updateHighlightTransform = function() {
+UIElement.prototype.updateHighlightTransform = function(canvas) {
 	if(this.highlightConfig) {
+		var c = this.highlightConfig;
+		
+		if(c.paused) return;
+
 		var me = this;
 		var tOffset = 0;
-		var c = this.highlightConfig;
 		var random = c.random ? c.random/1000 : 0;	
 		var frequency = c.frequency ? c.frequency : 4;
+
 		if(c.startTime) {
-			tOffset = (Date.now() - c.startTime)/1000;
+			tOffset = (canvas.now - c.startTime)/1000;
 		}
 		else {
 			c.startTime = Date.now();
 		}
 		tOffset += 1/(frequency*4) + random;
 		var womiga = frequency * Math.PI * 2;
-        var factor = Math.cos(womiga*tOffset) * 0.5;
-
-		if(c.paused) return;
+        var factor = UIElement.timeScale * Math.cos(womiga*tOffset) * 0.5;
 
 		if(this.removeHighlightConfig && Math.abs(factor) < 0.1) {
 			this.removeHighlightConfig = false;
@@ -2457,18 +2653,23 @@ UIElement.prototype.updateHighlightTransform = function() {
 			this.offsetY = c.offsetYMiddle + c.offsetYRange * factor;
 		}
 
-		UIElement.setAnimTimer(function() {me.postRedraw(); return false;});
+		canvas.needRedraw++;
 	}
 
 	return;
 }
 
 UIElement.prototype.paintSelf = function(canvas) {
+	this.stepAnimation(canvas);
+
+	if(!this.visible) return;
+
+	var animating = this.animating;
+
 	canvas.save();
 	this.translate(canvas);
-	canvas.save();
 
-	if(this.animating) {
+	if(animating) {
 		var clipW = Math.min(this.w, this.clipW);
 		var clipH = Math.min(this.h, this.clipH);
 		if(clipW && clipH) {
@@ -2477,14 +2678,16 @@ UIElement.prototype.paintSelf = function(canvas) {
 			canvas.clip();
 		}
 	}
-
-	if(this.events["onUpdateTransform"]) {
-		this.updateTransform();
+	
+	if(this.events["onUpdateTransform"] && !animating) {
+		this.updateTransform(canvas);
 	}
-
 	if(this.highlightConfig) {
-		this.updateHighlightTransform();
+		this.updateHighlightTransform(canvas);
 	}
+	this.applyTransform(canvas);
+
+	canvas.save();
 
 	var flipX = this.flipX ? -1 : 1;
 	var flipY = this.flipY ? -1 : 1;
@@ -2498,9 +2701,6 @@ UIElement.prototype.paintSelf = function(canvas) {
 		canvas.translate(-hw, -hh);
 	}
 
-	this.prepareStyle(canvas);
-	this.applyTransform(canvas);
-	this.clearBackground(canvas);
 	this.drawBgImage(canvas);
 	this.paintSelfOnly(canvas);
 	this.drawImage(canvas);
@@ -2513,9 +2713,15 @@ UIElement.prototype.paintSelf = function(canvas) {
 
 	if(this.children.length || this.mode === Shape.MODE_EDITING) {
 		canvas.save();
+		if(animating) {
+			canvas.animating++;
+		}
 		this.beforePaintChildren(canvas);
 		this.paintChildren(canvas);
 		this.afterPaintChildren(canvas);
+		if(animating) {
+			canvas.animating--;
+		}
 		canvas.restore();
 	}
 
@@ -2612,18 +2818,30 @@ UIElement.prototype.afterApplyFormat = function() {
 	return;
 }
 
-UIElement.prototype.findShapeByPoint = function(point, recursive) {
+UIElement.prototype.findChildByPoint = function(point, recursive, checkFunc) {
+	var n = this.children.length;
 	var p = this.translatePoint(point);
 	
-	for(var i = this.children.length; i > 0; i--) {
+	for(var i = n; i > 0; i--) {
 		var child = this.children[i-1];
 		if(child.visible && child.hitTest(p)) {
-			return child.findShapeByPoint(p, recursive);
+			if(checkFunc && !checkFunc(child)) {
+				continue;
+			}
+
+			if(recursive) {
+				return child.findChildByPoint(p, recursive, checkFunc);
+			}
+			else {
+				return child;
+			}
 		}
 	}
 
 	return this;
 }
+
+UIElement.prototype.findShapeByPoint = UIElement.prototype.findChildByPoint;
 
 UIElement.prototype.getChildren = function() {
 	return this.children;
@@ -2868,6 +3086,9 @@ UIElement.prototype.dupChild = function(name, zIndex) {
 
 	if(child) {
 		var shape = child.clone();
+
+		shape.xAttr = 0;
+		shape.yAttr = 0;
 		this.addShape(shape, false, null, zIndex);
 		shape.setVisible(true);
 
@@ -3050,23 +3271,75 @@ UIElement.prototype.setText = function(text, notify) {
 	return this;
 }
 
-
-
 UIElement.prototype.getValue = function() {
 	return this.getText();
 }
 
-UIElement.prototype.setValue = function(value) {
-	this.setText(value);
+UIElement.prototype.setValue = function(value, notify, animation) {
+	var me = this;
+	var oldValue = this.getText() || 0;
+
+	value = String(value);
+	if(value == String(oldValue)) return this;
+	if(!!animation && !isNaN(+value) && !isNaN(+oldValue)) {
+		var fixLen = value.indexOf('.') > -1 ? (value.length - value.indexOf('.') - 1) : 0;
+
+		this.animate({
+			duration: 300,
+			valueEnd: +value,
+			valueStart: +oldValue,
+			onStep: function(ui, timePercent, config) {
+				me.setText(config.value.toFixed(fixLen));
+				return true;
+			},
+			onDone: function(ui, aniName) {
+				me.setText(value);
+				console.debug('element setValue onDone');
+			}
+		});
+	}
+	else {
+		this.setText(value);
+	}
 
 	return this;
 }
 
-UIElement.prototype.addValue = function(delta) {
+UIElement.prototype.addValue = function(delta, notify, animation) {
 	var oldValue = this.getValue();
-	var value =  (oldValue ? parseInt(oldValue) : 0) + delta;
+	var colonIdx = String(oldValue).indexOf(':');
 
-	return this.setValue(value);
+	if(colonIdx == -1) {
+		oldValue = +oldValue;
+		var value = (isNaN(oldValue) ? 0 : oldValue) + (isNaN(+delta) ? 0 : +delta);
+		var lenOld   = getFixlen(String(oldValue));
+		var lenDelta = getFixlen(String(delta));
+		var lenValue = getFixlen(String(value));
+		var length = lenOld > lenDelta ? lenOld : lenDelta;
+			length = length > lenValue ? lenValue : length;
+
+		function getFixlen(str) {
+			return str.indexOf('.') > -1 ? (str.length - str.indexOf('.') - 1) : 0;
+		}
+
+		return this.setValue(value.toFixed(length), notify, animation);
+	}
+	else {
+		var min   = +oldValue.substr(0, colonIdx);
+		var sec   = +oldValue.substr(colonIdx+1, 2);
+		var total = (isNaN(min) ? 0 : min*60) + (isNaN(sec) ? 0 : sec);
+		var dst = total + delta>>0;
+		if(isNaN(+delta) || dst < 0) {
+			return this;
+		}
+		else {
+			var min = Math.floor(dst/60);
+			var sec = dst%60;
+			min = min < 10 ? ('0' + min) : min;
+			sec = sec < 10 ? ('0' + sec) : sec;
+			return this.setValue(min + ':' + sec);
+		}
+	}
 }
 
 UIElement.prototype.getPositionInView = function() {
@@ -3128,6 +3401,10 @@ UIElement.prototype.setImage = function(type, src) {
 		
 	var image = null;
 	function onImageLoad(img) {
+		if(!me.parentShape) {
+			return;
+		}
+
 		me.postRedraw();
 		if(me.images.display === UIElement.IMAGE_DISPLAY_DEFAULT && img && img.width) {
 			var rect = image ? image.getImageRect() : null;
@@ -3143,6 +3420,9 @@ UIElement.prototype.setImage = function(type, src) {
 	}
 	else if(typeof src === "object") {
 		image = WImage.createWithImage(src); 
+	}
+	else if(typeof src === "number") {
+		image = this.images["option_image_" + src];
 	}
 	else {
 		image = WImage.create(src, onImageLoad);
@@ -3249,15 +3529,16 @@ UIElement.prototype.initUIElement= function(type) {
 }
 
 UIElement.prototype.updateLayoutParams = function() {
+	var p = this.parentShape;
+
+	if(!p) {
+		return;
+	}
+
 	this.xParam = 1;
 	this.yParam = 1;
 	this.widthParam = 1;
 	this.heightParam = 1;
-
-	var p = this.parentShape;
-	if(!p) {
-		return;
-	}
 
 	var wParent = p.getRelayoutWidth();
 	var hParent = p.getRelayoutHeight();
@@ -3311,7 +3592,7 @@ UIElement.prototype.imagesToJson = function(o) {
 				
 					var url = src.substr(0, sharpOffset);	
 					if(realSrc && realSrc.indexOf(src) < 0) {
-						o.images["real-image-"+url] = realSrc;	
+						o.images["real-image-"+url] = decodeURI(realSrc);
 					}
 				}
 			}
@@ -3389,6 +3670,10 @@ UIElement.prototype.elementFromJson = function(js) {
 	return this;
 }
 
+UIElement.prototype.getEnable = function() {
+	return this.enable;
+}
+
 UIElement.prototype.setEnable = function(enable) {
 	this.enable = enable;
 
@@ -3397,7 +3682,11 @@ UIElement.prototype.setEnable = function(enable) {
 
 UIElement.prototype.setVisible = function(visible) {
 	this.visible = visible;
-
+	if(!visible) {
+		if(this.animatingInfo) {
+			console.log("%cWarning: hide animating element invisble.", "color: red; font-weight: bold");
+		}
+	}
 	return this;
 }
 
@@ -4182,26 +4471,6 @@ UIElement.prototype.addMovementForVelocityTracker = function() {
 	return;
 }
 
-UIElement.prototype.animShow = function(animHint, onAnimDone) {
-	if(!this.visible) {
-		animateUIElement(this, animHint, onAnimDone);
-	}
-
-	return;
-}
-
-UIElement.prototype.animHide = function(animHint, onAnimDone) {
-	if(this.isVisible()) {
-		animateUIElement(this, animHint, onAnimDone);
-	}
-	else {
-		this.setVisible(false);
-	}
-
-	return;
-}
-
-
 UIElement.prototype.getSavedState = function() {
 	return this.savedState ? this.savedState.json : null;
 }
@@ -4268,96 +4537,8 @@ UIElement.prototype.getEditorRect = function() {
 	return rect;
 }
 
-//////////////////////////////////////////////////////////////////////
-function UIGroup() {
-	return;
-}
-
-UIGroup.prototype = new UIElement();
-UIGroup.prototype.isUIGroup = true;
-
-UIGroup.prototype.initUIGroup = function(type, w, h, img) {
-	this.initUIElement(type);	
-
-	this.roundRadius = 5;
-	this.setDefSize(w, h);
-	this.setTextType(Shape.TEXT_NONE);
-	this.setImage(UIElement.IMAGE_DEFAULT, img);
-	this.setCanRectSelectable(false, false);
-	this.addEventNames(["onInit"]);
-	this.style.lineColor = "rgba(0,0,0,0)";
-	this.style.fillColor = "rgba(0,0,0,0)";
-	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
-
-	return this;
-}
-
-UIGroup.prototype.shapeCanBeChild = function(shape) {
-	if(shape.isUIDevice || shape.isUIScreen || shape.isUIStatusBar 
-		|| shape.isUIWindow || shape.isUIPageManager || shape.isUIPage 
-		|| shape.isUIList || shape.isUIListItem || shape.isUIGridView) {
-		return false;
-	}
-
-	return true;
-}
-
-UIGroup.prototype.onPointerUpEditing = function(point, beforeChild) {
-	if(!beforeChild) {
-		this.relayoutChildren();
-	}
-
-	return;
-}
-
-UIGroup.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
-
-	if(!image) {
-		canvas.beginPath();
-		canvas.lineWidth = this.style.lineWidth;
-
-		canvas.fillStyle = this.style.fillColor;
-		canvas.strokeStyle = this.style.lineColor;
-		drawRoundRect(canvas, this.w, this.h, this.roundRadius);
-		
-		if(!this.isFillColorTransparent()) {
-			canvas.fillStyle = this.style.fillColor;
-			canvas.fill();
-		}
-
-		if(!this.isStrokeColorTransparent()) {
-			canvas.stroke();	
-		}
-	}
-
-	return;
-}
-
-function UIGroupCreator(w, h, img) {
-	var args = ["ui-group", "ui-group", null, 1];
-	
-	ShapeCreator.apply(this, args);
-	this.createShape = function(createReason) {
-		var g = new UIGroup();
-
-		return g.initUIGroup(this.type, w, h, img);
-	}
-	
-	return;
-}
-
-function createUIGroupShape() {
-	var g = new UIGroup();
-	
-	g.initUIGroup("ui-group", 200, 200, null);
-	g.state = Shape.STAT_NORMAL;
-
-	return g;
-}
 
 UIElement.funcs = [];
-
 UIElement.setAnimTimer = function(func, deltaTime) {
 	return UIElement.setTimeout(func, deltaTime);	
 }
@@ -4467,6 +4648,40 @@ UIElement.prototype.requestFullscreen = function(onDone) {
 	}
 
 	return;
+}
+
+UIElement.prototype.pickFiles = function(contentType, onDone) {
+	return showFileDialog(contentType, true, false, onDone);
+}
+
+UIElement.prototype.pickFile = function(contentType, onDone) {
+	if(!window.FileReader) {
+		return false;
+	}
+
+	showFileDialog(contentType, false, true, function(files) {
+		var file = files[0];
+		if (file) {
+			var reader  = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onloadend = function () {
+				if(onDone) {
+					onDone(file, reader.result);
+				}
+				reader = null;
+			}
+		}
+	});
+
+	return true;
+}
+
+UIElement.prototype.pickAudio = function(onDone) {
+	return this.pickFile("audio/*", onDone);
+}
+
+UIElement.prototype.pickImage = function(onDone) {
+	return this.pickFile("image/*", onDone);
 }
 
 UIElement.fixArtTextStyle = function(style) {
@@ -4622,4 +4837,48 @@ UIElement.createArtTextImage = function(text, style, bgColor) {
 }
 
 ShapeFactoryGet().addShapeCreator(new UIGroupCreator(200, 200, null));
+
+UIElement.timeScale = 1;
+UIElement.prototype.getTimeScale = function() {
+	return UIElement.timeScale;
+}
+
+UIElement.prototype.setTimeScale = function(timeScale, fadeDuration) {
+	UIElement.timeScaleAnimating = false;
+
+	if(fadeDuration && fadeDuration > 100) {
+		var me = this;
+		var start = UIElement.timeScale;
+		var range = timeScale - start;
+		var startTime = Date.now();
+		UIElement.timeScaleAnimating = true;
+
+		function updateTimeScale() {
+			if(!UIElement.timeScaleAnimating) return;
+
+			var elapsed = Date.now() - startTime;
+			if(elapsed < fadeDuration) {
+				setTimeout(updateTimeScale, 100);
+				UIElement.timeScale = start + range * (elapsed/fadeDuration);
+			}
+			else {
+				UIElement.timeScale = timeScale;
+				UIElement.timeScaleAnimating = false;
+			}
+		}
+
+		updateTimeScale();
+	}
+	else {
+		UIElement.timeScale = timeScale;
+	}
+
+	return this;
+}
+
+UIElement.prototype.getAppInfo = function() {
+	var metaInfo = this.view.getMetaInfo();
+
+	return metaInfo.general;
+}
 

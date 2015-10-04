@@ -213,6 +213,30 @@ function DecelerateInterpolator(factor) {
 	return this;
 }
 
+function SineAccelerateInterpolator() {
+	this.get = function(percent) {
+		return -Math.cos(percent * (Math.PI / 2)) + 1;
+	}
+
+	return this;
+}
+
+function SineAccDecelerateInterpolator() {
+	this.get = function(percent) {
+		return (-0.5 * (Math.cos(Math.PI * percent) - 1));
+	}
+
+	return this;
+}
+
+function SineDecelerateInterpolator() {
+	this.get = function(percent) {
+		return Math.sin(percent * (Math.PI / 2));
+	}
+
+	return this;
+}
+
 //////////////////////////////////////////////////////////////////////
 function AnimationFactory() {
 	this.createAnimation = function(name, duration) {
@@ -392,6 +416,18 @@ AnimationFactory.createInterpolator = function(name, args) {
 		case 'ad':
 		case 'accelerate-decelerate': {
 			return new AccDecelerateInterpolator();
+		}
+		case 'sa':
+		case 'sine-accelerate': {
+			return new SineAccelerateInterpolator();
+		}
+		case 'sd':
+		case 'sine-decelerate': {
+			return new SineDecelerateInterpolator();
+		}
+		case 'sad':
+		case 'sine-accelerate-decelerate': {
+			return new SineAccDecelerateInterpolator();
 		}
 		default: {
 			return new DecelerateInterpolator();

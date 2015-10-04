@@ -43,11 +43,12 @@ UIWindow.prototype.initUIWindow = function(type, x, y, w, h, bg) {
 	this.initUIElement(type);	
 
 	this.move(x, y);
+	this.settings = {};
 	this.setDefSize(w, h);
 	this.setTextType(Shape.TEXT_NONE);
 	this.setImage(UIElement.IMAGE_DEFAULT, bg);
 	this.setName("window-" + UIWindow.serialNo++);
-	
+
 	if(!bg) {
 		this.style.setFillColor("White");
 	}
@@ -209,8 +210,27 @@ UIWindow.prototype.onPointerUpNormal = function(point) {
 	return UIElement.prototype.onPointerUpNormal.call(this, point);
 }
 
+UIWindow.prototype.paintSelfOnly =function(canvas) {
+	this.clearBackground(canvas);
+	this.drawBgImage(canvas);
+
+	return;
+}
+
 UIWindow.prototype.paintSelf = function(canvas) {
-	UIElement.prototype.paintSelf.call(this, canvas);
+	if(this.mode === Shape.MODE_EDITING) {
+		UIElement.prototype.paintSelf.call(this, canvas);
+	}
+	else {
+		canvas.save();
+		this.translate(canvas);
+		this.paintSelfOnly(canvas);
+		
+		this.beforePaintChildren(canvas);
+		this.paintChildren(canvas);
+		this.afterPaintChildren(canvas);
+		canvas.restore();
+	}
 
 	if(this.popupWindow) {
 		this.popupWindow.paintSelf(canvas);
@@ -270,6 +290,8 @@ UIWindow.prototype.setCloseWhenPointerUpOutside = function(closeWhenPointerUpOut
 }
 
 UIWindow.prototype.isAnimationEnabled = function() {
+	if(CantkRT.isNative()) return false;
+
 	return this.animHint !== "none";
 }
 
@@ -348,13 +370,15 @@ UIWindow.prototype.clearBackground =function(canvas) {
 			case UIElement.IMAGE_DISPLAY_SCALE_KEEP_RATIO: return;
 			default:break;
 		}
+
 		if(image.width >= this.w && image.height >= this.h) {
 			return;
 		}
 	}
 
-	if(this.style.fillColor != "rgba(0,0,0,0)") {
+	if(!this.isFillColorTransparent()) {
 		canvas.beginPath();
+		canvas.fillStyle = this.style.fillColor;
 		canvas.fillRect(0, 0, this.w, this.h);
 	}
 
@@ -426,6 +450,45 @@ function UINormalWindowCreator(bg) {
 	}
 	
 	return;
+}
+
+UIWindow.prototype.initStageOne = function() {
+	this.forEach(function(iter) {
+		if(iter.offset) {
+			iter.offset = 0;
+		}
+		iter.visible = iter.runtimeVisible;
+
+		if(iter.animatingInfo) {
+			iter.animatingInfo = null;
+			iter.animating = false;
+		}
+
+		if(iter.animations && iter.animations[iter.defaultAnimationName]) {
+			console.log(iter.name + " has default animation, set it invisible initially.");
+			iter.visible = false;
+		}
+	});
+
+	return;
+}
+
+UIWindow.prototype.onInit = function() {
+	this.initStageOne();
+	return;
+}
+
+UIWindow.prototype.prepareForOpen = function() {
+	if(!this.getSavedState()) {
+		this.relayout();
+		this.saveState();
+	}
+	else {
+		this.restoreState();
+	}
+	this.relayout();	
+
+	return this;
 }
 
 UIWindow.prototype.callOnBeforeOpen = function(initData) {

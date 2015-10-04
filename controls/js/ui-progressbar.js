@@ -111,19 +111,24 @@ UIProgressBar.prototype.afterChildAppended =function(shape) {
 		}
 
 		if(this.pointerDown && this.dragger) {
-			bar.isChanging = true;
 			var x = Math.min(Math.max(0, point.x), this.w - this.dragger.w);
 			var y = Math.min(Math.max(0, point.y), this.h - this.dragger.h);
 
 			this.dragger.move(x, y);
+			
 		}
 		
 		return;
 	}
 
 	bar.onPointerUpRunning = function(point, beforeChild) {
-		if(this.isChanging) {
-			delete this.isChanging;
+		if(beforeChild) {
+			return;
+		}
+
+		if(this.changed) {
+			this.changed = false;
+			this.callOnChangedHandler(this.getValue());
 		}
 
 		return;
@@ -166,7 +171,9 @@ UIProgressBar.prototype.afterChildAppended =function(shape) {
 			}
 		}
 
+		bar.changed = true;
 		bar.setPercentOnly(percent);
+		bar.callOnChangingHandler(bar.getValue());
 
 		return;
 	}
@@ -180,42 +187,76 @@ UIProgressBar.prototype.setInteractive = function(value) {
 	return this;
 }
 
-UIProgressBar.prototype.setPercentOnly = function(value, notNotify) {
+UIProgressBar.prototype.setPercentOnly = function(value, notify, animation) {
 	var newValue = (value%101)/100;
-	if(this.value != newValue) {
+	
+	if(!animation) {
 		this.value = newValue;
+		this.relayoutChildren();
 	}
-	this.relayoutChildren();
 
 	if(this.mode === Shape.MODE_EDITING || !this.isVisible()) {
 		return this;
 	}
 
-	if(notNotify) {
-		return this;
-	}
-
-	if(this.isChanging) {
-		this.callOnChangingHandler(this.getValue());
+	if(!animation) {
+		if(notify) {
+			this.callOnChangedHandler(this.getValue());
+		}
 	}
 	else {
-		this.callOnChangedHandler(this.getValue());
+		if(this.value == newValue) return this;
+		this.setupAnimation({
+			notify: notify,
+			valueStart: this.value,
+			valueEnd: newValue
+		});
 	}
 
 	return this;
 }
 
-UIProgressBar.prototype.setPercent = function(value, notNotify) {
+UIProgressBar.prototype.setupAnimation = function(config) {
+	var me = this;
+	var def = {
+		duration: 300,
+		actionWhenBusy: 'replace',
+		onStep: function(ui, timePercent, config) {
+			me.value = config.value;
+			me.relayoutChildren();
+			return true;
+		},
+		onDone: function(ui, aniName) {
+			me.value = config.valueEnd;
+			if(config.notify) {
+				me.callOnChangedHandler(me.getValue());	
+			}
+		}
+	};
+
+	if(!config) {
+		config = def;
+	}
+	else {
+		var keys = Object.keys(def);
+		for(var i = 0, len = keys.length; i < len; i++) {
+			var k = keys[i];
+			if(!config[k]) {
+				config[k] = def[k];
+			}
+		}
+	}
+
+	this.animate(config);
+
+	return this;
+}
+
+UIProgressBar.prototype.setPercent = function(value, notify, animation) {
 	value = Math.max(0, Math.min(value, 100));
 
-	this.setPercentOnly(value, notNotify);
-
-	if(this.dragger) {
-		var dx = this.value * this.w - this.dragger.w + 5;
-
-		this.dragger.y = Math.floor((this.h - this.dragger.h)/2);
-		this.dragger.x = Math.floor(dx > 0 ? dx : 0);
-	}
+	this.setPercentOnly(value, notify, animation);
+	this.relayoutChildren();
 
 	return this;
 }
@@ -228,8 +269,8 @@ UIProgressBar.prototype.getValue = function() {
 	return this.getPercent();
 }
 
-UIProgressBar.prototype.setValue = function(value, notNotify) {
-	this.setPercent(value, notNotify);
+UIProgressBar.prototype.setValue = function(value, notify, animation) {
+	this.setPercent(value, notify, animation);
 
 	return this;
 }
@@ -258,9 +299,17 @@ UIProgressBar.prototype.drawBgImageV = function(canvas) {
 	var x = (this.w - w)>> 1;
 	var r = this.roundRadius ? this.roundRadius : 0;
 
-	image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
-	if(image) {
-		drawNinePatchEx(canvas, image, 0, 0, image.width, image.height, x, 0, w, this.h);
+	var wImage = this.getImageByType(UIElement.IMAGE_DEFAULT);
+	if(wImage && wImage.getImage()) {
+		var rect = wImage.getImageRect();
+		
+		image = wImage.getImage();
+		if(this.images.display === UIElement.IMAGE_DISPLAY_SCALE) {
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_SCALE, 0, 0, this.w, this.h, rect);
+		}
+		else {
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_9PATCH, x, 0, w, this.h, rect);
+		}
 	}
 	else {
 		canvas.beginPath();
@@ -271,13 +320,32 @@ UIProgressBar.prototype.drawBgImageV = function(canvas) {
 		canvas.fill();
 	}
 
-	image = this.getHtmlImageByType(UIElement.IMAGE_NORMAL_FG);
+	wImage = this.getImageByType(UIElement.IMAGE_NORMAL_FG);
 
 	var h = Math.round(this.h * this.value);
 	var y = this.h - h;
 
-	if(image) {
-		drawNinePatchEx(canvas, image, 0, 0, image.width, image.height, x, y, w, h);
+	if(wImage && wImage.getImage()) {
+		var rect = wImage.getImageRect();
+		image = wImage.getImage();
+
+		if(this.images.display === UIElement.IMAGE_DISPLAY_SCALE) {
+			var tmph = rect.h;
+			var tmpy = rect.y;
+			var tmprh = rect.rh;
+			var ih = Math.round(tmph*this.value);
+			rect.h = ih;
+			rect.y = rect.y + tmph - ih;
+			rect.h = ih;
+			rect.rh = Math.round(tmprh*this.value);  
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_SCALE, 0, y, this.w, h, rect);
+			rect.y = tmpy;
+			rect.h = tmph;
+			rect.rh = tmprh;
+		}
+		else {
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_9PATCH, x, y, w, h, rect);
+		}
 	}
 	else {
 		if(h > 2 * r) {
@@ -298,9 +366,17 @@ UIProgressBar.prototype.drawBgImageH = function(canvas) {
 	var y = (this.h - h)>> 1;
 	var r = this.roundRadius ? this.roundRadius : 0;
 
-	image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
-	if(image) {
-		drawNinePatchEx(canvas, image, 0, 0, image.width, image.height, 0, y, this.w, h);
+	var wImage = this.getImageByType(UIElement.IMAGE_DEFAULT);
+	if(wImage && wImage.getImage()) {
+		var rect = wImage.getImageRect();
+		
+		image = wImage.getImage();
+		if(this.images.display === UIElement.IMAGE_DISPLAY_SCALE) {
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_SCALE, 0, 0, this.w, this.h, rect);
+		}
+		else {
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_9PATCH, 0, y, this.w, h, rect);
+		}
 	}
 	else {
 		canvas.beginPath();
@@ -312,9 +388,23 @@ UIProgressBar.prototype.drawBgImageH = function(canvas) {
 	}
 
 	var w = Math.round(this.w * this.value);
-	image = this.getHtmlImageByType(UIElement.IMAGE_NORMAL_FG);
-	if(image) {
-		drawNinePatchEx(canvas, image, 0, 0, image.width, image.height, 0, y, w, h);
+	var wImage = this.getImageByType(UIElement.IMAGE_NORMAL_FG);
+	if(wImage && wImage.getImage()) {
+		var rect = wImage.getImageRect();
+
+		image = wImage.getImage();
+		if(this.images.display === UIElement.IMAGE_DISPLAY_SCALE) {
+			var tmpw = rect.w;
+			var tmprw = rect.rw;
+			rect.w = Math.round(rect.w*this.value);
+			rect.rw = Math.round(rect.rw*this.value);
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_SCALE, 0, 0, w, this.h, rect);
+			rect.w = tmpw; 
+			rect.rw= tmprw;
+		}
+		else {
+			WImage.draw(canvas, image, UIElement.IMAGE_DISPLAY_9PATCH, 0, y, w, h, rect);
+		}
 	}
 	else {
 		if(w > 2 * r) {
@@ -337,9 +427,10 @@ UIProgressBar.prototype.drawCircle = function(canvas) {
 	var lineWidth = Math.min(r, Math.max(this.style.lineWidth, 5));
 
 	if(!this.isFillColorTransparent()) {
-		canvas.fillStyle = this.style.fillStyle;
 		canvas.beginPath();
 		canvas.arc(cx, cy, r, 0, Math.PI * 2);
+		
+		canvas.fillStyle = this.style.fillColor;
 		canvas.fill();
 	}
 
@@ -350,6 +441,8 @@ UIProgressBar.prototype.drawCircle = function(canvas) {
 		canvas.lineCap = 'round';
 		canvas.lineWidth = lineWidth;
 		canvas.arc(cx, cy, r, -Math.PI * 0.5, angle);
+		
+		canvas.strokeStyle = this.style.lineColor;
 		canvas.stroke();
 	}
 
@@ -359,7 +452,7 @@ UIProgressBar.prototype.drawCircle = function(canvas) {
 UIProgressBar.prototype.drawBgImage = function(canvas) {
 	canvas.save();
 	if(Math.abs(this.w - this.h) < 10) {
-		this.drawCircle(canvas);	
+		this.drawCircle(canvas);
 	}
 	else if(this.w > this.h) {
 		this.drawBgImageH(canvas);
@@ -371,7 +464,7 @@ UIProgressBar.prototype.drawBgImage = function(canvas) {
 }
 
 UIProgressBar.prototype.onFromJsonDone = function() {
-	this.setPercent(this.getPercent(), false);
+	this.setPercent(this.getPercent());
 
 	return;
 }

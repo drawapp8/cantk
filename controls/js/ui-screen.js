@@ -133,6 +133,17 @@ UIScreen.prototype.relayoutChildren = function() {
 	return;
 }
 
+UIScreen.prototype.paintSelf = function(canvas) {
+	canvas.save();
+	canvas.beginPath();
+	canvas.rect(this.x, this.y, this.w, this.h);
+	canvas.clip();
+
+	UIElement.prototype.paintSelf.call(this, canvas);
+
+	canvas.restore();
+}
+
 function UIScreenCreator(w, h) {
 	var args = ["ui-screen", "ui-screen", null, 1];
 	

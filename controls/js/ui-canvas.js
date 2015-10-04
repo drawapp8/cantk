@@ -22,6 +22,7 @@ UICanvas.prototype.initUICanvas = function(type, w, h) {
 	this.addEventNames(["onPaint", "onPointerDown", "onPointerMove", "onPointerUp", "onKeyDown", 
 		"onKeyUp", "onLongPress", "onDoubleClick"]);
 
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
 	this.setImage("option_image_0", null);
 	this.setImage("option_image_1", null);
 	this.setImage("option_image_2", null);
@@ -45,16 +46,17 @@ UICanvas.prototype.shapeCanBeChild = function(shape) {
 	return shape.isUIImage || shape.isUIButton || shape.isUIGroup || shape.isUILabel;
 }
 
-UICanvas.prototype.paintSelfOnly =function(canvas) {
-	canvas.save();
-	canvas.rect(0, 0, this.w, this.h);
-	canvas.clip();
-	canvas.beginPath();
-	if(this.mode === Shape.MODE_EDITING) {
+UICanvas.prototype.paintSelfOnly = function(canvas) {
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
+	
+	if(!image && !this.isFillColorTransparent()) {
+		canvas.beginPath();
+		canvas.fillStyle = this.style.fillColor;
 		canvas.fillRect(0, 0, this.w, this.h);
 	}
+
+	canvas.beginPath();
 	this.callOnPaintHandler(canvas);
-	canvas.restore();
 
 	return;
 }

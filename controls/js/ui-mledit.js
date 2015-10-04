@@ -109,7 +109,7 @@ UIMLEdit.prototype.editText = function(point) {
 		}
 
 		function onChange(text) {
-			shape.callOnChangingHandler(this.value);
+			shape.callOnChangingHandler(text);
 		}
 
 		editor.setOnChangedHandler(onChanged);

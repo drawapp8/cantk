@@ -44,34 +44,50 @@ UIGrid.prototype.gridFromJson = function(js) {
 	return;
 }
 
-UIGrid.prototype.initUIGrid = function(type, border, itemSize, bg) {
-	var size = itemSize * 3 + 2 * border;
-	var minSize = itemSize + 2 * border;
-
+UIGrid.prototype.initUIGrid = function(type) {
 	this.initUIElement(type);	
 
 	this.spacer = 0;
 	this.offset = 0;
-	this.setDefSize(size, size);
-	this.setMargin(border, border);
-	this.setSizeLimit(minSize, minSize, 2000, 2000);
+	this.setMargin(5, 5);
+	this.setDefSize(200, 200);
 
-	this.itemSize = itemSize;
-	this.itemWidth = itemSize;
-	this.itemHeight = itemSize;
-	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
-	this.setTextType(Shape.TEXT_NONE);
-	this.setImage(UIElement.IMAGE_DEFAULT, bg);
-	this.setImage(UIElement.IMAGE_DELETE_ITEM, null);
-	this.regSerializer(this.gridToJson, this.gridFromJson);
+	this.checkable = false;
+	this.itemSize = 150;
+	this.itemWidth = 150;
+	this.itemHeight = 150;
 	this.rectSelectable = false;
+	this.setTextType(Shape.TEXT_NONE);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
+	this.setImage(UIElement.IMAGE_DEFAULT, null);
+	this.setImage(UIElement.IMAGE_DELETE_ITEM, null);
+	this.setImage(UIElement.IMAGE_CHECKED_ITEM, null);
+	this.regSerializer(this.gridToJson, this.gridFromJson);
 	this.addEventNames(["onChildDragged", "onChildDragging", "onInit"]);
 
-	if(!bg) {
-		this.style.setFillColor("White");
+	return this;
+}
+
+UIGrid.prototype.setCheckable = function(value) {
+	this.checkable = value;
+
+	return this;
+}
+
+UIGrid.prototype.setChildChecked = function(index, checked) {
+	if(index < this.children.length) {
+		this.children[index].checked = checked; 
 	}
 
 	return this;
+}
+
+UIGrid.prototype.isChildChecked = function(index) {
+	if(index < this.children.length) {
+		return this.children[index].checked; 
+	}
+
+	return false;
 }
 
 UIGrid.prototype.setRows = function(value) {
@@ -96,7 +112,7 @@ UIGrid.prototype.getCols = function() {
 	return this.calcItemSize().cols;
 }
 
-UIGrid.prototype.getChildAt = function(row, col) {
+UIGrid.prototype.getChildByRowCol = function(row, col) {
 	var cols = this.getCols();
 	var index = row * cols + col;
 
@@ -108,47 +124,43 @@ UIGrid.prototype.getChildAt = function(row, col) {
 	}
 }
 
+UIGrid.prototype.getChildRow = function(child) {
+	var cols = this.getCols();
+	var index = this.children.indexOf(child);
+
+	if(index < 0) return;
+
+	return Math.floor(index/cols);
+}
+
+UIGrid.prototype.getChildCol = function(child) {
+	var cols = this.getCols();
+	var index = this.children.indexOf(child);
+
+	if(index < 0) return;
+
+	return index%cols;
+}
+
+UIGrid.prototype.exchangeTwoChildren = function(child1Index, child2Index, enableAnimation) {
+	var n = this.children.length;
+	if(child1Index < 0 || child1Index >= n || child2Index < 0 || child2Index >= n) {
+		return;
+	}
+
+	var child = this.children[child1Index];
+	this.children[child1Index] = this.children[child2Index];
+	this.children[child2Index] = child;
+
+	this.relayoutChildren(enableAnimation);
+
+	return this;
+}
+
 UIGrid.prototype.shapeCanBeChild = UIGroup.prototype.shapeCanBeChild;
 
 UIGrid.prototype.childIsBuiltin = function(child) {
 	return child.name === "ui-last";
-}
-
-UIGrid.prototype.afterPaintChildren =function(canvas) {
-	if(this.mode !== Shape.MODE_EDITING) {
-		return;
-	}
-
-	var offset = 0;
-	var w = this.getWidth(true);
-	var h = this.getHeight(true);
-	var spacer = this.spacer;
-	var itemSize = this.calcItemSize();
-	var itemW = itemSize.w + spacer;
-	var itemH = itemSize.h + spacer;
-	var cols = Math.floor(w/itemW);
-	var rows = Math.floor(h/itemH);
-	var vMargin = (this.h - rows * itemH) >> 1;
-	var hMargin = (this.w - cols * itemW) >> 1;
-
-	canvas.lineWidth = 1;
-	canvas.strokeStyle = this.style.lineColor;
-	
-	canvas.rect(hMargin, vMargin, w, h);
-	canvas.rect(hMargin, vMargin, this.w-2*hMargin, this.h-2*vMargin);
-	canvas.stroke();
-
-	for(offset = itemH+vMargin; (offset+itemH) <= this.h; offset+=itemH) {
-		drawDashedLine(canvas, {x:hMargin, y:offset}, {x:w, y:offset}, 8, 4);
-	}
-
-	for(offset = itemW + hMargin; (offset+itemW) < this.w; offset+=itemW) {
-		drawDashedLine(canvas, {x:offset, y:vMargin}, {x:offset, y:h}, 8, 4);
-	}
-
-	canvas.stroke();
-
-	return;
 }
 
 UIGrid.prototype.calcItemSize = function() {
@@ -209,7 +221,7 @@ UIGrid.prototype.sortChildren = function() {
 	return;
 }
 
-UIGrid.prototype.getChildIndexByPosition = function(point) {
+UIGrid.prototype.getChildIndexByPoint = function(point) {
 	var border = this.getHMargin();
 	var itemSize = this.calcItemSize();
 	
@@ -230,7 +242,7 @@ UIGrid.prototype.getChildIndexByPosition = function(point) {
 }
 
 UIGrid.prototype.onChildDragging = function(child, point) {
-	var targetChildIndex = this.getChildIndexByPosition(point);
+	var targetChildIndex = this.getChildIndexByPoint(point);
 	var sourceChildIndex = this.getIndexOfChild(child);
 	
 	this.callOnChildDraggingHandler(sourceChildIndex, targetChildIndex);
@@ -239,7 +251,7 @@ UIGrid.prototype.onChildDragging = function(child, point) {
 }
 
 UIGrid.prototype.onChildDragged = function(child, point) {
-	var targetChildIndex = this.getChildIndexByPosition(point);
+	var targetChildIndex = this.getChildIndexByPoint(point);
 	var sourceChildIndex = this.getIndexOfChild(child);
 	
 	this.callOnChildDraggedHandler(sourceChildIndex, targetChildIndex);
@@ -274,9 +286,14 @@ UIGrid.prototype.relayoutChildren = function(animHint) {
 	this.cols = cols;
 	this.rows = rows;
 
-	for(var i = 0; i < this.children.length; i++) {
-		var child = this.children[i];
-	
+	var i = 0;
+	var n = this.children.length;
+	var children = this.children;
+	for(var k = 0; k < n; k++) {
+		var child = children[k];
+
+		if(child.removed || !child.visible) continue;
+
 		r = Math.floor(i/cols);
 		c = Math.floor(i%cols);
 	
@@ -301,6 +318,8 @@ UIGrid.prototype.relayoutChildren = function(animHint) {
 		if(!this.isUIScrollView) {
 			child.setDraggable(this.itemDraggable);
 		}
+
+		i++;
 	}
 
 	return;
@@ -325,18 +344,18 @@ UIGrid.prototype.afterChildAppended = function(shape) {
 	return true;
 }
 
-UIGrid.prototype.triggerUserEditingMode = function() {
+UIGrid.prototype.triggerDeleteMode = function() {
 	if(this.mode === Shape.MODE_EDITING) {
 		return;
 	}
 
-	this.userEditingMode = !this.userEditingMode;
+	this.deleteMode = !this.deleteMode;
 
 	var grid = this;
 	function redrawGrid() {
 		grid.postRedraw();
 
-		if(grid.userEditingMode) {
+		if(grid.deleteMode) {
 			setTimeout(redrawGrid, 20);
 		}
 	}
@@ -346,12 +365,12 @@ UIGrid.prototype.triggerUserEditingMode = function() {
 	return;
 }
 
-UIGrid.prototype.isInUserEditingMode = function() {
-	return this.userEditingMode && this.mode != Shape.MODE_EDITING;
+UIGrid.prototype.isInDeleteMode = function() {
+	return this.deleteMode && this.mode != Shape.MODE_EDITING;
 }
 
 UIGrid.prototype.beforePaintChild = function(child, canvas) {
-	if(this.isInUserEditingMode()) {
+	if(this.isInDeleteMode()) {
 		canvas.save();
 		var cx = child.x + child.w/2;
 		var cy = child.y + child.h/2;
@@ -367,32 +386,48 @@ UIGrid.prototype.beforePaintChild = function(child, canvas) {
 }
 
 UIGrid.prototype.afterPaintChild = function(child, canvas) {
-	if(this.isInUserEditingMode()) {
-		var image = this.getHtmlImageByType(UIElement.IMAGE_DELETE_ITEM);
-
-		if(image && image.width > 0) {
+	if(this.isInDeleteMode()) {
+		var wImage = this.getImageByType(UIElement.IMAGE_DELETE_ITEM);
+		if(WImage.isValid(wImage)) {
+			var image = wImage.getImage();
+			var srcRect = wImage.getImageRect();
 			var y = child.y + child.vMargin;
-			var x = child.x + child.w - image.width - child.hMargin;
+			var x = child.x + child.w - srcRect.w - child.hMargin;
+
 			canvas.drawImage(image, x, y);
+			WImage.draw(canvas, image, WImage.DISPLAY_CENTER, x, y, srcRect.w, srcRect.h, srcRect);
 		}
 
 		canvas.restore();
+
+		return;
+	}
+
+	if(this.checkable) {
+		if(child.checked) {
+			var wImage = this.getImageByType(UIElement.IMAGE_CHECKED_ITEM);
+			if(WImage.isValid(wImage)) {
+				var image = wImage.getImage();
+				var srcRect = wImage.getImageRect();
+				WImage.draw(canvas, image, WImage.DISPLAY_AUTO, child.x, child.y, child.w, child.h, srcRect);
+			}
+		}
 	}
 
 	return;
 }
 
-function UIGridCreator(border, itemSize, bg) {
+function UIGridCreator(border) {
 	var args = ["ui-grid", "ui-grid", null, 1];
 	
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIGrid();
-		return g.initUIGrid(this.type, border, itemSize, bg);
+		return g.initUIGrid(this.type);
 	}
 	
 	return;
 }
 
-ShapeFactoryGet().addShapeCreator(new UIGridCreator(5, 150, null));
+ShapeFactoryGet().addShapeCreator(new UIGridCreator());
 

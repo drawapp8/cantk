@@ -308,12 +308,7 @@ UIScrollView.prototype.onPointerUpRunning = function(point, beforeChild) {
 }
 
 UIScrollView.prototype.paintSelfOnly =function(canvas) {
-	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
-
-	if(!image) {
-//		canvas.beginPath();
-//		canvas.fillRect(0, 0, this.w, this.h);
-	}
 
 	return;
 }
+

@@ -298,6 +298,9 @@ UIImageSlideView.prototype.drawFrameIndicator = function(canvas, currFrame) {
 	dx += itemSize/2;
 	dy += itemSize/2;
 
+	canvas.fillStyle = this.style.fillColor;
+	canvas.strokeStyle = this.style.lineColor;
+
 	for(var i = 0; i < n; i++) {
 		canvas.beginPath();
 		canvas.arc(dx, dy, 10, 0, Math.PI * 2);

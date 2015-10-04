@@ -50,6 +50,7 @@ UIShortcut.prototype.drawText = function(canvas) {
 	var ih = this.getHeight(true)/n;
 	var ihh = ih >> 1;
 
+	canvas.lineWidth = this.style.lineWidth;
 	canvas.strokeStyle = this.style.lineColor;
 	for(var i = 0; i < text.length; i++) {
 		var c = text[i];

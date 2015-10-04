@@ -14,13 +14,21 @@ function UIRadioBox() {
 UIRadioBox.prototype = new UICheckBox();
 UIRadioBox.prototype.isUIRadioBox = true;
 
-UIRadioBox.prototype.initUIRadioBox = function(type, w, h) {
-	return this.initUICheckBox(type, w, h)
+UIRadioBox.prototype.initUIRadioBox = function(type) {
+	return this.initUICheckBox(type)
 }
 
 UIRadioBox.prototype.setParent = function(parentShape) {
 	this.parentShape = parentShape;
 
+	if(this.value) {
+		this.setChecked();
+	}
+
+	return this;
+}
+
+UIRadioBox.prototype.onFromJsonDone = function() {
 	if(this.value) {
 		this.setChecked();
 	}
@@ -61,7 +69,7 @@ function UIRadioBoxCreator(w, h) {
 	ShapeCreator.apply(this, args);
 	this.createShape = function(createReason) {
 		var g = new UIRadioBox();
-		g.initUIRadioBox(this.type, w, h);
+		g.initUIRadioBox(this.type);
 
 		return g;
 	}

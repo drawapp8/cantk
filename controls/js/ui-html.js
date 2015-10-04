@@ -18,7 +18,6 @@ UIHtml.prototype.initUIHtml = function(type, w, h) {
 	this.initUIElement(type);	
 
 	this.setDefSize(w, h);
-	this.setTextType(Shape.TEXT_NONE);
 
 	return this;
 }
@@ -27,18 +26,20 @@ UIHtml.prototype.shapeCanBeChild = function(shape) {
 	return false;
 }
 
-UIHtml.prototype.paintSelfOnly =function(canvas) {
-	if(!this.htmlVisible) {
-		canvas.beginPath();
-		canvas.fillRect(0, 0, this.w, this.h);
-	}
-
-	return;
-}
-
-UIHtml.prototype.drawImage =function(canvas) {
+UIHtml.prototype.drawBgImage =function(canvas) {
 	if(this.mode === Shape.MODE_EDITING || this.isIcon) {
-		this.drawBgImage(canvas);
+		var image = this.getBgImage();
+
+		if(image) {
+			var htmlImage = image.getImage();
+			var srcRect = image.getImageRect();
+			this.drawImageAt(canvas, htmlImage, this.images.display, 0, 0, this.w, this.h, srcRect);
+		}
+		else {
+			canvas.beginPath();
+			canvas.fillStyle = this.style.fillColor;
+			canvas.fillRect(0, 0, this.w, this.h);
+		}
 	}
 
 	return;
@@ -106,10 +107,10 @@ UIHtml.prototype.onSetElementStyle = function() {
 	var fontSize = Math.floor(this.scaleForCurrentDensity(14));
 
 	this.element.style.fontSize = fontSize + "px";
-	this.element.style.marginLeft = "6px";
-	this.element.style.marginTop = "6px";
-	this.element.style.marginBottom = "6px";
-	this.element.style.marginRight = "6px";
+	this.element.style.marginLeft = "0px";
+	this.element.style.marginTop = "0px";
+	this.element.style.marginBottom = "0px";
+	this.element.style.marginRight = "0px";
 
 	return;
 }
@@ -154,6 +155,20 @@ UIHtml.prototype.setValue = function(value) {
 	return;
 }
 
+UIHtml.prototype.setHtmlContent = function(htmlContent) {
+	this.htmlContent = htmlContent;
+
+	if(this.element) {
+		this.element.innerHTML = htmlContent;
+	}
+
+	return this;
+}
+
+UIHtml.prototype.getHtmlContent = function() {
+	return this.htmlContent;
+}
+
 function UIHtmlCreator(w, h) {
 	var args = ["ui-html", "ui-html", null, 1];
 	
@@ -165,3 +180,5 @@ function UIHtmlCreator(w, h) {
 	
 	return;
 }
+
+ShapeFactoryGet().addShapeCreator(new UIHtmlCreator());

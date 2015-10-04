@@ -17,9 +17,10 @@ UIListItem.prototype.isUIListItem = true;
 UIListItem.prototype.initUIListItem = function(type) {
 	this.initUIElement(type);	
 
+	this.roundRadius = 5;
 	this.setDefSize(200, 120);
-	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
 	this.setTextType(Shape.TEXT_NONE);
+	this.widthAttr = UIElement.WIDTH_FILL_PARENT; 
 	this.images.display = UIElement.IMAGE_DISPLAY_9PATCH;
 	this.setImage(UIElement.IMAGE_FOCUSED, null);
 	this.setImage(UIElement.IMAGE_ACTIVE, null);
@@ -62,32 +63,6 @@ UIListItem.prototype.onUserResized = function() {
 	}
 
 	return;
-}
-
-UIListItem.cachedBgImages = new Array();
-
-UIListItem.prototype.addCacheImage = function(name, data, w, h) {
-	var cacheImage = {name:name, data:data, w: w, h: h};
-
-	UIListItem.cachedBgImages.push(cacheImage);
-
-	return;
-}
-
-UIListItem.prototype.getCacheImage = function(name, w, h) {
-	var i = 0;
-	var iter = null;
-	var images = UIListItem.cachedBgImages;
-	var n = UIListItem.cachedBgImages.length;
-
-	for(i = 0; i < n; i++) {
-		iter = images[i];
-		if(iter.w === w && iter.h === h && iter.name === name) {
-			return iter.data;
-		}
-	}
-
-	return null;
 }
 
 UIListItem.prototype.setSlideToRemove = function(value) {
@@ -165,69 +140,68 @@ UIListItem.prototype.onPointerUpRunning = function(point, beforeChild) {
 	return;
 }
 
-UIListItem.prototype.paintSelfOnly = function(canvas) {
-	var image = this.getBgImage();
-
-	if(image) {
-		return;
-	}
-
-	canvas.beginPath();
-	if(this.children.length === 0 && (this.isIcon || (this.parentShape && this.parentShape.isIcon))) {
-		if(!this.isStrokeColorTransparent()) {
-			canvas.strokeStyle = this.style.lineColor;
-			drawDashedRect(canvas, 0, 0, this.w, this.h);
-			canvas.stroke();
-		}
-
-		return;
-	}
-	
-	var r = 10;
-	var parentShape = this.parentShape;
-
-	canvas.lineWidth = 2;
-	canvas.strokeStyle = this.style.lineColor;
-
+UIListItem.prototype.getFillColor = function(canvas) {
+	var fillColor;
 	if(this.pointerDown) {
 		var dy = Math.abs(this.getMoveAbsDeltaY());
 		if(dy < 5) {
 			var deltaTime = Date.now() - this.pointerDownTime;
 			if(deltaTime < 50 && this.getParent().isUIListView) {
-				canvas.fillStyle = this.style.fillColor;
+				fillColor = this.style.fillColor;
 				this.postRedraw();
 			}
 			else {
-				canvas.fillStyle = this.style.textColor; 
+				fillColor = this.style.textColor; 
 			}
 		}
 		else {
-			canvas.fillStyle = this.style.fillColor;
+			fillColor = this.style.fillColor;
 		}
 	}
 	else if(this.isPointerOverShape()) {
-		canvas.fillStyle = this.style.overFillColor ? this.style.overFillColor : this.style.fillColor;
+		fillColor = this.style.overFillColor ? this.style.overFillColor : this.style.fillColor;
 	}
 	else if(this.isFocused()) {
-		canvas.fillStyle = this.style.focusedFillColor ? this.style.focusedFillColor : this.style.fillColor;
+		fillColor = this.style.focusedFillColor ? this.style.focusedFillColor : this.style.fillColor;
 	}
 	else {
-		canvas.fillStyle = this.style.fillColor;
+		fillColor = this.style.fillColor;
 	}
 
+	return fillColor;
+}
+
+UIListItem.prototype.paintSelfOnly = function(canvas) {
+	if(this.getBgHtmlImage()) {
+		return;
+	}
+
+	var parentShape = this.parentShape;
+	var fillColor = this.getFillColor();
+	var lineColor = this.style.lineColor;
+	var lineWidth = this.style.lineWidth;
+
+	canvas.beginPath();
 	if(!parentShape || parentShape.isUIListView || parentShape.isUIMenu) {
-		canvas.fillRect(0, 0, this.w, this.h);
-		canvas.moveTo(0, this.h);
-		canvas.lineTo(this.w, this.h);
-		canvas.stroke();
+		if(!Shape.isTransparentColor(fillColor)) {
+			canvas.fillStyle = fillColor;
+			canvas.fillRect(0, 0, this.w, this.h);
+		}
+
+		if(!Shape.isTransparentColor(lineColor)) {
+			canvas.moveTo(0, this.h);
+			canvas.lineTo(this.w, this.h);
+			canvas.lineWidth = lineWidth;
+			canvas.strokeStyle = lineColor;
+			canvas.stroke();
+		}
 
 		return;
 	}
 
-	var r = Math.floor(this.h/12);
-	var isFirst = (this == parentShape.children[0]);
-	var isLast   = (this == parentShape.children[parentShape.children.length-1]);
-	canvas.beginPath();
+	var r = this.roundRadius;
+	var isFirst = (this === parentShape.children[0]);
+	var isLast  = (this === parentShape.children[parentShape.children.length-1]);
 	if(isFirst && isLast) {
 		drawRoundRect(canvas, this.w, this.h, r);
 	}
@@ -240,8 +214,17 @@ UIListItem.prototype.paintSelfOnly = function(canvas) {
 	else {
 		canvas.rect(0, 0, this.w, this.h);
 	}
-	canvas.fill();
-	canvas.stroke();
+
+	if(!Shape.isTransparentColor(fillColor)) {
+		canvas.fillStyle = fillColor;
+		canvas.fill();
+	}
+	
+	if(!Shape.isTransparentColor(lineColor)) {
+		canvas.lineWidth = lineWidth;
+		canvas.strokeStyle = lineColor;
+		canvas.stroke();
+	}
 
 	return;
 }

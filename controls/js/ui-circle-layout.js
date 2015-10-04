@@ -49,6 +49,8 @@ UICircleLayout.prototype.shapeCanBeChild = function(shape) {
 
 UICircleLayout.prototype.paintSelfOnly = function(canvas) {
 	if(this.mode === Shape.MODE_EDITING) {
+		canvas.lineWidth = this.style.lineWidth;
+
 		switch(this.origin) {
 			case UICircleLayout.O_CENTER: {
 				var ox = this.w >> 1;

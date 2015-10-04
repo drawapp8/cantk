@@ -11,230 +11,530 @@ function UIMenu() {
 	return;
 }
 
-UIMenu.ARROW_AT_TL = 1;
-UIMenu.ARROW_AT_TM = 2;
-UIMenu.ARROW_AT_TR = 3;
-UIMenu.ARROW_AT_BL = 4;
-UIMenu.ARROW_AT_BM = 5;
-UIMenu.ARROW_AT_BR = 6;
+UIMenu.FREE_LAYOUT = 0;
+UIMenu.ARC_LAYOUT = 1;
+UIMenu.VLINEAR_LAYOUT = 2;
+UIMenu.HLINEAR_LAYOUT = 3;
 
-UIMenu.prototype = new UIList();
+UIMenu.prototype = new UITips();
 UIMenu.prototype.isUIMenu = true;
 
 UIMenu.prototype.initUIMenu = function(type) {
-	this.initUIList(type, 5, 114, null);
-	this.setAlwaysOnTop(true);
+	this.initUITips(type, null);
+
+	this.spacer = 2;
+	this.menuItemNr = 2;
+	this.roundRadius = 5;
+	this.animDuration = 600;
+	this.setTextType(Shape.TEXT_NONE);
+	this.layoutType = UIMenu.FREE_LAYOUT;
+	this.originPoint = UIElement.ORIGIN_RIGHT;
+	this.setCanRectSelectable(false, false);
+	this.enableHideAnimation = true;
+	this.enableShowAnimation = true;
 
 	return this;
 }
 
-UIMenu.prototype.onModeChanged = function() {
-	if(this.mode === Shape.MODE_EDITING) {
-		this.setVisible(true);
-	}
-	else {
-		this.setVisible(false);
-	}
+UIMenu.prototype.relayoutChildrenHLL = function() {
+	var n = this.children.length;
+	var hMargin = this.getHMargin();
+	var vMargin = this.getVMargin();
 
-	return;
-}
-
-UIMenu.prototype.show = function(callerElement) {
-	this.showDown = true;
-	this.fromLeft =  true;
-
-	this.callerElement = callerElement;
-	if(callerElement) {
-		var y = this.y;
-		var x = callerElement.x;
-		var winH = this.getWindow().h;
-		var winW = this.getWindow().w;
-		var pos = callerElement.getPositionInWindow();
-
-		if((pos.y + callerElement.h + this.h) < winH || pos.y < winH * 0.3) {
-			y = pos.y + callerElement.h;
-		}
-		else {
-			y = pos.y - this.h;
-			this.showDown = false;
-		}
-
-		if(pos.x > 0.6 * winW) {
-			this.fromLeft = false;
-			x = (pos.x + callerElement.w - this.w);
-		}
-
-		if((x + this.w) > winW) {
-			x = winW - this.w;
-			this.fromLeft = false;
-		}
-
-		this.x = x;
-		this.y = y;
-	}
-
-	var animHint = "";
-	if(this.showDown) {
-		animHint = this.fromLeft ? "anim-scale1-show-origin-topleft" : "anim-scale1-show-origin-topright";
-	}
-	else {
-		animHint = this.fromLeft ? "anim-scale1-show-origin-bottomleft" : "anim-scale1-show-origin-bottomright";
-	}
+	var x = hMargin;
+	var y = vMargin;
+	var spacer = this.spacer;
+	var w = this.getWidth(true);
+	var h = this.getHeight(true);
+	var originPoint = this.originPoint;
 	
-	this.animShow(animHint);
-	this.getWindow().grab(this);
+	var nr = Math.max(n, this.menuItemNr);
+	var itemW = Math.round((w - spacer * (nr - 1))/nr);
+	for(var i = 0; i < n; i++) {
+		var iter = this.children[i];
+		iter.h = h;
+		iter.w = itemW;
+		iter.x = x;
+		iter.y = y;
+		x += itemW + spacer;
+		iter.relayoutChildren();
+	}
+
+	return this;
+}
+
+UIMenu.prototype.relayoutChildrenVLL = function() {
+	var n = this.children.length;
+	var hMargin = this.getHMargin();
+	var vMargin = this.getVMargin();
+
+	var x = hMargin;
+	var y = vMargin;
+	var spacer = this.spacer;
+	var w = this.getWidth(true);
+	var h = this.getHeight(true);
+	var originPoint = this.originPoint;
+
+	var nr = Math.max(n, this.menuItemNr);
+	var itemH = Math.round((h - spacer * (nr - 1))/nr);
+	for(var i = 0; i < n; i++) {
+		var iter = this.children[i];
+		iter.w = w;
+		iter.h = itemH;
+		iter.x = x;
+		iter.y = y;
+		y += itemH + spacer;
+		iter.relayoutChildren();
+	}
+
+	return this;
+}
+
+UIMenu.prototype.getChildPositionOfArc = function(originInfo, r, index, n) {
+	var p = {};
+	var nr = originInfo.angleRange > (Math.PI * 1.9) ? n : n - 1;
+	var angle = originInfo.angleStart + (originInfo.angleRange*index)/nr;
+
+	p.x = originInfo.x + r * Math.cos(angle);
+	p.y = originInfo.y + r * Math.sin(angle);
+
+	return p;
+}
+
+UIMenu.prototype.relayoutChildrenARC = function() {
+	var n = this.children.length;
+	var originInfo = this.getOrigin();
+	var r = originInfo.r;
+	var w = this.w;
+	var h = this.h;
+
+	for(var i = 0; i < n; i++) {
+		var iter = this.children[i];
+		var p = this.getChildPositionOfArc(originInfo, r, i, n);
+		iter.x = p.x - (iter.w >> 1);
+		iter.y = p.y - (iter.h >> 1);
+		iter.relayoutChildren();
+	}
 
 	return;
 }
 
-UIMenu.prototype.hide = function(animHint) {
-	if(!this.visible) {
+UIMenu.prototype.relayoutChildren = function() {
+	var n = this.children.length;
+	if(this.disableRelayout || !n) {
 		return;
 	}
 
-	if(animHint) {
-		if(this.showDown) {
-			animHint = this.fromLeft ? "anim-scale1-hide-origin-topleft" : "anim-scale1-hide-origin-topright";
+	switch(this.layoutType) {
+		case UIMenu.HLINEAR_LAYOUT: {
+			this.relayoutChildrenHLL();
+			break;
 		}
-		else {
-			animHint = this.fromLeft ? "anim-scale1-hide-origin-bottomleft" : "anim-scale1-hide-origin-bottomright";
+		case UIMenu.VLINEAR_LAYOUT: {
+			this.relayoutChildrenVLL();
+			break;
 		}
-
-		this.animHide(animHint);
+		case UIMenu.ARC_LAYOUT: {
+			this.relayoutChildrenARC();
+			break;
+		}
+		default: {
+			for(var i = 0; i < n; i++) {
+				this.children[i].relayout();
+			}
+			break;
+		}
 	}
-	else {
-		this.setVisible(false);
-	}
-
-	this.getWindow().ungrab(this);
-	delete this.showDown;
-	delete this.fromLeft;
-	delete this.callerElement;
 
 	return;
+}
+
+UIMenu.prototype.paintSelfOnly =function(canvas) {
+	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
+
+	if(!image) {
+		this.paintSelfOnlyByColor(canvas);
+	}
+
+	return;
+}
+
+UIMenu.prototype.prepareShowChildAnimation = function(child, origin) {
+	var config = {};
+
+	config.duration = this.animDuration;
+	config.interpolator = "d";
+	config.xStart = origin.x - (child.w >> 1);
+	config.xEnd = child.x;
+	config.yStart = origin.y - (child.h >> 1);
+	config.yEnd = child.y;
+	config.scaleXStart = 0;
+	config.scaleXEnd = 1;
+	config.scaleYStart = 0;
+	config.scaleYEnd = 1;
+	config.opacityStart = 0;
+	config.opacityEnd = 1;
+	config.rotationStart = 0;
+	config.rotationEnd = 2 * Math.PI;
+
+	return config;
+}
+
+UIMenu.prototype.prepareHideChildAnimation = function(child, origin) {
+	var config = {};
+
+	config.duration = this.animDuration;
+	config.interpolator = "d";
+
+	config.xStart = child.x;
+	config.xEnd = origin.x - (child.w >> 1);
+	config.yStart = child.y;
+	config.yEnd = origin.y - (child.h >> 1);
+
+	config.opacityStart = 1;
+	config.opacityEnd = 0;
+	config.scaleXStart = 1;
+	config.scaleXEnd = 0;
+	config.scaleYStart = 1;
+	config.scaleYEnd = 0;
+	config.rotationStart = Math.PI * 2;
+	config.rotationEnd = 0;
+
+	return config;
+}
+
+UIMenu.prototype.animateShowChildren = function() {
+	var me = this;
+	var n = this.children.length;
+	var origin = this.getOrigin();
+
+	this.busy = 0;
+	this.visible = true;
+	for(var i = 0; i < n; i++) {
+		var config = null;
+		var iter = this.children[i];
+		if(iter.animations) {
+			config = iter.animations['show'];
+		}
+		if(!config) {
+			config = this.prepareShowChildAnimation(iter, origin);
+		}
+		else {
+			console.log("Use child show animation.");
+		}
+
+		this.busy++;
+		iter.animate(config, function() {
+			me.busy--;
+		});
+	}
+
+	return this;
+}
+
+UIMenu.prototype.animateHideChild = function(child, config) {
+	var me = this;
+	var x = child.x;
+	var y = child.y;
+	var w = child.w;
+	var h = child.h;
+
+	this.busy++;
+	child.animate(config, function() {
+		child.x = x;
+		child.y = y;
+		child.w = w;
+		child.h = h;
+		
+		child.opacity = 1;
+		child.visible = false;
+
+		me.busy--;
+		if(!me.busy) {
+			me.visible = false;
+		}
+	});
+
+	return;
+}
+
+UIMenu.prototype.animateHideChildren = function() {
+	var me = this;
+	var n = this.children.length;
+	var origin = this.getOrigin();
+
+	this.busy = 0;
+	this.visible = true;
+	for(var i = 0; i < n; i++) {
+		var config = null;
+		var iter = this.children[i];
+		if(iter.animations) {
+			config = iter.animations['hide'];
+		}
+
+		if(!config) {
+			config = this.prepareHideChildAnimation(iter, origin);
+		}
+		else {
+			console.log("Use child hide animation.");
+		}
+
+		this.animateHideChild(iter, config);
+	}
+
+	return this;
+}
+
+UIMenu.prototype.prepareShowAnimation = function() {
+	var config = {};
+
+	config.duration = this.animDuration;
+	config.interpolator = "d";
+
+	config.scaleXStart = 0.5;
+	config.scaleXEnd = 1;
+	config.scaleYStart = 0.5;
+	config.scaleYEnd = 1;
+	config.opacityStart = 0;
+	config.opacityEnd = 1;
+
+	return config;
+}
+
+UIMenu.prototype.prepareHideAnimation = function() {
+	var config = {};
+
+	config.duration = this.animDuration;
+	config.interpolator = "a";
+	config.scaleXStart = 1;
+	config.scaleXEnd = 0.5;
+	config.scaleYStart = 1;
+	config.scaleYEnd = 0.5;
+	config.opacityStart = 1;
+	config.opacityEnd = 0;
+
+	return config;
+}
+
+UIMenu.prototype.animateShowSelf = function() {
+	var me = this;
+	me.busy = true;
+	var config = null;
+	if(this.animations) {
+		config = this.animations["show"];
+	}
+
+	if(!config) {
+		config = this.prepareShowAnimation();
+	}
+
+	this.animate(config, function() {
+		me.visible = true;
+		me.busy = false;
+	});
+}
+
+UIMenu.prototype.animateHideSelf = function() {
+	var me = this;
+	me.busy = true;
+	this.visible = true;
+	var config = null;
+	if(this.animations) {
+		config = this.animations["hide"];
+	}
+
+	if(!config) {
+		config = this.prepareHideAnimation();
+	}
+
+	this.animate(config, function() {
+		me.visible = false;
+		me.busy = false;
+	});
+
+	return this;
+}
+
+UIMenu.prototype.show = function() {
+	if(this.autoHideWhenClicked) {
+		this.getWindow().grab(this);
+	}
+
+	if(!this.enableShowAnimation) {
+		this.visible = true;
+		return;
+	}
+
+	if(this.childrenAnimation) {
+		this.animateShowChildren();
+	}
+	else {
+		this.animateShowSelf();
+	}
+}
+
+UIMenu.prototype.hide = function() {
+	if(this.autoHideWhenClicked) {
+		this.getWindow().ungrab(this);
+	}
+	
+	if(!this.enableHideAnimation) {
+		this.visible = false;
+		return;
+	}
+
+	if(this.childrenAnimation) {
+		return this.animateHideChildren();
+	}
+	else {
+		return this.animateHideSelf();
+	}
 }
 
 UIMenu.prototype.onPointerUpRunning = function(point, beforeChild) {
-	if(!beforeChild) {
-		this.hide("default");
+	if(beforeChild) {
+		return;
+	}
+
+	if(this.autoHideWhenClicked) {
+		this.hide();
 	}
 
 	return;
 }
 
-UIMenu.prototype.fixListItemImage = function(item, position) {
-	return;
+UIMenu.prototype.setVisible = function(visible) {
+	if(this.visible === visible || this.busy) {
+		return this;
+	}
+
+	return visible ? this.show() : this.hide();
 }
 
-UIMenu.prototype.getItemHeight = function() {
-	var n = this.children.length;
-	if(n) {
-		var itemHeight = this.getHeight(true) / n;
+UIMenu.prototype.getOrigin = function() {
+	var w = this.getWidth(true);
+	var h = this.getHeight(true);
+	var hMargin = this.hMargin;
+	var vMargin = this.vMargin;
 
-		return Math.min(itemHeight, 160);
-	}
+	var p = {x:hMargin, y:vMargin};
 
-	return this.itemHeight;
-}
-
-UIMenu.prototype.setArrowPosition = function(arrowPosition) {
-	this.arrowPosition = arrowPosition;
-
-	return;
-}
-
-UIMenu.prototype.paintSelfOnly = function(canvas) {
-	var image = this.getBgImage();
-	var roundRadius = this.roundRadius ? this.roundRadius : 0;
-
-	if(image) {
-		return;
-	}
-	
-	canvas.beginPath();
-	canvas.lineWidth = 2;
-	canvas.fillStyle = this.style.fillColor;
-	canvas.strokeStyle = this.style.lineColor;
-	drawRoundRect(canvas, this.w, this.h, roundRadius);
-	canvas.fill();
-	canvas.stroke();
-
-	var size = Math.floor(this.scaleForCurrentDensity(10));
-	var arrowPosition = this.arrowPosition ? this.arrowPosition : 0;
-
-	var h = this.h;
-	var halfSize = size >> 1;
-	function drawUpArrow(offset) {
-		var y = 0;
-		canvas.beginPath();
-		canvas.moveTo(offset, y+2);
-		canvas.lineTo(offset + halfSize, y-halfSize);
-		canvas.lineTo(offset + size, y+2);
-		canvas.lineTo(offset, y+2);
-		canvas.fill();
-
-		canvas.beginPath();
-		canvas.moveTo(offset, y);
-		canvas.lineTo(offset + halfSize, y-halfSize);
-		canvas.lineTo(offset + size, y);
-		canvas.stroke();
-
-		return;
-	}
-	
-	function drawDownArrow(offset) {
-		var y = h;
-		canvas.beginPath();
-		canvas.moveTo(offset, y-2);
-		canvas.lineTo(offset + halfSize, y+halfSize);
-		canvas.lineTo(offset + size, y-2);
-		canvas.lineTo(offset, y-2);
-		canvas.fill();
-
-		canvas.beginPath();
-		canvas.moveTo(offset, y);
-		canvas.lineTo(offset + halfSize, y+halfSize);
-		canvas.lineTo(offset + size, y);
-		canvas.stroke();
-
-		return;
-	}
-
-	switch(arrowPosition) {
-		case UIMenu.ARROW_AT_TL: {
-			var offset = Math.max(roundRadius, this.w >> 3);
-			drawUpArrow(offset);
+	switch(this.originPoint) {
+		case UIElement.ORIGIN_UP: {
+			p.x = this.w >> 1;
+			p.angleRange = Math.PI;		
+			p.angleStart = 0;
+			p.r = w >> 1;
 			break;
 		}
-		case UIMenu.ARROW_AT_TM: {
-			var offset = Math.max(roundRadius, (this.w - size)>> 1);
-			drawUpArrow(offset);
+		case UIElement.ORIGIN_DOWN: {
+			p.x = this.w >> 1;
+			p.y = this.h - vMargin;
+			p.angleRange = Math.PI;		
+			p.angleStart = Math.PI;
+			p.r = w >> 1;
 			break;
 		}
-		case UIMenu.ARROW_AT_TR: {
-			var offset = this.w - Math.max(roundRadius, this.w >> 3) - size;
-			drawUpArrow(offset);
+		case UIElement.ORIGIN_LEFT: {
+			p.x = hMargin;
+			p.y = this.h >> 1;
+			p.angleRange = Math.PI;		
+			p.angleStart = - Math.PI * 0.5;
+			p.r = h >> 1;
 			break;
 		}
-		case UIMenu.ARROW_AT_BL: {
-			var offset = Math.max(roundRadius, this.w >> 3);
-			drawDownArrow(offset);
+		case UIElement.ORIGIN_RIGHT: {
+			p.x = this.w - hMargin;
+			p.y = this.h >> 1;
+			p.angleRange = Math.PI;		
+			p.angleStart = Math.PI * 0.5;
+			p.r = h >> 1;
 			break;
 		}
-		case UIMenu.ARROW_AT_BM: {
-			var offset = Math.max(roundRadius, (this.w - size)>> 1);
-			drawDownArrow(offset);
+		case UIElement.ORIGIN_UP_LEFT: {
+			p.angleRange = Math.PI * 0.5;
+			p.angleStart = 0;
+			p.r = Math.min(w,h);
+
 			break;
 		}
-		case UIMenu.ARROW_AT_BR: {
-			var offset = this.w - Math.max(roundRadius, this.w >> 3) - size;
-			drawDownArrow(offset);
+		case UIElement.ORIGIN_UP_RIGHT: {
+			p.x = this.w - hMargin;
+			p.angleStart = 0.5 * Math.PI;
+			p.angleRange = Math.PI * 0.5;
+			p.r = Math.min(w,h);
+			break;
+		}
+		case UIElement.ORIGIN_DOWN_LEFT: {
+			p.x = hMargin;
+			p.y = this.h - vMargin;
+			p.angleStart = - 0.5 * Math.PI;
+			p.angleRange = Math.PI * 0.5;
+			p.r = Math.min(w,h);
+			break;
+		}
+		case UIElement.ORIGIN_DOWN_RIGHT: {
+			p.x = this.w - hMargin;
+			p.y = this.h - vMargin;
+			p.angleStart = Math.PI;
+			p.angleRange = Math.PI * 0.5;
+			p.r = Math.min(w,h);
+			break;
+		}
+		case UIElement.ORIGIN_MIDDLE_CENTER: {
+			p.x = this.w >> 1;
+			p.y = this.h >> 1;
+			p.angleStart = -0.5 * Math.PI;
+			p.angleRange = Math.PI * 2;
+			p.r = Math.min(w,h) >> 1;
 			break;
 		}
 		default:break;
 	}
 
+	return p;
+}
+
+UIMenu.prototype.applyTransform = function(canvas) {
+	if(this.mode === Shape.MODE_EDITING) return;
+
+	var origin = this.getOrigin();
+
+	if(canvas.globalAlpha != this.opacity) {
+		canvas.globalAlpha =  this.opacity;
+	}
+
+	if(this.offsetX) {
+		canvas.translate(this.offsetX, 0);
+	}
+
+	if(this.offsetY) {
+		canvas.translate(0, this.offsetY);
+	}
+
+	var scaleX = this.getScaleX();
+	var scaleY = this.getScaleY();
+	if(this.rotation || (scaleX && scaleX !== 1) || (scaleY && scaleY !== 1)) {
+		var hw = origin.x;
+		var hh = origin.y;
+
+		canvas.translate(hw, hh);
+		if(scaleX && scaleY) {
+			canvas.scale(scaleX, scaleY);
+		}
+		
+		if(this.rotation) {
+			canvas.rotate(this.rotation);
+		}
+		canvas.translate(-hw, -hh);
+	}
+
 	return;
+}
+
+
+UIMenu.prototype.shapeCanBeChild = function(shape) {
+	return shape.isUIListItem || shape.isUIButton || shape.isUIImage;
 }
 
 function UIMenuCreator() {

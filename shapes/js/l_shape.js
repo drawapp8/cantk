@@ -576,8 +576,6 @@ LShape.prototype.showProperty = function() {
 	}
 
 	return;
-
-	return;
 }
 
 LShape.prototype.asIcon = function() {

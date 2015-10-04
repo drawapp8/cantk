@@ -229,6 +229,24 @@ UITips.prototype.drawPath = function(canvas) {
 	return;
 }
 
+UITips.prototype.paintSelfOnlyByColor = function(canvas) {
+	canvas.beginPath();
+	this.drawPath(canvas);
+
+	if(!this.isFillColorTransparent()) {
+		canvas.fillStyle = this.style.fillColor;
+		canvas.fill();
+	}
+
+	if(!this.isStrokeColorTransparent()) {
+		canvas.strokeStyle = this.style.lineColor;
+		canvas.lineWidth = (this.pointerDown && this.clickable) ? 4 : 2;
+		canvas.stroke();
+	}
+
+	return;
+}
+
 UITips.prototype.paintSelfOnly =function(canvas) {
 	if(this.autoAdjustHeight && (!this.children || !this.children.length)) {
 		var textHeight = this.getTextHeight();
@@ -238,14 +256,7 @@ UITips.prototype.paintSelfOnly =function(canvas) {
 	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
 	if(!image) {
-		canvas.beginPath();
-		this.drawPath(canvas);
-		
-		canvas.lineWidth = (this.pointerDown && this.clickable) ? 4 : 2;
-		canvas.strokeStyle = this.style.lineColor;
-		
-		canvas.fill();
-		canvas.stroke();
+		this.paintSelfOnlyByColor(canvas);
 	}
 
 	return;

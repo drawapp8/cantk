@@ -116,7 +116,7 @@ UIGaugePointer.prototype.shapeCanBeChild = function(shape) {
 }
 
 UIGaugePointer.prototype.setText = function(text) {
-	text = this.toText(text);
+	text = this.toText(text ? text : 0);
 	try {
 		this.setValue(parseInt(text));
 	}catch(e) {

@@ -8,11 +8,13 @@
  */
 
 ///////////////////////////////////////////////////////////////
-UIElement.prototype.callOnUpdateTransformHandler = function() {
+UIElement.prototype.callOnUpdateTransformHandler = function(canvas) {
+	if(this.mode === Shape.MODE_EDITING) return true;
+
 	if(!this.handleOnUpdateTransform) {
 		var sourceCode = this.events["onUpdateTransform"];
 		if(sourceCode) {
-			sourceCode = "this.handleOnUpdateTransform = function() {\n" + sourceCode + "\n}\n";
+			sourceCode = "this.handleOnUpdateTransform = function(canvas) {\n" + sourceCode + "\n}\n";
 			try {
 				eval(sourceCode);
 			}catch(e) {
@@ -23,7 +25,7 @@ UIElement.prototype.callOnUpdateTransformHandler = function() {
 
 	if(this.handleOnUpdateTransform) {
 		try {
-			this.handleOnUpdateTransform();
+			this.handleOnUpdateTransform(canvas);
 		}catch(e) {
 			console.log("this.handleOnUpdateTransform:" + e.message);
 		}
@@ -32,7 +34,7 @@ UIElement.prototype.callOnUpdateTransformHandler = function() {
 	return;
 }
 
-UIElement.prototype.callOnPointerDownHandler = function(point) {
+UIElement.prototype.callOnPointerDownHandler = function(point, beforeChild) {
 	if(!this.enable) {
 		return false;
 	}
@@ -40,7 +42,7 @@ UIElement.prototype.callOnPointerDownHandler = function(point) {
 	if(!this.handlePointerDown) {
 		var sourceCode = this.events["onPointerDown"];
 		if(sourceCode) {
-			sourceCode = "this.handlePointerDown = function(point) {\n" + sourceCode + "\n}\n";
+			sourceCode = "this.handlePointerDown = function(point, beforeChild) {\n" + sourceCode + "\n}\n";
 			try {
 				eval(sourceCode);
 			}catch(e) {
@@ -51,7 +53,7 @@ UIElement.prototype.callOnPointerDownHandler = function(point) {
 
 	if(this.handlePointerDown) {
 		try {
-			this.handlePointerDown(point);
+			this.handlePointerDown(point, beforeChild);
 		}catch(e) {
 			console.log("this.handlePointerDown:" + e.message);
 		}
@@ -60,7 +62,7 @@ UIElement.prototype.callOnPointerDownHandler = function(point) {
 	return true;
 }
 
-UIElement.prototype.callOnPointerMoveHandler = function(point) {
+UIElement.prototype.callOnPointerMoveHandler = function(point, beforeChild) {
 	if(!this.enable) {
 		return false;
 	}
@@ -68,7 +70,7 @@ UIElement.prototype.callOnPointerMoveHandler = function(point) {
 	if(!this.handlePointerMove) {
 		var sourceCode = this.events["onPointerMove"];
 		if(sourceCode) {
-			sourceCode = "this.handlePointerMove = function(point) {\n" + sourceCode + "\n}\n";
+			sourceCode = "this.handlePointerMove = function(point, beforeChild) {\n" + sourceCode + "\n}\n";
 			try {
 				eval(sourceCode);
 			}catch(e) {
@@ -79,7 +81,7 @@ UIElement.prototype.callOnPointerMoveHandler = function(point) {
 
 	if(this.handlePointerMove) {
 		try {
-			this.handlePointerMove(point);
+			this.handlePointerMove(point, beforeChild);
 		}catch(e) {
 			console.log("this.handlePointerMove:" + e.message);
 		}
@@ -88,7 +90,7 @@ UIElement.prototype.callOnPointerMoveHandler = function(point) {
 	return true;
 }
 
-UIElement.prototype.callOnPointerUpHandler = function(point) {
+UIElement.prototype.callOnPointerUpHandler = function(point, beforeChild) {
 	if(!this.enable) {
 		return false;
 	}
@@ -96,7 +98,7 @@ UIElement.prototype.callOnPointerUpHandler = function(point) {
 	if(!this.handlePointerUp) {
 		var sourceCode = this.events["onPointerUp"];
 		if(sourceCode) {
-			sourceCode = "this.handlePointerUp = function(point) {\n" + sourceCode + "\n}\n";
+			sourceCode = "this.handlePointerUp = function(point, beforeChild) {\n" + sourceCode + "\n}\n";
 			try {
 				eval(sourceCode);
 			}catch(e) {
@@ -107,7 +109,7 @@ UIElement.prototype.callOnPointerUpHandler = function(point) {
 
 	if(this.handlePointerUp) {
 		try{
-			this.handlePointerUp(point);
+			this.handlePointerUp(point, beforeChild);
 		}catch(e) {
 			console.log("this.handlePointerUp:" + e.message);
 		}
@@ -1111,6 +1113,41 @@ UIElement.prototype.callOnBirthedHandler = function() {
 			this.handleOnBirthed();
 		}catch(e) {
 			console.log("this.handleOnBirthed:" + e.message);
+		}
+	}
+
+	return true;
+}
+
+UIElement.prototype.dispatchCustomEvent = function(eventName, args) {
+	if(!this.customEventHandler) {
+		this.customEventHandler = {};
+	}
+
+	var handleCustomEvent = this.customEventHandler[eventName];
+	if(!handleCustomEvent) {
+		var sourceCode = this.events[eventName];
+		if(sourceCode) {
+			sourceCode = "this.handleCustomEvent = function(args) {\n" + sourceCode + "\n}\n";
+			try {
+				eval(sourceCode);
+			}catch(e) {
+				console.log("eval sourceCode failed: " + e.message + "\n" + sourceCode);
+			}
+		}
+
+		if(this.handleCustomEvent) {
+			handleCustomEvent = this.handleCustomEvent;
+			this.customEventHandler[eventName] = handleCustomEvent;
+			this.handleCustomEvent = null;
+		}
+	}
+
+	if(handleCustomEvent) {
+		try {
+			handleCustomEvent.call(this, args);
+		}catch(e) {
+			console.log("handleCustomEvent " + eventName + ":" + e.message);
 		}
 	}
 

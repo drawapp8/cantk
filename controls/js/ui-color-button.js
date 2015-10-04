@@ -22,6 +22,7 @@ UIColorButton.prototype.initUIColorTile = function(type, w, h) {
 	this.isUIColorTile = true;
 	this.setAutoScaleFontSize(true);
 	this.addEventNames(["onUpdateTransform"]); 
+	this.roundStyle = 'a';
 
 	return this;
 }
@@ -41,32 +42,64 @@ UIColorButton.prototype.initUIColorButton = function(type, w, h) {
 
 UIColorButton.prototype.shapeCanBeChild = UIGroup.prototype.shapeCanBeChild;
 
+UIColorButton.prototype.getRoundStyle =function() {
+	var roundStyle = this.roundStyle;
+
+	if(roundStyle === 't') {
+		return RoundRect.TL | RoundRect.TR;
+	}
+	else if(roundStyle === 'l') {
+		return RoundRect.TL | RoundRect.BL;
+	}
+	else if(roundStyle === 'r') {
+		return RoundRect.TR | RoundRect.BR;
+	}
+	else if(roundStyle === 'b') {
+		return RoundRect.BL | RoundRect.BR;
+	}
+	else {
+		return RoundRect.TL | RoundRect.TR | RoundRect.BL | RoundRect.BR; 
+	}
+}
+
 UIColorButton.prototype.paintSelfOnly =function(canvas) {
-	var hw = this.w >> 1;
-	var hh = this.h >> 1;
+	var roundStyle = this.getRoundStyle();
+	var fillColor = this.style.fillColor;
+	var lineColor = this.style.lineColor;
+
+	if(this.pointerDown && this.style.activeFillColor) {
+		fillColor = this.style.activeFillColor;
+	}
+
+	var fillIt = !Shape.isTransparentColor(fillColor);
+	var strokeIt = !Shape.isTransparentColor(lineColor);
+		
+	if(!fillIt && !strokeIt) {
+		return;
+	}
 
 	canvas.save();
 	canvas.beginPath();
 
-	if(this.isUIColorButton && this.pointerDown) {
-		canvas.lineWidth = this.style.lineWidth * 2;
-	}
-	else {
-		canvas.lineWidth = this.style.lineWidth;
-	}
-
 	canvas.translate(this.hMargin, this.vMargin);
-	drawRoundRect(canvas, this.w-2*this.hMargin, this.h-2*this.vMargin, this.roundRadius);
+	drawRoundRect(canvas, this.w-2*this.hMargin, this.h-2*this.vMargin, this.roundRadius, roundStyle);
 
-	if(this.pointerDown) {
-		canvas.fillStyle = this.style.activeFillColor ? this.style.activeFillColor : this.style.fillColor;
+	if(fillIt) {
+		canvas.fillStyle = fillColor;
+		canvas.fill();
 	}
-	else {
-		canvas.fillStyle = this.style.fillColor;
+
+	if(strokeIt) {
+		if(this.isUIColorButton && this.pointerDown) {
+			canvas.lineWidth = this.style.lineWidth + 1;
+		}
+		else {
+			canvas.lineWidth = this.style.lineWidth;
+		}
+
+		canvas.strokeStyle = lineColor;
+		canvas.stroke();
 	}
-	canvas.strokeStyle = this.style.lineColor;
-	canvas.fill();
-	canvas.stroke();	
 
 	canvas.restore();
 

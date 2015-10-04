@@ -45,6 +45,7 @@ UIToolBar.prototype.paintSelfOnly =function(canvas) {
 
 	if(!image) {
 		canvas.beginPath();
+		canvas.fillStyle = this.style.fillColor;
 		canvas.fillRect(0, 0, this.w, this.h);
 	}
 

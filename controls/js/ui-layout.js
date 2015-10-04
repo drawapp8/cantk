@@ -39,6 +39,8 @@ UILayout.prototype.paintSelfOnly = function(canvas) {
 		var w = this.getWidth(true);
 		var h = this.getHeight(true);
 		var vLayout = this.vLayout;
+		canvas.lineWidth = this.style.lineWidth;
+		canvas.strokeStyle = this.style.lineColor;
 
 		drawDashedRect(canvas, x, y, w, h);
 		if(this.children.length === 0) {

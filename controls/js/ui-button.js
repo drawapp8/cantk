@@ -46,6 +46,7 @@ UIButton.prototype.paintSelfOnly =function(canvas) {
 		var image = this.getHtmlImageByType(UIElement.IMAGE_ACTIVE);
 
 		if(!image) {
+			canvas.fillStyle = this.style.fillColor;
 			canvas.fillRect(0, 0, this.w, this.h);
 		}
 	}

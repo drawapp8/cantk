@@ -51,14 +51,6 @@ Shape.TEXT_NONE = 0;
 Shape.TEXT_INPUT = 1;
 Shape.TEXT_TEXTAREA = 2;
 
-Shape.prototype.canBindingData = function() {
-	return false;
-}
-
-Shape.prototype.afterCreated = function(point) {
-	return true;
-}
-
 Shape.prototype.setNearRange = function(nearRange) {
 	this.nearRange = nearRange;
 
@@ -336,6 +328,10 @@ Shape.prototype.onSized = function() {
 
 }
 
+Shape.prototype.onUserMoved = function(x, y) {
+
+}
+
 Shape.prototype.onUserResized = function() {
 
 }
@@ -493,11 +489,11 @@ Shape.prototype.setScaleY = function(scaleY) {
 }
 
 Shape.prototype.getScaleX = function() {
-	return this.scaleX ? this.scaleX : this.scale;
+	return this.scaleX !== undefined ? this.scaleX : this.scale;
 }
 
 Shape.prototype.getScaleY = function() {
-	return this.scaleY ? this.scaleY : this.scale;
+	return this.scaleY !== undefined ? this.scaleY : this.scale;
 }
 
 Shape.prototype.setScale = function(scaleX, scaleY) {

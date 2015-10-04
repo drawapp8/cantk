@@ -61,8 +61,9 @@ UIPage.prototype.shapeCanBeChild = function(shape) {
 UIPage.prototype.paintSelfOnly =function(canvas) {
 	var image = this.getHtmlImageByType(UIElement.IMAGE_DEFAULT);
 
-	if(!image) {
+	if(!image && !this.isFillColorTransparent()) {
 		canvas.beginPath();
+		canvas.fillStyle = this.style.fillColor;
 		canvas.fillRect(0, 0, this.w, this.h);
 	}
 

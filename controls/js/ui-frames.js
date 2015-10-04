@@ -281,12 +281,12 @@ UIFrames.prototype.afterChildRemoved = function(shape) {
 	return;
 }
 
-UIFrames.prototype.findShapeByPoint = function(point, recursive) {
+UIFrames.prototype.findChildByPoint = function(point, recursive) {
 	var p = this.translatePoint(point);
 	var curFrame = this.getCurrentFrame();
 
 	if(curFrame) {
-		return curFrame.findShapeByPoint(p, recursive);	
+		return curFrame.findChildByPoint(p, recursive);	
 	}
 
 	return this;
