@@ -49,9 +49,9 @@ Make cantk app fast as native app
 Online Design Tools
 ==============================================
 
-#### To develop HTML5 Apps Click Here [App Builder](http://www.tangide.com/gamebuilder.php)
+#### To develop HTML5 Apps Click Here [Game Builder](http://www.tangide.com/gamebuilder.php)
 
-#### To develop HTML5 Games Click Here [Game Builder](http://www.tangide.com/appbuilder.php)
+#### To develop HTML5 Games Click Here [App Builder](http://www.tangide.com/appbuilder.php)
 
 
 Documentation
