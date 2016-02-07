@@ -1,43 +1,30 @@
-### What is CanTK?
+## Hola cantk
 
 ***
 
-CanTK is a tool kit(GUI) for HTML5 canvas, it implements a full GUI system on HTML5 canvas element, includes window manager, input dispatcher, animation, controls, adapters for different platforms.
+Hola cantk是基于HTML5 Canvas的游戏引擎。 cantk除了具有HTML5跨平台的特点外，还具有下列优点：
 
-### Why CanTK?
+**完整的游戏组件。**包括场景、图片、帧动画、Spine骨骼动画、DragonBones骨骼动画、几何变换动画（任何控件都支持缓动作动画）、音乐、音效、路径、地图、振屏、重力感应、刚体、关节、图片字体、定时器和粒子效果等各种游戏需要的组件。
 
-***
+**完整的UI组件。**包括完整窗口、对话框、列表、网格、按钮、文本、编辑器、进度条、菜单等标签数十种UI组件，不但能满足游戏开发，而且可以开发复杂的应用程序。
 
-#### To Develop Real Native Like Applications.
+**集成变现和社交组件。**包括广告、分享、弹幕、统计和玩家系统。
 
-HTML5 is not good at mobile applications development. The gene of HTML is documention. It is powerful to show text, images, videos to users. But it is very weak at user interaction. HTML5 web application is little like native application when compared with web pages, but it is more like web pages when compared with native application.
+**自带功能超强的IDE。**Hola Studio提供了物理编辑器、界面编辑器、代码编辑器、拆图、合图、图片字体生成器、粒子编辑器、DATA URL产生器、发布编译和导出等各种功能。
 
-CanTK draw all controls on HTML5 canvas element, so it is very easy to implement native applications look and feel.
+**数据驱动的开发。**UI数据和各种设置放在独立的JSON文件中，游戏运行时由引擎加载场景数据和相应的资源。所有界面设计都在IDE中完成，不需要编写一行代码。
 
-#### To Help Javascript Game Engine Create Better User Interface. 
+**事件驱动的开发。**事件驱动简化游戏逻辑，事件即包括玩家触发的键盘和点击事件，也包括物理引擎中的碰撞等事件和游戏逻辑中的状态改变事件。所有的事件都不用注册，不需要记忆，只需要在IDE中填写相应的事件处理代码即可。
 
-Most of the game engines are developed base on the HTML5 Canvas Element, it is very hard to integrate HTML UI controls seamless. CanTK give the power for game engines to create complex and attractive user interface.
+**基于组件的开发。**你可以把小到一张图片一个按钮做成组件，大到一个场景一个游戏做成组件。在IDE中一键可以生成组件，生成组件不但可以自己用，还可以分享给同事和朋友。
 
+**完整的工具链支持。**你可以用Spine/DragonBones制作骨骼动画，用TexturePacker合并图片，用Tiled编辑地图，用其它粒子编辑器开发粒子效果。
 
-Features
-==============================================
-1. Open source for both free and commercial use(under LGPL).
+**功能稳定。**经过几年发展，上百个游戏的验证，Hola cantk已经稳定。而且我们会提供强力的技术支持，一般新发现的BUG都在12小时内解决，紧急需要的特性在24小时内提供。
 
-2. Full GUI System, support almost all common used controls on mobile devices today.
+**速度超快。**每个引擎都说自己超快，其实都差不多了。原理都一样，要高出一头是很难的，目前来说，要达到或接近native的效果，Runtime是唯一的选择，cantk也提供了Runtime，有基于V8的版本和基于phonegap的版本，后者是开源的。
 
-3. Real native like appearance.
-
-4. Better performance than tranditional HTML5 Applications.
-
-5. Window animation.
-
-6. Game engine integration, cocos2d, panda.js, phaser.js, pixi.js, etc.
-
-7. Easy to use, you can create application with [Gamebuilder](http://www.tangide.com/gamebuilder.php)/[AppBuilder](http://www.tangide.com/appbuilder.php) by drag & drop.
-
-8. Easy to extension, there are several ways to extend existed controls to get different appearance or function.
-
-9. Support the main stream mobile platform, iOS, android, windows phone, firefox, blackberry, tizen, etc.
+**免费和开源。**你可以永久免费使用Hola cantk和Hola Studio，Hola cantk完全开源，Hola Studio仅对重要贡献者开源。
 
 
 Make cantk app fast as native app
@@ -49,9 +36,7 @@ Make cantk app fast as native app
 Online Design Tools
 ==============================================
 
-#### To develop HTML5 Apps Click Here [Game Builder](http://www.tangide.com/gamebuilder.php)
-
-#### To develop HTML5 Games Click Here [App Builder](http://www.tangide.com/appbuilder.php)
+[Game Builder](http://studio.holaverse.com/)
 
 
 Documentation
