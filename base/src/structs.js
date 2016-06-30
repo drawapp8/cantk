@@ -123,5 +123,4 @@ Rect.subtract2 = function(r1, r2, r3) {
 	}
 
 	return all;
-}
-
+};

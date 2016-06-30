@@ -20,10 +20,26 @@ ResLoader.reset = function() {
 	return;
 }
 
-ResLoader.toLoadInc = function() {
+ResLoader.toLoadInc = function(src) {
 	ResLoader.total++;
+	return;
+}
+
+ResLoader.loadedInc = function(src) {
+	setTimeout(function() {
+		ResLoader.finished++;
+		ResLoader.notifyLoadProgress();
+	}, 1);
 
 	return;
+}
+
+ResLoader.setAssetsConfig = function(assetsConfig) {
+	ResLoader.assetsConfig = assetsConfig;
+}
+
+ResLoader.mapImageURL = function(url, assetsConfig) {
+		return url;
 }
 
 ResLoader.setOnChangedListener = function(onChanged) {
@@ -36,20 +52,29 @@ ResLoader.setOnLoadFinishListener = function(onLoadFinished) {
 	return;
 }
 
-ResLoader.loadedInc = function() {
-	ResLoader.finished++;
+ResLoader.isLoadCompleted = function() {
+	return ResLoader.finished >= ResLoader.total;
+}
 
+ResLoader.notifyLoadDone = function() {
+	if(ResLoader.onLoadFinished) {
+		ResLoader.onLoadFinished();
+	}
+	console.log("All resource loaded:" + ResLoader.total);
+}
+
+ResLoader.notifyLoadProgress = function() {
 	var percent = ResLoader.getPercent();
 	if(ResLoader.onChanged) {
 		ResLoader.onChanged(percent, ResLoader.finished, ResLoader.total);
 	}
 	
-	if(percent >= 99) {
-		if(ResLoader.onLoadFinished) {
-			ResLoader.onLoadFinished();
-		}
-		console.log("All resource loaded:" + ResLoader.total);
+	if(ResLoader.finished >= ResLoader.total) {
+		ResLoader.notifyLoadDone();
 	}
+
+	var event = {type:ResLoader.EVENT_ASSETS_LOAD_PROGRESS, percent:percent, finished:ResLoader.finished, total:ResLoader.total};
+	ResLoader.dispatchEvent(event);
 
 	return;
 }
@@ -86,9 +111,22 @@ ResLoader.dump = function() {
 	}
 }
 
-setTimeout(function() {
-	ResLoader.dump();
-}, 15000);
+ResLoader.clearCache = function(check) {
+	var newCache = {};
+	for(var key in ResLoader.cache) {
+		var asset = ResLoader.cache[key];
+
+		if(check && check(key)) {
+			newCache[key] =  asset;
+		}
+		else {
+			console.log("clear asset:" + key);
+		}
+	}
+	ResLoader.cache = newCache;
+
+	return;
+}
 
 ResLoader.getFromCache = function(src) {
 	return ResLoader.cache[src];
@@ -130,9 +168,8 @@ function ResProxy(src, onSuccess, onFail) {
 	this.onFailList = [onFail];
 
 	if(src) {
-		ResLoader.toLoadInc();
+		ResLoader.toLoadInc(src);
 		ResLoader.addToCache(src, this);
-//		console.log("to load: " + src);
 	}
 	else {
 		console.log("WARNNING: load null url.");
@@ -144,15 +181,17 @@ function ResProxy(src, onSuccess, onFail) {
 ResProxy.prototype.onDone = function(obj) {
 	this.obj = obj;
 	delete this.pending;
-	ResLoader.loadedInc();
+	ResLoader.loadedInc(this.src);
 
-	if(obj) {
-		this.callOnSuccess();
-//		console.log("load " + this.src + " done.");
-	}
-	else {
-		this.callOnFail();
-		console.log("load " + this.src + " failed:");
+	try {
+		if(obj) {
+			this.callOnSuccess();
+		}
+		else {
+			this.callOnFail();
+		}
+	}catch(e) {
+		console.log("ResProxy.prototype.onDone:" + e.message);
 	}
 
 	return;
@@ -160,12 +199,20 @@ ResProxy.prototype.onDone = function(obj) {
 
 ResProxy.prototype.callOnSuccess = function() {
 	var obj = this.obj;
+	var src = this.src;
+
 	for(var i = 0; i < this.onSuccessList.length; i++) {
-		var iter = this.onSuccessList[i];
-		if(iter) {
-			iter(obj);
+		var onSuccess = this.onSuccessList[i];
+		if(!onSuccess) continue;
+
+		if(onSuccess.dataType === "json") {
+			ResLoader.callFunc(onSuccess, this.getJsonObj());
+		}
+		else {
+			ResLoader.callFunc(onSuccess, this.obj);
 		}
 	}
+
 	this.onFailList = [];
 	this.onSuccessList = [];
 
@@ -176,15 +223,29 @@ ResProxy.prototype.callOnFail = function() {
 	var src = this.src;
 
 	for(var i = 0; i < this.onFailList.length; i++) {
-		var iter = this.onFailList[i];
-		if(iter) {
-			iter(src);
-		}
+		var onFail = this.onFailList[i];
+		if(!onFail) continue;
+		ResLoader.callFunc(onFail, null);
+
 	}
 	this.onFailList = [];
 	this.onSuccessList = [];
 
 	return;
+}
+
+ResProxy.prototype.getJsonObj = function() {
+	if(this.jsonObj) {
+		return this.jsonObj;
+	}
+
+	try {
+		this.jsonObj = JSON.parse(this.obj);
+	}catch(e) {
+		console.log("ensureJson:" + e.message);
+	}
+
+	return this.jsonObj;
 }
 
 ResProxy.prototype.onHitCache = function(onSuccess, onFail) {
@@ -193,7 +254,12 @@ ResProxy.prototype.onHitCache = function(onSuccess, onFail) {
 		this.onFailList.push(onFail);
 	}
 	else if(this.obj) {
-		ResLoader.callFunc(onSuccess, this.obj);
+		if(onSuccess.dataType === "json") {
+			ResLoader.callFunc(onSuccess, this.getJsonObj());
+		}
+		else {
+			ResLoader.callFunc(onSuccess, this.obj);
+		}
 	}
 	else {
 		ResLoader.callFunc(onFail, null);
@@ -204,33 +270,28 @@ ResProxy.prototype.onHitCache = function(onSuccess, onFail) {
 
 ResLoader.callFunc = function(func, data) {
 	if(func) {
-		func(data);
+		try {
+			func(data);
+		}catch(e) {
+			console.log("ResLoader.callFunc:" + e.message);
+		}
 	}
 
 	return;
 }
 
 ResLoader.loadImage = function(url, onSuccess, onFail) {
-	var src = ResLoader.toAbsURL(url);
+	var src = ResLoader.mapImageURL(ResLoader.toAbsURL(url), ResLoader.assetsConfig);
+
 	var proxy = ResLoader.getFromCache(src);
 	if(proxy) {
 		return proxy.onHitCache(onSuccess, onFail);
 	}
+	else {
+		var proxy = new ResProxy(src, onSuccess, onFail);
 
-	proxy = new ResProxy(src, onSuccess, onFail);
-
-
-	function onLoad(img) {
-		proxy.onDone(img);
+		return CantkRT.createImage(src, proxy.onDone.bind(proxy), proxy.onDone.bind(proxy));
 	}
-
-	function onError(img) {
-		proxy.onDone(null);
-	}
-
-	var image = CantkRT.createImage(src, onLoad, onError);
-
-	return image;
 }
 
 ResLoader.loadAudio = function(url, onSuccess, onFail) {
@@ -272,21 +333,7 @@ ResLoader.loadAudio = function(url, onSuccess, onFail) {
 ResLoader.loadJson = function(url, onSuccess, onFail) {
 	var src = ResLoader.toAbsURL(url);
 	var proxy = ResLoader.getFromCache(src);
-	if(proxy) {
-		return proxy.onHitCache(onSuccess, onFail);
-	}
-
-	proxy = new ResProxy(src, onSuccess, onFail);
-	httpGetJSON(src, function(data) {
-		proxy.onDone(data);
-	});
-
-	return;
-}
-
-ResLoader.loadData = function(url, onSuccess, onFail) {
-	var src = ResLoader.toAbsURL(url);
-	var proxy = ResLoader.getFromCache(src);
+	onSuccess.dataType = "json";
 	if(proxy) {
 		return proxy.onHitCache(onSuccess, onFail);
 	}
@@ -297,6 +344,48 @@ ResLoader.loadData = function(url, onSuccess, onFail) {
 	});
 
 	return;
+}
+
+ResLoader.loadData = function(url, onSuccess, onFail) {
+	var src = ResLoader.toAbsURL(url);
+	var proxy = ResLoader.getFromCache(src);
+	
+	onSuccess.dataType = "string";
+	if(proxy) {
+		return proxy.onHitCache(onSuccess, onFail);
+	}
+
+	proxy = new ResProxy(src, onSuccess, onFail);
+	httpGetURL(src, function(result, xhr, data) {
+		proxy.onDone(data);
+	});
+
+	return;
+}
+
+ResLoader.loadScriptsSync = function(srcs, onCompleted) {
+	var i = 0;
+	var n = srcs.length;
+
+	ResLoader.toLoadInc("scripts begin");
+	function loadNext() {
+		if(i < n) {
+			var iter = srcs[i];
+			
+			i++;
+			console.log("load script("+i+"/"+n+"):" + iter);
+			ResLoader.loadScript(iter, window.studioDevMode, loadNext, loadNext);
+		}
+		else {
+			if(onCompleted) {
+				onCompleted();
+			}
+			ResLoader.loadedInc("scripts done");
+			console.log("load scripts done.");
+		}
+	}
+
+	loadNext();
 }
 
 ResLoader.loadScript = function(src, force, onSuccess, onFail) {
@@ -319,31 +408,32 @@ ResLoader.loadScript = function(src, force, onSuccess, onFail) {
 				if(onSuccess) {
 					onSuccess();
 				}
+
 				if(force) {
-					ResLoader.toLoadInc();
-					var src = src + timestamp;
-					script.setAttribute("src", src);
-					setTimeout(function() {ResLoader.loadedInc()}, 1000);
+					document.head.removeChild(script);
+					break;
 				}
-				return;
+				else {
+					return;
+				}
 			}
 		}
 	}
 
-	ResLoader.toLoadInc();
+	ResLoader.toLoadInc(src);
 	script = document.createElement("script");
 	script.onload = function() { 
 		if(onSuccess) {
 			onSuccess();
 		}
-		ResLoader.loadedInc();
+		ResLoader.loadedInc(src);
 	}
 
 	script.onerror = script.onabort = script.oncancel = function(e) {
 		if(onFail) {
 			onFail();
 		}
-		ResLoader.loadedInc();
+		ResLoader.loadedInc(src);
 	}
 
 	if(!force) {
@@ -356,3 +446,65 @@ ResLoader.loadScript = function(src, force, onSuccess, onFail) {
 
 	return;
 }
+
+ResLoader.loadFonts = function(fonts) {
+	if(CantkRT.isCantkRTV8()) {
+		return ResLoader.loadFontsRT(fonts);
+	}
+	else {
+		return ResLoader.loadFontsWeb(fonts);
+	}
+}
+
+ResLoader.loadFontsRT = function(fonts) {
+	for(var i = 0; i < fonts.length; i++) {
+		var iter = fonts[i];
+		var name = iter.basename(true);
+		CantkRT.loadFont(name, iter);
+	}	
+
+	return;
+}
+
+ResLoader.loadFontsWeb = function(fonts) {
+	var styleStr = "";
+	for(var i = 0; i < fonts.length; i++) {
+		var iter = fonts[i];
+		var name = iter.basename(true);
+		var str = "font-family:'"+name+"';\n";
+			str += "src: url('"+iter+"') ";
+			if(iter.indexOf(".ttf") > 0 || iter.indexOf("TTF") > 0) {
+				str += "format('truetype');\n";
+			}
+			else if(iter.indexOf(".woff") > 0) {
+				str += "format('woff');\n";
+			}
+			else if(iter.indexOf(".otf") > 0) {
+				str += "format('opentype');\n";
+			}
+			else {
+				console.log("not supported:" + iter);
+			}
+
+			var fontFaceStr = "@font-face {\n";
+			fontFaceStr += str;
+			fontFaceStr += "}\n";
+			styleStr += fontFaceStr;
+	}
+
+	var style = document.createElement("style");
+	style.onload = function() {
+		console.log("font style loaded.");
+	}
+
+	style.innerHTML = styleStr;
+	document.head.appendChild(style);
+	console.log(styleStr);
+
+	return;
+}
+
+TEventTarget.apply(ResLoader);
+ResLoader.EVENT_ASSETS_LOAD_PROGRESS = "assets-load-progress";
+
+

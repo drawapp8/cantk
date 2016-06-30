@@ -29,6 +29,7 @@ WWidget.TYPE_FLOAT_MENU_BAR = "float-menubar";
 
 WWidget.TYPE_POPUP = "popup";
 WWidget.TYPE_DIALOG = "dialog";
+WWidget.TYPE_DRAGGABLE_DIALOG = "draggable-dialog";
 WWidget.TYPE_WINDOW = "window";
 WWidget.TYPE_VBOX = "vbox";
 WWidget.TYPE_HBOX = "hbox";
@@ -46,11 +47,13 @@ WWidget.TYPE_SCROLL_VIEW = "scroll-view";
 WWidget.TYPE_GRID_VIEW = "grid-view";
 WWidget.TYPE_LIST_VIEW = "list-view";
 WWidget.TYPE_LIST_ITEM = "list-item";
+WWidget.TYPE_LIST_ITEM_RADIO = "list-item-radio";
 WWidget.TYPE_IMAGE_VIEW = "image-view";
 WWidget.TYPE_TREE_VIEW = "tree-view";
 WWidget.TYPE_TREE_ITEM = "tree-item";
 WWidget.TYPE_ACCORDION = "accordion";
 WWidget.TYPE_ACCORDION_ITEM = "accordion-item";
+WWidget.TYPE_ACCORDION_TITLE = "accordion-title";
 WWidget.TYPE_PROPERTY_TITLE = "property-title";
 WWidget.TYPE_PROPERTY_SHEET = "property-sheet";
 WWidget.TYPE_PROPERTY_SHEETS = "property-sheets";
@@ -58,8 +61,9 @@ WWidget.TYPE_VIEW_BASE = "view-base";
 WWidget.TYPE_COMPONENT_MENU_ITEM = "menuitem.component";
 WWidget.TYPE_WINDOW_MENU_ITEM = "menuitem.window";
 WWidget.TYPE_MESSAGE_BOX = "messagebox";
-WWidget.TYPE_ICON_TEXT = "icon-text";
+WWidget.TYPE_IMAGE_TEXT = "icon-text";
 WWidget.TYPE_BUTTON = "button";
+WWidget.TYPE_KEY_VALUE = "key-value";
 WWidget.TYPE_LABEL = "label";
 WWidget.TYPE_LINK = "link";
 WWidget.TYPE_EDIT = "edit";
@@ -78,8 +82,8 @@ WWidget.TYPE_TIPS = "tips";
 WWidget.TYPE_HLAYOUT = "h-layout";
 WWidget.TYPE_VLAYOUT = "v-layout";
 WWidget.TYPE_BUTTON_GROUP = "button-group";
-WWidget.TYPE_COMBOBOX_POUP = "combobox-popup";
-WWidget.TYPE_COMBOBOX_POUP_ITEM = "combobox-popup-item";
+WWidget.TYPE_COMBOBOX_POPUP = "combobox-popup";
+WWidget.TYPE_COMBOBOX_POPUP_ITEM = "combobox-popup-item";
 WWidget.TYPE_COLOR_EDIT = "color-edit";
 WWidget.TYPE_RANGE_EDIT = "range-edit";
 WWidget.TYPE_FILENAME_EDIT = "filename-edit";
@@ -108,10 +112,11 @@ WWidget.prototype.init = function(parent, x, y, w, h) {
 	this.point = {x:0, y:0};
 	this.rect  = {x:x, y:y, w:w, h:h};
 	this.setState(WWidget.STATE_NORMAL);
-	this.imageDiplay = WImage.DISPLAY_9PATCH;
+	this.imageDisplay = WImage.DISPLAY_9PATCH;
 	this.borderStyle = WWidget.BORDER_STYLE_ALL;
+	this.cursor = "default";
 
-	if(this.parent !== null) {
+	if(this.parent) {
 		var border = parent.border ? parent.border : 0;
 		var pw = parent.rect.w - 2 * border;
 		var ph = parent.rect.h - 2 * border;
@@ -137,6 +142,16 @@ WWidget.prototype.init = function(parent, x, y, w, h) {
 
 WWidget.prototype.useTheme = function(type) {
 	this.themeType = type;
+
+	return this;
+}
+
+WWidget.prototype.isSelected = function() {
+	return this.selected;
+}
+
+WWidget.prototype.setSelected = function(value) {
+	this.selected = value;
 
 	return this;
 }
@@ -182,7 +197,13 @@ WWidget.prototype.isPointerDown = function() {
 }
 
 WWidget.prototype.isClicked = function() {
-	return WWindowManager.getInstance().isClicked();
+	var win = this.getWindow();
+	if(win) {
+		return win.isClicked();
+	}
+	else {
+		return WWindowManager.getInstance().isClicked();
+	}
 }
 
 WWidget.prototype.isAltDown = function() {
@@ -198,11 +219,11 @@ WWidget.prototype.getApp = function() {
 }
 
 WWidget.prototype.getCanvas2D = function() {
-	return WWindowManager.getInstance().getCanvas2D();
+	return this.getWindow().getCanvas2D();
 }
 
 WWidget.prototype.getCanvas = function() {
-	return WWindowManager.getInstance().getCanvas();
+	return this.getWindow().getCanvas();
 }
 
 WWidget.prototype.getLastPointerPoint = function() {
@@ -214,11 +235,16 @@ WWidget.prototype.getTopWindow = function() {
 }
 
 WWidget.prototype.getWindow = function() {
-	 if(this.parent) {
-		  return this.parent.getWindow();
-	 }
-	 
-	 return this;
+	if(!this.parent) {
+		return this;
+	}
+
+	var p = this.parent;
+	while(p.parent) {
+		p = p.parent;
+	}
+
+	return p;
 }
 
 WWidget.prototype.getParent = function() {
@@ -272,6 +298,24 @@ WWidget.prototype.getAbsPosition =  function() {
 		y = y + parent.rect.y;
 	}
 	
+	return {x: x, y: y};
+}
+
+WWidget.prototype.getPositionInWindow =  function() {
+	var x = 0;
+	var y = 0;
+
+	if(this.parent) {
+		for(var iter = this; iter !== null; iter = iter.parent) {
+			if(!iter.parent) {
+				break;
+			}
+
+			x = x + iter.rect.x;
+			y = y + iter.rect.y;
+		}
+	}
+
 	return {x: x, y: y};
 }
 
@@ -359,6 +403,8 @@ WWidget.putWidget = function(widget) {
 			WWidget.widgetsPool[type] = [];
 			widgets = WWidget.widgetsPool[type];
 		}
+		delete widget.selectable;
+
 		widget.themeType = null;
 		widget.userData = null;
 		widget.handleGesture = null;
@@ -370,8 +416,11 @@ WWidget.putWidget = function(widget) {
 		widget.handleKeyDown = null;
 		widget.handleWheel = null;
 		widget.onChanged = null;
-		widget.onChanging = null;
-		widget.clickHandler = null;
+		widget.onChange = null;
+		widget.onMoved = null;
+		widget.onSized = null;
+		widget.clickedHandler = null;
+		widget.removedHandler = null;
 		widget.stateChangedHandler = null;
 
 		if(widget.onBeforePaint) {
@@ -389,7 +438,19 @@ WWidget.putWidget = function(widget) {
 	return;
 }
 
+WWidget.prototype.setRemovedHandler = function(removedHandler) {
+	this.removedHandler = removedHandler;
+	
+	return this;
+}
+
+
 WWidget.prototype.onRemoved = function() {
+	if(this.removedHandler) {
+		this.removedHandler();
+	}
+
+	return;
 }
 
 WWidget.prototype.removeChild = function(child) {
@@ -571,12 +632,16 @@ WWidget.prototype.drawTips = function(canvas) {
 		var style = this.getStyle();
 		var x = this.rect.w >> 1;
 		var y = this.rect.h >> 1;
+		var font = style.tipsFont || style.font;
+		var textColor = style.tipsTextColor || style.textColor;
 
-		canvas.textAlign = "center";
-		canvas.textBaseline = "middle";
-		canvas.font = style.font ? style.font : "10pt bold sans-serif";
-		canvas.fillStyle = style.textColor ? style.textColor : "Black";
-		canvas.fillText(tips, x, y);
+		if(font && textColor) {
+			canvas.textAlign = "center";
+			canvas.textBaseline = "middle";
+			canvas.font = font;
+			canvas.fillStyle = textColor;
+			canvas.fillText(tips, x, y);
+		}
 	}
 
 	return this;
@@ -628,15 +693,28 @@ WWidget.prototype.setEnable = function(value) {
 	return this;
 }
 
-WWidget.prototype.onStateChanged = function(state) {
-	if(this.stateChangedHandler) {
-		this.stateChangedHandler(state);
+WWidget.prototype.changeCursor = function() {
+	var canvas = this.getCanvas();
+	if(canvas.style.cursor !== this.cursor) {
+		canvas.style.cursor = this.cursor;
 	}
 
 	return this;
 }
 
-WWidget.prototype.setState = function(state) {
+WWidget.prototype.onStateChanged = function(state) {
+	if(this.stateChangedHandler) {
+		this.stateChangedHandler(state);
+	}
+
+	if(state === WWidget.STATE_OVER || state === WWidget.STATE_ACTIVE) {
+		this.changeCursor();
+	}
+
+	return this;
+}
+
+WWidget.prototype.setState = function(state, recursive) {
 	if(this.state !== state) {
 		this.state = state;
 		this.onStateChanged(state);
@@ -644,7 +722,11 @@ WWidget.prototype.setState = function(state) {
 			WWindowManager.getInstance().setTipsWidget(this);
 		}
 	}
-	
+
+	if(recursive && this.target) {
+		this.target.setState(state, recursive);
+	}
+
 	return this;
 }
 
@@ -652,13 +734,12 @@ WWidget.prototype.measure = function(canvas) {
 	 return;
 }
 
-WWidget.prototype.onMoved = function() {
-}
-
 WWidget.prototype.move = function(x, y) {
 	this.rect.x = x;
 	this.rect.y = y;
-	this.onMoved();
+	if(this.onMoved) {
+		this.onMoved();
+	}
 
 	return this;
 }
@@ -689,18 +770,19 @@ WWidget.prototype.moveToBottom = function(border) {
 WWidget.prototype.moveDelta = function(dx, dy) {
 	this.rect.x = this.rect.x + dx;
 	this.rect.y = this.rect.y + dy;
-	this.onMoved();
+	if(this.onMoved) {
+		this.onMoved();
+	}
 
 	return this;
-}
-
-WWidget.prototype.onSized = function(w, h) {
 }
 
 WWidget.prototype.resize = function(w, h) {
 	this.rect.w = w;
 	this.rect.h = h;
-	this.onSized();
+	if(this.onSized) {
+		this.onSized();
+	}
 	this.setNeedRelayout(true);
 
 	return this;
@@ -712,8 +794,14 @@ WWidget.prototype.setStateChangedHandler = function(stateChangedHandler) {
 	 return this;
 }
 
-WWidget.prototype.setClickedHandler = function(clickHandler) {
-	 this.clickHandler = clickHandler;
+WWidget.prototype.setContextMenuHandler = function(contextMenuHandler) {
+	this.handleContextMenu = contextMenuHandler;
+
+	return this;
+}
+
+WWidget.prototype.setClickedHandler = function(clickedHandler) {
+	 this.clickedHandler = clickedHandler;
 	 
 	 return this;
 }
@@ -735,13 +823,13 @@ WWidget.prototype.onClicked = function(point) {
 		this.handleClicked(point);
 	}
 
-	if(this.clickHandler) {
-		this.clickHandler(this, point);
+	if(this.clickedHandler) {
+		this.clickedHandler(this, point);
 	}
 
 	this.postRedraw();
 
-	return this.clickHandler != null;
+	return this.clickedHandler != null;
 }
 
 WWidget.prototype.lookup = function(id, recursive) {
@@ -766,8 +854,18 @@ WWidget.prototype.lookup = function(id, recursive) {
 	return null;
 }
 
+WWidget.prototype.onRelayout = function(canvas, force) {
+}
+
 WWidget.prototype.relayout = function(canvas, force) {
-	 return this;
+	if((!this.needRelayout && !force) || !this.children.length) {
+		return this;
+	}
+	
+	this.onRelayout(canvas, force);
+	this.needRelayout = false;
+
+	return this;
 }
 
 WWidget.prototype.setLineWidth = function(lineWidth) {
@@ -802,16 +900,26 @@ WWidget.prototype.getStyle = function(_state) {
 	this.ensureTheme();
 	var state = _state ? _state : this.state;
 
-	if(this.enable) {
-		style = this.theme[state];
-	}
-	else {
-		if(state === WWidget.STATE_SELECTED) {
+	if(!this.enable) {
+		if(this.selectable && this.isSelected()) {
 			style = this.theme[WWidget.STATE_DISABLE_SELECTED];
 		}
-
-		if(!style) {
+		else {
 			style = this.theme[WWidget.STATE_DISABLE];
+		}
+	}
+	else {
+		if(this.selectable && this.selected) {
+			style = this.theme[WWidget.STATE_SELECTED];
+		}
+		else if(state === WWidget.STATE_OVER) {
+			style = this.theme[WWidget.STATE_OVER];
+		}
+		else if(state === WWidget.STATE_ACTIVE) {
+			style = this.theme[WWidget.STATE_ACTIVE];
+		}
+		else {
+			style = this.theme[WWidget.STATE_NORMAL];
 		}
 	}
 	
@@ -822,8 +930,8 @@ WWidget.prototype.getStyle = function(_state) {
 	return style;
 }
 
-WWidget.prototype.setImageDisplay = function(imageDiplay) { 
-	this.imageDiplay = imageDiplay;
+WWidget.prototype.setImageDisplay = function(imageDisplay) { 
+	this.imageDisplay = imageDisplay;
 
 	return this;
 }
@@ -835,71 +943,114 @@ WWidget.prototype.setBorderStyle = function(borderStyle) {
 }
 
 WWidget.prototype.paintBackground = function(canvas) {
-	var dst  = this.rect;
 	var style =  this.getStyle();
-
-	if(!style) return;
-
-	if(style.bgImage) {
-		var image = style.bgImage.getImage();
-		var src = style.bgImage.getImageRect();
-		if(image) {
-			style.bgImage.draw(canvas, this.imageDiplay, 0, 0, dst.w, dst.h, src);
+	if(style) {
+		if(style.bgImage) {
+			this.paintBackgroundImage(canvas, style);
 		}
+		else {
+			this.paintBackgroundColor(canvas, style);
+		}
+	}
+}
+
+WWidget.prototype.paintBackgroundImage = function(canvas, style) {
+	var dst  = this.rect;
+	var image = style.bgImage.getImage();
+	var src = style.bgImage.getImageRect();
+	var imageDisplay = style.imageDisplay ? style.imageDisplay : this.imageDisplay;
+
+	if(image) {
+		var topOut = style.topOut ? style.topOut : 0;
+		var leftOut = style.leftOut ? style.leftOut : 0;
+		var rightOut = style.rightOut ? style.rightOut : 0;
+		var bottomOut = style.bottomOut ? style.bottomOut : 0;
+
+		var x = -leftOut;
+		var y = -topOut;
+		var w = dst.w + rightOut + leftOut;
+		var h = dst.h + bottomOut + topOut;
+
+		style.bgImage.draw(canvas, imageDisplay, x, y, w, h, src);
+	}
+}
+
+WWidget.prototype.paintLeftBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(0, 0);
+	canvas.lineTo(0, h);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintRightBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(w, 0);
+	canvas.lineTo(w, h);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintTopBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(0, 0);
+	canvas.lineTo(w, 0);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintBottomBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(0, h);
+	canvas.lineTo(w, h);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintBackgroundColor = function(canvas, style) {
+	var dst  = this.rect;
+
+	canvas.beginPath();
+	if(this.roundRadius || style.roundRadius) {
+		var roundRadius = Math.min((dst.h >> 1) - 1, style.roundRadius || this.roundRadius);
+		drawRoundRect(canvas, dst.w, dst.h, roundRadius);	
 	}
 	else {
-		canvas.beginPath();
-		if(this.roundRadius) {
-			drawRoundRect(canvas, dst.w, dst.h, this.roundRadius);	
-		}
-		else {
-			canvas.rect(0, 0, dst.w, dst.h);
-		}
-		
-		if(style.fillColor) {
-			canvas.fillStyle = style.fillColor;
-			canvas.fill();
-		}
-		var lineWidth = this.getLineWidth(style);
-		if(!lineWidth || !style.lineColor || this.borderStyle === WWidget.BORDER_STYLE_NONE) {
-			//something	
-		}
-		else {
-			var doDrawLine = function(src, dst) {
-				canvas.moveTo(src.x, src.y);
-				canvas.lineTo(dst.x, dst.y);
-			};
-			canvas.beginPath();
-			if(this.borderStyle & WWidget.BORDER_STYLE_LEFT) {
-				if(lineWidth === 1) {
-					canvas.translate(0.5, 0);
-				}
-				doDrawLine({x:0, y:0}, {x:0, y:dst.h});
-			}
-			if(this.borderStyle & WWidget.BORDER_STYLE_RIGHT) {
-				if(lineWidth === 1) {
-					canvas.translate(-0.5, 0);
-				}
-				doDrawLine({x:dst.w, y:0}, {x:dst.w, y:dst.h});
-			}
-			if(this.borderStyle & WWidget.BORDER_STYLE_TOP) {
-				if(lineWidth === 1) {
-					canvas.translate(0, 0.5);
-				}
-				doDrawLine({x:0, y:0}, {x:dst.w, y:0});
-			}
-			if(this.borderStyle & WWidget.BORDER_STYLE_BOTTOM) {
-				if(lineWidth === 1) {
-					canvas.translate(0, -0.5);
-				}
-				doDrawLine({x:0, y:dst.h}, {x:dst.w, y:dst.h});
-			}
-			canvas.lineWidth = lineWidth;
-			canvas.strokeStyle = style.lineColor;
-			canvas.stroke();
-		}
-		canvas.beginPath();
+		canvas.rect(0, 0, dst.w, dst.h);
 	}
+	
+	if(style.fillColor) {
+		canvas.fillStyle = style.fillColor;
+		canvas.fill();
+	}
+
+	var lineWidth = this.getLineWidth(style);
+	if(!lineWidth || !style.lineColor || this.borderStyle === WWidget.BORDER_STYLE_NONE) {
+		return;
+	}
+
+	var w = this.getWidth();
+	var h = this.getHeight();
+	canvas.lineWidth = lineWidth;
+	canvas.strokeStyle = style.lineColor;
+	if(this.borderStyle === WWidget.BORDER_STYLE_ALL) {
+		canvas.stroke();
+		canvas.beginPath();
+		return;
+	}
+	
+	if(this.borderStyle & WWidget.BORDER_STYLE_LEFT) {
+		this.paintLeftBorder(canvas, w, h);
+	}
+
+	if(this.borderStyle & WWidget.BORDER_STYLE_RIGHT) {
+		this.paintRightBorder(canvas, w, h);
+	}
+	
+	if(this.borderStyle & WWidget.BORDER_STYLE_TOP) {
+		this.paintTopBorder(canvas, w, h);
+	}
+	
+	if(this.borderStyle & WWidget.BORDER_STYLE_BOTTOM) {
+		this.paintBottomBorder(canvas, w, h);
+	}
+	canvas.beginPath();
 	
 	return;
 }
@@ -954,8 +1105,9 @@ WWidget.prototype.paintChildrenFocusLater = function(canvas) {
 	var n = this.children.length;
 	for(var i = 0; i < n; i++) {
 		var iter = this.children[i];
+		var iterFocused = (iter.state === WWidget.STATE_OVER || iter.state === WWidget.STATE_ACTIVE);
 
-		if(iter.state === WWidget.STATE_OVER) {
+		if(iterFocused) {
 			focusChild = iter;
 		}
 		else {
@@ -1083,10 +1235,10 @@ WWidget.prototype.findTarget = function(point) {
 ////////////////////////////////////////////
 WWidget.prototype.onPointerDown = function(point) {
 	if(!this.enable) return false;
-
+	
 	var target = this.findTarget(point);
-	if(this.target) {
-		if(this.target !== target) {
+	if(this.target !== target) {
+		if(this.target) {
 			this.target.setState(WWidget.STATE_NORMAL);
 		}
 	}
@@ -1096,12 +1248,11 @@ WWidget.prototype.onPointerDown = function(point) {
 		target.onPointerDown(point);
 	}
 	else {
-		if(this.state !== WWidget.STATE_DISABLE) {
-			this.setState(WWidget.STATE_ACTIVE);
-		}
+		this.changeCursor();
 	}
 
 	this.target = target;
+	this.postRedraw();
 
 	return true;
 }
@@ -1109,16 +1260,13 @@ WWidget.prototype.onPointerDown = function(point) {
 WWidget.prototype.onPointerMove = function(point) {
 	if(!this.enable) return false;
 
-	var target = this.findTarget(point);
 	this.pointerOverr = isPointInRect(point, this.rect);
+	var target = this.isPointerDown() ? this.target : this.findTarget(point);
 
-	if(this.target) {
-		if(this.target.state === WWidget.STATE_OVER || this.target.state === WWidget.STATE_ACTIVE) {
-			if(this.target !== target) {
-				this.target.setState(WWidget.STATE_NORMAL);
-			}
+	if(this.target !== target) {
+		if(this.target) {
+			this.target.setState(WWidget.STATE_NORMAL, true);
 		}
-		this.target.onPointerMove(point);
 	}
 
 	if(target) {
@@ -1128,44 +1276,48 @@ WWidget.prototype.onPointerMove = function(point) {
 		else {
 			target.setState(WWidget.STATE_OVER);
 		}
+		target.onPointerMove(point);
+	}
+	else {
+		this.changeCursor();
 	}
 	
-	if(this.target !== target) {
-		this.postRedraw();
-		this.target = target;
-		if(this.target) {
-			this.target.onPointerMove(point);
-		}
-	}
+	this.target = target;
+	this.postRedraw();
 
 	return true;
 }
 
 WWidget.prototype.onPointerUp = function(point) {
-	if(this.enable) {
-		var target = this.target;
-		if(target) {
-			if(target.state !== WWidget.STATE_DISABLE) {
-				target.onPointerUp(point);
-			}
+	if(!this.enable) return false;
+	
+	var target = this.findTarget(point);
+	if(this.target !== target) {
+		if(this.target) {
+			this.target.setState(WWidget.STATE_NORMAL);
+			this.target.onPointerUp(point);
 		}
+	}
+	
+	if(target) {
+		target.setState(WWidget.STATE_OVER);
+		target.onPointerUp(point);
+	}
+	else {
+		this.changeCursor();
+	}
 		
-		if(this.isClicked()) {
-			try {
-				this.onClicked(point);
-			}catch(e) {
-				console.debug('stack:', e.stack);
-				console.debug("this.onClicked:" + e.message);
-			}
+	if(this.isClicked()) {
+		try {
+			this.onClicked(point);
+		}catch(e) {
+			console.debug('stack:', e.stack);
+			console.debug("this.onClicked:" + e.message);
 		}
 	}
 
-	if(this.selectable) {
-		this.setState(WWidget.STATE_SELECTED);
-	}
-	else {
-		this.setState(WWidget.STATE_OVER);
-	}
+	this.target = target;
+	this.postRedraw();
 
 	return true;
 }
@@ -1179,7 +1331,7 @@ WWidget.prototype.onKeyDown = function(code) {
 		this.handleKeyDown(code);
 	}
 
-	console.log("onKeyUp WWidget:" + this.type + " code=" + code)
+	console.log("onKeyDown WWidget:" + this.type + " code=" + code)
 	return;
 }
 
@@ -1274,3 +1426,70 @@ WWidget.prototype.onGesture = function(gesture) {
 	return;
 }
 
+WWidget.prototype.setCursor = function(cursor) {
+	this.cursor = cursor;
+
+	return this;
+}
+
+WWidget.canvasPool = [];
+WWidget.resizeCanvas = function(canvas, w, h) {
+    canvas.width = w;
+    canvas.height = h;
+}
+
+WWidget.getCanvas = function(x, y, w, h, zIndex) {
+	var canvas = null;
+	if(WWidget.canvasPool.length) {
+		canvas = WWidget.canvasPool.pop();
+	}
+	else {
+		canvas = document.createElement('canvas');
+	}
+    
+    WWidget.resizeCanvas(canvas, w, h);
+	canvas.style.position = "absolute";
+	canvas.style.opacity = 1;
+	canvas.style.left = x + "px";
+	canvas.style.top = y + "px";
+	canvas.style.width = w + "px";
+	canvas.style.height = h + "px";
+	canvas.style.zIndex = zIndex;
+
+	return canvas;
+}
+
+WWidget.putCanvas = function(canvas) {
+	canvas.style.zIndex = -1;
+	canvas.style.opacity = 0;
+	WWidget.canvasPool.push(canvas);
+}
+
+WWidget.tipsCanvas = null;
+WWidget.getTipsCanvas = function(x, y, w, h, zIndex) {
+	if(!WWidget.tipsCanvas) {
+		WWidget.tipsCanvas = WWidget.getCanvas(x, y, w, h, zIndex);
+		document.body.appendChild(WWidget.tipsCanvas);
+	}
+
+	var canvas = WWidget.tipsCanvas;
+
+	canvas.width = w;
+	canvas.height = h;
+	canvas.style.position = "absolute";
+	canvas.style.opacity = 1;
+	canvas.style.left = x + "px";
+	canvas.style.top = y + "px";
+	canvas.style.width = w + "px";
+	canvas.style.height = h + "px";
+	canvas.style.zIndex = zIndex;
+
+	return canvas;
+}
+
+WWidget.hideTipsCanvas = function() {
+	var canvas = WWidget.tipsCanvas;
+	if(canvas) {
+		canvas.style.zIndex = -1;
+	}
+}

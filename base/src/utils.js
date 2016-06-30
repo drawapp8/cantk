@@ -323,125 +323,6 @@ function drawDashedLine(canvas, start_p, end_p, f, e) {
 	return;
 }
 
-var C_ARROW_NONE   = 0;
-var C_ARROW_NORMAL = 1;
-var C_ARROW_CIRCLE = 2;
-var C_ARROW_RECT   = 3;
-var C_ARROW_DIAMOND  = 4;
-var C_ARROW_TRI    = 5;
-var C_ARROW_FILL_CIRCLE = 1 << 8 | C_ARROW_CIRCLE;
-var C_ARROW_FILL_RECT   = 1 << 8 | C_ARROW_RECT;
-var C_ARROW_FILL_DIAMOND  = 1 << 8 | C_ARROW_DIAMOND;
-var C_ARROW_FILL_TRI    = 1 << 8 | C_ARROW_TRI;
-
-function drawArrowHeaderNormal(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.moveTo(-size/2, -size/2);
-	canvas.lineTo(size/2, 0);
-	canvas.lineTo(-size/2, size/2);
-	canvas.stroke();
-	canvas.beginPath();
-
-	return;
-}
-
-function drawArrowHeaderTri(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.moveTo(size/2, 0);
-	canvas.lineTo(-size/2, -size/2);
-	canvas.lineTo(-size/2, size/2);
-	canvas.lineTo(size/2, 0);
-	
-	return;
-}
-
-function drawArrowHeaderCircle(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.arc(0, 0, size/2, Math.PI*2, 0);
-	
-	return;
-}
-
-function drawArrowHeaderRect(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.rect(-size/2, -size/2, size, size);
-	
-	return;
-}
-
-function drawArrowHeaderRRect(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.rotate(Math.PI/4);
-	canvas.rect(-size/2, -size/2, size, size);
-		
-	return;
-}
-
-var arrow_draw_header = 
-[
-	null,
-	drawArrowHeaderNormal,
-	drawArrowHeaderCircle,
-	drawArrowHeaderRect,
-	drawArrowHeaderRRect,
-	drawArrowHeaderTri
-];
-
-function drawArrow(canvas, type, start_p, end_p, a_size) {
-	var size = 10;
-	if(!canvas || !start_p || !end_p) return;
-	var fill = type >> 8;
-	
-	type = type & 0xff;	
-	if(type <= 0 || type >= arrow_draw_header.length) {
-		return;
-	}
-	
-	if(a_size) {
-		size = a_size;
-	}
-	
-	var k = (end_p.y - start_p.y)/(end_p.x - start_p.x)
-	var angle = Math.atan(k);
-	
-
-	if(end_p.x < start_p.x) {
-		angle = angle + Math.PI;
-	}
-	
-	var fillStyle =  canvas.fillStyle;
-	var strokeStyle = canvas.strokeStyle;
-	
-	canvas.save();
-	
-	canvas.translate(end_p.x, end_p.y);
-	canvas.rotate(angle);
-	
-	canvas.beginPath();
-	size = size + canvas.lineWidth - 1;
-	arrow_draw_header[type](canvas, size);
-	canvas.closePath();
-	
-	if(fill) {
-		canvas.fillStyle = strokeStyle;
-	}
-	else {
-		canvas.fillStyle = "White";
-	}
-
-	if(type > 1) {
-		canvas.fill();
-	}
-	canvas.stroke();
-
-	canvas.restore();
-	
-	canvas.fillStyle =  fillStyle;
-	canvas.strokeStyle = strokeStyle;
-	
-	return;
-}
-
 var gCacheCanvas = null;
 function CacheCanvasGet(width, height) {
 	if(!gCacheCanvas) {
@@ -465,130 +346,81 @@ function CacheCanvasGet(width, height) {
 	return gCacheCanvas;
 }
 
-if(isWebkit()) {
-	drawNinePatchEx = function(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
-		var dx = 0;
-		var dy = 0;
-		var tw = 0;
-		var th = 0;
-		var cw = 0;
-		var ch = 0;
-		var dcw = 0;
-		var dch = 0;
-		
-		if(!image) {
-			context.fillRect(x, y, w, h);
-			return;
-		}
+function drawNinePatchEx(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
+	var dx = 0;
+	var dy = 0;
+	var tw = 0;
+	var th = 0;
+	var cw = 0;
+	var ch = 0;
+	var dcw = 0;
+	var dch = 0;
+	
+	if(!image) {
+		context.fillRect(x, y, w, h);
+		return;
+	}
 
-		if(!s_w || s_w > image.width) {
-			s_w = image.width;
-		}
+	if(!s_w || s_w > image.width) {
+		s_w = image.width;
+	}
 
-		if(!s_h || s_h > image.height) {
-			s_h = image.height;
-		}
+	if(!s_h || s_h > image.height) {
+		s_h = image.height;
+	}
 
-		if(w < s_w && h < s_h) {
-			context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
-
-			return;
-		}
-
-		tw = Math.floor(s_w/3);
-		th = Math.floor(s_h/3);
-		cw = s_w - tw - tw;
-		ch = s_h - th - th;
-		
-		dcw = w - tw - tw;
-		dch = h - th - th;
-
-		/*draw four corner*/
-		context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
-		context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
-
-		//top/bottom center
-		if(dcw > 0) {
-			context.drawImage(image, s_x+tw, s_y, cw, th, x+tw, y, dcw, th);
-			context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw, y+h-th, dcw, th);
-		}
-
-		//left/right middle 
-		if(dch > 0) {
-			context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th, tw, dch);
-			context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th, tw, dch);
-		}
-
-		//center + middle
-		if(dcw > 0 && dch > 0) {
-			context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw, y+th, dcw, dch);
-		}
+	if(w < s_w && h < s_h && (s_w < 3 || s_h < 3)) {
+		context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
 
 		return;
 	}
-} else {
-	drawNinePatchEx = function(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
-		var dx = 0;
-		var dy = 0;
-		var tw = 0;
-		var th = 0;
-		var cw = 0;
-		var ch = 0;
-		var dcw = 0;
-		var dch = 0;
-		
-		if(!image) {
-			context.fillRect(x, y, w, h);
-			return;
-		}
 
-		if(!s_w || s_w > image.width) {
-			s_w = image.width;
-		}
-
-		if(!s_h || s_h > image.height) {
-			s_h = image.height;
-		}
-
-		if(w < s_w && h < s_h) {
-			context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
-
-			return;
-		}
-
-		tw = Math.floor(s_w/3);
-		th = Math.floor(s_h/3);
-		cw = s_w - tw - tw;
-		ch = s_h - th - th;
-		
-		dcw = w - tw - tw;
-		dch = h - th - th;
-
-		/*draw four corner*/
-		context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
-		context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
-
-		if(dcw > 0) {
-			context.drawImage(image, s_x+tw, s_y, cw, th, x+tw-1, y, dcw+2, th);
-			context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw-1, y+h-th, dcw+2, th);
-		}
-
-		if(dch > 0) {
-			context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th-0.5, tw, dch+1);
-			context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th-0.5, tw, dch+1);
-		}
-
-		//center
-		if(dcw > 0 && dch > 0) {
-			context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw-1, y+th-1, dcw+2, dch+2);
-		}
-
-		return;
+	if(w < s_w) {
+		tw = w/2;
+		dcw = 0;
+		cw = 0;
 	}
+	else {
+		tw = Math.floor(s_w/3);
+		dcw = w - tw - tw;
+		cw = s_w - tw - tw;
+	}
+
+	if(h < s_h) {
+		th = h/2;
+		dch = 0;
+		ch = 0;
+	}
+	else {
+		th = Math.floor(s_h/3);
+		dch = h - th - th;
+		ch = s_h - th - th;
+	}
+
+	/*draw four corner*/
+	context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
+	context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
+	context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
+	context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
+
+	//top/bottom center
+	if(dcw > 0) {
+		context.drawImage(image, s_x+tw, s_y, cw, th, x+tw, y, dcw, th);
+		context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw, y+h-th, dcw, th);
+	}
+
+	//left/right middle 
+	if(dch > 0) {
+		context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th, tw, dch);
+		context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th, tw, dch);
+	}
+
+	//center + middle
+	if(dcw > 0 && dch > 0) {
+		context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw, y+th, dcw, dch);
+	}
+
+	return;
 }
 
 function drawNinePatch(context, image, x, y, w, h) {
@@ -695,7 +527,7 @@ if(!window.orgViewPort) {
 }
 
 function layoutText(canvas, fontSize, str, width, flexibleWidth) {
-	if(width <= 0 || !str) {
+	if(width <= 0 || !width || !str) {
 		return [];
 	}
 
@@ -1094,71 +926,91 @@ function httpGetJSON(url, onDone, autoProxy, withCredentials) {
 	return;
 }
 
+window.jsonpIndex = 0;
+function httpGetJSONP(url, onDone, options) {
+	var jsonp = "callback";
+	var name =  "jsonpCallBack" + window.jsonpIndex++;
+
+	window[name] = function(data) {
+		if(onDone) {
+			try {
+				onDone(data);
+			}catch(e) {
+				console.log(e.message);
+			}
+		}
+		console.log("jsonp data:" + url + "\n" + JSON.stringify(data));
+		delete window[name];
+	}
+
+	if(options && options.jsonp) {
+		jsonp = options.jsonp;
+	}
+
+	if(url.indexOf("?") > 0) {
+		url += "&"+jsonp+"="+name;
+	}
+	else {
+		url += "?"+jsonp+"="+name;
+	}
+
+	var node = document.head ? document.head : document.body;
+	var script = document.createElement("script");
+	script.onload = function() { 
+		console.log("jsonp success:" + url);
+	}
+
+	script.onerror = script.onabort = script.oncancel = function(e) {
+		console.log("jsonp error:" + url);
+	}
+
+	script.src = url;
+	node.appendChild(script);
+
+	return;
+}
+
 function cantkRestoreViewPort() {
 	cantkInitViewPort(1);
 
 	return;
 }
 
-function cantkSetViewPortWidth(width) {
-	var value = "";
-	var head = document.getElementsByTagName('head')[0];
-	var meta = document.querySelector("meta[name=viewport]");
-
-	if(!meta) {
-		meta = document.createElement('meta');
-		meta.name = 'viewport';
-		head.appendChild(meta);
-	}
-	
-	var content = 'width='+ width +'; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;';
-	meta.setAttribute('content', content);
-
-	return;
-}
-
-function cantkInitViewPort(scale) {
+function cantkInitViewPort() {
 	var value = "";
 	var meta = document.createElement('meta');
 	var head = document.getElementsByTagName('head')[0];
-	
-	if(window.devicePixelRatio && window.devicePixelRatio > 2) {
-		window.realDevicePixelRatio = window.devicePixelRatio;
-		window.devicePixelRatio = 2;
-	}
-
-	var defaultRatio = window.devicePixelRatio ? window.devicePixelRatio : 1;
-
-	scale = scale ? scale : (1/defaultRatio);
+	var scale = 1/(window.devicePixelRatio||1);	
+	var scale1Values = 'initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
 	var scaleValues = "initial-scale="+scale+", minimum-scale="+scale+", maximum-scale="+scale+", user-scalable=0";
 
+	var metaScale = 'width=device-width, ' + scaleValues;
+	var metaDensity = 'target-densitydpi=device-dpi, width=device-width, ' + scale1Values;
+
 	if(isIPhone()) {
-	  value = 'width=device-width, ' + scaleValues;
+		value = metaScale;
 	}
 	else if(isAndroid()) {
 		var ver = browserVersion();
 		if(ver < 537.00 || isWeiXin() || isWeiBo() || isQQ()) {
-			window.devicePixelRatio = window.realDevicePixelRatio;
-			value = 'target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+			value = metaDensity;
 		}
 		else { 
-			//target-densitydpi is not supported any longer in new version.
-			value =  'width=device-width, ' + scaleValues; 
+			value = metaScale;
 		}
 	}
 	else if(isFirefoxMobile()) {
-      var vp = cantkGetViewPort();
-	  value =  'width='+vp.width+', ' + scaleValues; 
+		var vp = cantkGetViewPort();
+		value = 'width='+vp.width+', ' + scaleValues; 
 	}
 	else {
-	  value =  'width=device-width, ' + scaleValues; 
+		value =  metaScale;;
 	}
 
 	meta.name = 'viewport';
 	meta.content = value;
-
-	console.log("viewport: " + value);
 	head.appendChild(meta);
+	console.log("viewport: " + value);
 
 	return;
 }
@@ -1259,25 +1111,6 @@ function isScriptLoaded(url) {
 
 
 /////////////////////////////////////////////////////////
-Locales = {};
-Locales.getLanguageName = function() {
-	var lang = "";
-	if(navigator.language) {
-		lang = navigator.language;
-	}
-	else if(navigator.userLanguage) {
-		lang = navigator.userLanguage;
-	}
-
-	lang = lang.toLowerCase();
-
-	return lang;
-}
-
-function cantkGetLocale() {
-	return Locales.getLanguageName();
-}
-	
 var requestAnimFrame = CantkRT.requestAnimFrame;
 
 function getQueryParameter(key) {
@@ -1327,7 +1160,9 @@ function basename(path) {
 }
 
 function dirname(path) {
-	return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+	var str = path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+
+	return str ? str : "/";
 }
 
 String.prototype.basename = function(withoutExt) {
@@ -1343,6 +1178,22 @@ String.prototype.basename = function(withoutExt) {
 	return filename;
 }
 
+String.prototype.toRelativeURL = function() {
+	var str = this;
+    var host;
+    if(window.location.protocol === "file:") {
+		host = dirname(window.location.href) + "/";
+	}
+	else {
+		host = window.location.protocol + "//" + window.location.host + "/";
+	}
+
+    if(str.startWith(host)) {
+        return str.substring(host.length, str.length);    
+    }
+    return str;
+}
+
 String.prototype.extname = function() {	
 	var extName = "";
 	var index = this.lastIndexOf('.');
@@ -1356,6 +1207,22 @@ String.prototype.extname = function() {
 
 String.prototype.dirname = function() {
 	return this.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+}
+
+String.prototype.isLower = function() {
+	return /^[a-z]+$/.test(this); 
+}
+
+String.prototype.isUpper = function() {
+	return /^[A-Z]+$/.test(this); 
+}
+
+String.prototype.isDigit = function() {
+	return /^[0-9]+$/.test(this); 
+}
+
+String.prototype.isValidName = function() {
+	return /^[0-9]+$|^[A-Z]+$|^[a-z]+$|_/.test(this); 
 }
 
 function cantkIsFullscreen() {
@@ -1377,19 +1244,31 @@ function cantkRequestFullscreen(onDone) {
 		return true;
 	}
 
-    var element = document.documentElement;
-    if (document.documentElement.requestFullscreen) {
+	var element = document.documentElement;
+	if (document.documentElement.requestFullscreen) {
 		element.addEventListener('fullscreenchange', onFullscreenChanged, true);
-    	return element.requestFullscreen();
-    } else if (document.documentElement.mozRequestFullScreen) {
+		return element.requestFullscreen();
+	} else if (document.documentElement.mozRequestFullScreen) {
 		element.addEventListener('mozfullscreenchange', onFullscreenChanged, true);
-    	return element.mozRequestFullScreen();
-    } else if (document.documentElement.webkitRequestFullScreen) {
+		return element.mozRequestFullScreen();
+	} else if (document.documentElement.webkitRequestFullScreen) {
 		element.addEventListener('webkitfullscreenchange', onFullscreenChanged, true);
-    	return element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-    }
+		return element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+	}
 	
 	return false;
+}
+
+function cantkCancelFullscreen() {
+	if(document.cancelFullScreen) {
+		document.cancelFullScreen();
+	}
+	else if(document.webkitCancelFullScreen) {
+		document.webkitCancelFullScreen();
+	}
+	else if(document.mozCancelFullScreen) {
+		document.mozCancelFullScreen();
+	}
 }
 
 function saveStrToFile(fileName, content) {
@@ -1590,283 +1469,6 @@ window.setStatisticsData = function(data) {
 	return;
 }
 
-/*
- * JavaScript MD5 1.0.1
- * https://github.com/blueimp/JavaScript-MD5
- *
- * Copyright 2011, Sebastian Tschan
- * https://blueimp.net
- *
- * Licensed under the MIT license:
- * http://www.opensource.org/licenses/MIT
- * 
- * Based on
- * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
- * Digest Algorithm, as defined in RFC 1321.
- * Version 2.2 Copyright (C) Paul Johnston 1999 - 2009
- * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
- * Distributed under the BSD License
- * See http://pajhome.org.uk/crypt/md5 for more info.
- */
-
-/*jslint bitwise: true */
-/*global unescape, define */
-
-(function ($) {
-    'use strict';
-
-    /*
-    * Add integers, wrapping at 2^32. This uses 16-bit operations internally
-    * to work around bugs in some JS interpreters.
-    */
-    function safe_add(x, y) {
-        var lsw = (x & 0xFFFF) + (y & 0xFFFF),
-            msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-        return (msw << 16) | (lsw & 0xFFFF);
-    }
-
-    /*
-    * Bitwise rotate a 32-bit number to the left.
-    */
-    function bit_rol(num, cnt) {
-        return (num << cnt) | (num >>> (32 - cnt));
-    }
-
-    /*
-    * These functions implement the four basic operations the algorithm uses.
-    */
-    function md5_cmn(q, a, b, x, s, t) {
-        return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s), b);
-    }
-    function md5_ff(a, b, c, d, x, s, t) {
-        return md5_cmn((b & c) | ((~b) & d), a, b, x, s, t);
-    }
-    function md5_gg(a, b, c, d, x, s, t) {
-        return md5_cmn((b & d) | (c & (~d)), a, b, x, s, t);
-    }
-    function md5_hh(a, b, c, d, x, s, t) {
-        return md5_cmn(b ^ c ^ d, a, b, x, s, t);
-    }
-    function md5_ii(a, b, c, d, x, s, t) {
-        return md5_cmn(c ^ (b | (~d)), a, b, x, s, t);
-    }
-
-    /*
-    * Calculate the MD5 of an array of little-endian words, and a bit length.
-    */
-    function binl_md5(x, len) {
-        /* append padding */
-        x[len >> 5] |= 0x80 << (len % 32);
-        x[(((len + 64) >>> 9) << 4) + 14] = len;
-
-        var i, olda, oldb, oldc, oldd,
-            a =  1732584193,
-            b = -271733879,
-            c = -1732584194,
-            d =  271733878;
-
-        for (i = 0; i < x.length; i += 16) {
-            olda = a;
-            oldb = b;
-            oldc = c;
-            oldd = d;
-
-            a = md5_ff(a, b, c, d, x[i],       7, -680876936);
-            d = md5_ff(d, a, b, c, x[i +  1], 12, -389564586);
-            c = md5_ff(c, d, a, b, x[i +  2], 17,  606105819);
-            b = md5_ff(b, c, d, a, x[i +  3], 22, -1044525330);
-            a = md5_ff(a, b, c, d, x[i +  4],  7, -176418897);
-            d = md5_ff(d, a, b, c, x[i +  5], 12,  1200080426);
-            c = md5_ff(c, d, a, b, x[i +  6], 17, -1473231341);
-            b = md5_ff(b, c, d, a, x[i +  7], 22, -45705983);
-            a = md5_ff(a, b, c, d, x[i +  8],  7,  1770035416);
-            d = md5_ff(d, a, b, c, x[i +  9], 12, -1958414417);
-            c = md5_ff(c, d, a, b, x[i + 10], 17, -42063);
-            b = md5_ff(b, c, d, a, x[i + 11], 22, -1990404162);
-            a = md5_ff(a, b, c, d, x[i + 12],  7,  1804603682);
-            d = md5_ff(d, a, b, c, x[i + 13], 12, -40341101);
-            c = md5_ff(c, d, a, b, x[i + 14], 17, -1502002290);
-            b = md5_ff(b, c, d, a, x[i + 15], 22,  1236535329);
-
-            a = md5_gg(a, b, c, d, x[i +  1],  5, -165796510);
-            d = md5_gg(d, a, b, c, x[i +  6],  9, -1069501632);
-            c = md5_gg(c, d, a, b, x[i + 11], 14,  643717713);
-            b = md5_gg(b, c, d, a, x[i],      20, -373897302);
-            a = md5_gg(a, b, c, d, x[i +  5],  5, -701558691);
-            d = md5_gg(d, a, b, c, x[i + 10],  9,  38016083);
-            c = md5_gg(c, d, a, b, x[i + 15], 14, -660478335);
-            b = md5_gg(b, c, d, a, x[i +  4], 20, -405537848);
-            a = md5_gg(a, b, c, d, x[i +  9],  5,  568446438);
-            d = md5_gg(d, a, b, c, x[i + 14],  9, -1019803690);
-            c = md5_gg(c, d, a, b, x[i +  3], 14, -187363961);
-            b = md5_gg(b, c, d, a, x[i +  8], 20,  1163531501);
-            a = md5_gg(a, b, c, d, x[i + 13],  5, -1444681467);
-            d = md5_gg(d, a, b, c, x[i +  2],  9, -51403784);
-            c = md5_gg(c, d, a, b, x[i +  7], 14,  1735328473);
-            b = md5_gg(b, c, d, a, x[i + 12], 20, -1926607734);
-
-            a = md5_hh(a, b, c, d, x[i +  5],  4, -378558);
-            d = md5_hh(d, a, b, c, x[i +  8], 11, -2022574463);
-            c = md5_hh(c, d, a, b, x[i + 11], 16,  1839030562);
-            b = md5_hh(b, c, d, a, x[i + 14], 23, -35309556);
-            a = md5_hh(a, b, c, d, x[i +  1],  4, -1530992060);
-            d = md5_hh(d, a, b, c, x[i +  4], 11,  1272893353);
-            c = md5_hh(c, d, a, b, x[i +  7], 16, -155497632);
-            b = md5_hh(b, c, d, a, x[i + 10], 23, -1094730640);
-            a = md5_hh(a, b, c, d, x[i + 13],  4,  681279174);
-            d = md5_hh(d, a, b, c, x[i],      11, -358537222);
-            c = md5_hh(c, d, a, b, x[i +  3], 16, -722521979);
-            b = md5_hh(b, c, d, a, x[i +  6], 23,  76029189);
-            a = md5_hh(a, b, c, d, x[i +  9],  4, -640364487);
-            d = md5_hh(d, a, b, c, x[i + 12], 11, -421815835);
-            c = md5_hh(c, d, a, b, x[i + 15], 16,  530742520);
-            b = md5_hh(b, c, d, a, x[i +  2], 23, -995338651);
-
-            a = md5_ii(a, b, c, d, x[i],       6, -198630844);
-            d = md5_ii(d, a, b, c, x[i +  7], 10,  1126891415);
-            c = md5_ii(c, d, a, b, x[i + 14], 15, -1416354905);
-            b = md5_ii(b, c, d, a, x[i +  5], 21, -57434055);
-            a = md5_ii(a, b, c, d, x[i + 12],  6,  1700485571);
-            d = md5_ii(d, a, b, c, x[i +  3], 10, -1894986606);
-            c = md5_ii(c, d, a, b, x[i + 10], 15, -1051523);
-            b = md5_ii(b, c, d, a, x[i +  1], 21, -2054922799);
-            a = md5_ii(a, b, c, d, x[i +  8],  6,  1873313359);
-            d = md5_ii(d, a, b, c, x[i + 15], 10, -30611744);
-            c = md5_ii(c, d, a, b, x[i +  6], 15, -1560198380);
-            b = md5_ii(b, c, d, a, x[i + 13], 21,  1309151649);
-            a = md5_ii(a, b, c, d, x[i +  4],  6, -145523070);
-            d = md5_ii(d, a, b, c, x[i + 11], 10, -1120210379);
-            c = md5_ii(c, d, a, b, x[i +  2], 15,  718787259);
-            b = md5_ii(b, c, d, a, x[i +  9], 21, -343485551);
-
-            a = safe_add(a, olda);
-            b = safe_add(b, oldb);
-            c = safe_add(c, oldc);
-            d = safe_add(d, oldd);
-        }
-        return [a, b, c, d];
-    }
-
-    /*
-    * Convert an array of little-endian words to a string
-    */
-    function binl2rstr(input) {
-        var i,
-            output = '';
-        for (i = 0; i < input.length * 32; i += 8) {
-            output += String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xFF);
-        }
-        return output;
-    }
-
-    /*
-    * Convert a raw string to an array of little-endian words
-    * Characters >255 have their high-byte silently ignored.
-    */
-    function rstr2binl(input) {
-        var i,
-            output = [];
-        output[(input.length >> 2) - 1] = undefined;
-        for (i = 0; i < output.length; i += 1) {
-            output[i] = 0;
-        }
-        for (i = 0; i < input.length * 8; i += 8) {
-            output[i >> 5] |= (input.charCodeAt(i / 8) & 0xFF) << (i % 32);
-        }
-        return output;
-    }
-
-    /*
-    * Calculate the MD5 of a raw string
-    */
-    function rstr_md5(s) {
-        return binl2rstr(binl_md5(rstr2binl(s), s.length * 8));
-    }
-
-    /*
-    * Calculate the HMAC-MD5, of a key and some data (raw strings)
-    */
-    function rstr_hmac_md5(key, data) {
-        var i,
-            bkey = rstr2binl(key),
-            ipad = [],
-            opad = [],
-            hash;
-        ipad[15] = opad[15] = undefined;
-        if (bkey.length > 16) {
-            bkey = binl_md5(bkey, key.length * 8);
-        }
-        for (i = 0; i < 16; i += 1) {
-            ipad[i] = bkey[i] ^ 0x36363636;
-            opad[i] = bkey[i] ^ 0x5C5C5C5C;
-        }
-        hash = binl_md5(ipad.concat(rstr2binl(data)), 512 + data.length * 8);
-        return binl2rstr(binl_md5(opad.concat(hash), 512 + 128));
-    }
-
-    /*
-    * Convert a raw string to a hex string
-    */
-    function rstr2hex(input) {
-        var hex_tab = '0123456789abcdef',
-            output = '',
-            x,
-            i;
-        for (i = 0; i < input.length; i += 1) {
-            x = input.charCodeAt(i);
-            output += hex_tab.charAt((x >>> 4) & 0x0F) +
-                hex_tab.charAt(x & 0x0F);
-        }
-        return output;
-    }
-
-    /*
-    * Encode a string as utf-8
-    */
-    function str2rstr_utf8(input) {
-        return unescape(encodeURIComponent(input));
-    }
-
-    /*
-    * Take string arguments and return either raw or hex encoded strings
-    */
-    function raw_md5(s) {
-        return rstr_md5(str2rstr_utf8(s));
-    }
-    function hex_md5(s) {
-        return rstr2hex(raw_md5(s));
-    }
-    function raw_hmac_md5(k, d) {
-        return rstr_hmac_md5(str2rstr_utf8(k), str2rstr_utf8(d));
-    }
-    function hex_hmac_md5(k, d) {
-        return rstr2hex(raw_hmac_md5(k, d));
-    }
-
-    function md5(string, key, raw) {
-        if (!key) {
-            if (!raw) {
-                return hex_md5(string);
-            }
-            return raw_md5(string);
-        }
-        if (!raw) {
-            return hex_hmac_md5(key, string);
-        }
-        return raw_hmac_md5(key, string);
-    }
-
-    if (typeof define === 'function' && define.amd) {
-        define(function () {
-            return md5;
-        });
-    } else {
-        $.md5 = md5;
-    }
-    window.md5 = md5;
-    window.sum = md5;
-}(this));
-
 function showFileDialog(accept, multiple, capture, onDone) {
 	var input = document.createElement("input");
 	var form = document.getElementById("defform");
@@ -1892,5 +1494,324 @@ function showFileDialog(accept, multiple, capture, onDone) {
 
 	input.click();
 }
+
+/////////////////////////////////////////////////////
+//Promise
+window.Promise = window.Promise || (function(root) {
+	function Promise(func) {
+		if(typeof func !== 'function') {
+			throw new TypeError('func must a function');
+		}
+
+		this.state = Promise.STATE_UNFULFILLED;
+		this.outcome = void 0;
+		this.queue = [];
+
+		if(func !== INTERNAL) {
+			Promise.resolveThenable(this, func);
+		}
+	}
+
+	Promise.STATE_RESOLVE = 'resolve';
+	Promise.STATE_REJECT  = 'reject';
+	Promise.STATE_UNFULFILLED = 'unfulfilled';
+
+	function INTERNAL() {}
+
+	Promise.resolveThenable = function(promise, thenable) {
+		var called = false;
+
+		function onSucceed(value) {
+			if(!called) {
+				called = true;
+				Promise.doResolve(promise, value);
+			}
+		}
+
+		function onError(error) {
+			if(!called) {
+				called = true;
+				Promise.doReject(promise, error);
+			}
+		}
+
+		function wrapTheanble() {
+			thenable(onSucceed, onError);
+		}
+
+		var ret = Promise.safeCall(wrapTheanble);
+		if(ret.state === 'error') {
+			onError(ret.value);
+		}
+	};
+
+	Promise.getThen = function(obj) {
+		var then = obj && obj.then;
+		return typeof obj === 'object' && typeof then  === 'function' && function() {
+			then.apply(obj, arguments);
+		};
+	};
+
+	Promise.safeCall = function(func, param) {
+		var ret= {};
+
+		try {
+			ret.value = func(param);
+			ret.state = 'success';
+		}
+		catch(err) {
+			ret.value = err;
+			ret.state = 'error';
+		}
+
+		return ret;
+	};
+
+	Promise.doResolve = function(promise, value) {
+		var result = Promise.safeCall(Promise.getThen, value);
+
+		if(result.state === 'error') {
+			return Promise.doReject(promise, result.value);
+		}
+
+		if(result.value) {
+			Promise.resolveThenable(promise, result.value);	
+		}
+		else {
+			promise.state = Promise.STATE_RESOLVE;
+			promise.outcome = value;
+			promise.queue.forEach(function(iter) {
+				if(typeof iter.onResolve === 'function') {
+					Promise.callNextTick(iter.promise, iter.onResolve, value);
+				}
+				else {
+					Promise.doResolve(iter.promise, value);
+				}
+			});
+		}
+
+		return promise;
+	};
+
+	Promise.doReject = function(promise, error) {
+		promise.state = Promise.STATE_REJECT;
+		promise.outcome = error;
+
+		promise.queue.forEach(function(iter) {
+			if(typeof iter.onReject === 'function') {
+				Promise.callNextTick(iter.promise, iter.onReject, error);
+			}
+			else {
+				Promise.doReject(iter.promise, error);
+			}
+		});
+
+		return promise;
+	};
+
+	Promise.callNextTick = function(promise, hander, param) {
+		setTimeout(function() {
+			var ret;
+			try {
+				ret = hander(param);
+			}
+			catch(err) {
+				return Promise.doReject(promise, err);
+			}
+
+			if(ret === promise) {
+				Promise.doReject(promise, new TypeError('Cannot resolve promise with itself'));
+			}
+			else {
+				Promise.doResolve(promise, ret);
+			}
+		}, 0);
+	};
+
+	Promise.prototype.then = function(onFulfilled, onReject) {
+		if(typeof onFulfilled !== 'function' && this.state === Promise.STATE_RESOLVE
+			|| typeof onReject !== 'function' && this.state === Promise.STATE_REJECT) {
+			return this;
+		}
+
+		var newPromise = new this.constructor(INTERNAL);
+		if(this.state !== Promise.STATE_UNFULFILLED) {
+			var hander = this.state === Promise.STATE_REJECT ? onReject : onFulfilled;
+			Promise.callNextTick(newPromise, hander, this.outcome);
+		}
+		else {
+			this.queue.push({promise: newPromise, onResolve: onFulfilled, onReject: onReject});
+		}
+
+		return newPromise;
+	};
+
+	Promise.prototype.catch = function(onReject) {
+		return this.then(null, onReject);
+	};
+
+	Promise.resolve = function(value) {
+		if(value instanceof this) {
+			return value;
+		}
+		var promise = new this(INTERNAL);
+		return Promise.doResolve(promise, value);
+	};
+
+	Promise.reject = function(reason) {
+		var promise = new this(INTERNAL);
+		return Promise.doReject(promise, reason);
+	};
+
+	Promise.optimizeThumb = function(doit) {
+		return function(iterable) {
+			if(!Array.isArray(iterable)) {
+				return Promise.reject(new TypeError('iterable must be array'));
+			}
+			if(!iterable.length) {
+				return Promise.resolve([]);
+			}
+			var promise = new Promise(INTERNAL);
+			doit(promise, iterable);
+
+			return promise;
+		};
+	};
+
+	Promise.all = Promise.optimizeThumb(function(promise, iterable) {
+		var result = [],
+			called = false,
+			count = iterable.length;
+
+		for(var i = 0; i < count; i++) {
+			var iter = iterable[i];
+			Promise.resolve(iter)
+			.then(function(value) {
+				result.push(value);
+				if(!called && result.length === count) {
+					called = true;
+					Promise.doResolve(promise, result);
+				}
+			}, function(error) {
+				if(!called) {
+					called = true;
+					Promise.doReject(promise, error);
+				}
+			});
+		}
+	});
+
+	Promise.race = Promise.optimizeThumb(function(promise, iterable) {
+		var called = false;
+
+		for(var i = 0; i < iterable.length; i++) {
+			var iter = iterable[i];
+			Promise.resolve(iter)
+			.then(function(value) {
+				if(!called) {
+					called = true;
+					Promise.doResolve(promise, value);
+				}
+			}, function(error) {
+				if(!called) {
+					called = true;
+					Promise.doReject(promise, error);
+				}
+			});
+		}
+	});
+	return Promise;
+})(this);
+
+window.Deferred = window.Deferred || (function(root) {
+	var Promise = root.Promise;
+
+	function Deferred() {
+		if(!(this instanceof Deferred)) {
+			return new Deferred();
+		}
+
+		var self = this;
+		this.promise = new Promise(function(resolve, reject) {
+			self.reject = reject;
+			self.resolve = resolve;
+		});
+	}
+
+	Deferred.prototype.makeResolver = function() {
+		var self = this;
+		return function(err, data) {
+			if(err) {
+				self.reject(err);
+			}
+			else if(arguments.length > 2) {
+				self.resolve(Array.prototype.slice.call(arguments, 1));
+			}
+			else {
+				self.resolve(data);
+			}
+		};
+	};
+	return Deferred;
+})(this);
+
+void function(global) {
+	var isBoolean = function(obj) {
+		return obj === true || obj === false || Object.prototype.toString.call(obj) === '[Object Boolean]';
+	}
+	global.unique = function(array, isSorted, iteratee, context) {
+		if(!isBoolean(isSorted)) {
+			context = iteratee;
+			iteratee = isSorted;
+			isSorted = false;
+		}
+		var result = [],
+			seen = [];
+		for(var i = 0; i < array.length; i++) {
+			var value = array[i],
+				computed = iteratee ? iteratee.call(context, value, i, array) : value;
+			if(isSorted) {
+				if(!i || seen !== computed) {
+					result.push(computed);
+				}
+				seen = computed;
+			}
+			else if(iteratee) {
+				if(seen.indexOf(computed) === -1) {
+					seen.push(computed);
+					result.push(value);
+				}
+			}
+			else if(result.indexOf(value) === -1) {
+				result.push(value);
+			}
+		}
+
+		return result;
+	};
+}(this);
+
+function filterResults(n_win, n_docel, n_body) {
+	var n_result = n_win ? n_win : 0;
+	if (n_docel && (!n_result || (n_result > n_docel)))
+		n_result = n_docel;
+	return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
+};
+
+function getScrollLeft() {
+	return filterResults (
+		window.pageXOffset ? window.pageXOffset : 0,
+		document.documentElement ? document.documentElement.scrollLeft : 0,
+		document.body ? document.body.scrollLeft : 0
+	);
+};
+
+function getScrollTop() {
+	return filterResults (
+		window.pageYOffset ? window.pageYOffset : 0,
+		document.documentElement ? document.documentElement.scrollTop : 0,
+		document.body ? document.body.scrollTop : 0
+	);
+};
 
 

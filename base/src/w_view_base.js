@@ -169,7 +169,7 @@ WViewBase.prototype.getDocID = function() {
 	return this.docid ? this.docid : WViewBase.generateDocID();
 }
 
-WViewBase.prototype.saveAsJson = function() {
+WViewBase.prototype.saveAsJsonObj = function() {
 	var o = {};
 	var page = null;
 	var now = new Date();
@@ -188,10 +188,17 @@ WViewBase.prototype.saveAsJson = function() {
 	o.pages = this.pages;
 	o.saveDate = now.toLocaleString();
 
+	return o;
+}
+
+WViewBase.prototype.saveAsJson = function() {
+	var o = this.saveAsJsonObj();
+
 	var js = JSON.stringify(o, null, "\t");
 
 	return js;
 }
+
 
 WViewBase.prototype.parseJson = function(jsonStr) {
 	if(!jsonStr) {
@@ -394,6 +401,9 @@ WViewBase.prototype.translatePoint = function(p) {
 	return point; 
 }
 
+WViewBase.prototype.onNewShape = function(shape) {
+}
+
 WViewBase.prototype.addShape = function(shape) {
 	this.allShapes.push(shape);
 	shape.setView(this);
@@ -411,6 +421,8 @@ WViewBase.prototype.addShape = function(shape) {
 	if(shape.mode != Shape.MODE_RUNNING && shape.isUIDevice) {
 		this.autoScale();
 	}
+
+	this.onNewShape(this.creatingShape);
 
 	return;
 }

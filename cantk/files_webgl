@@ -1,0 +1,13 @@
+./webgl/js/color-string.js
+./webgl/js/data_buffer.js
+./webgl/js/line_clip.js
+./webgl/js/math.js
+./webgl/js/matrix.js
+./webgl/js/shader.js
+./webgl/js/shader_draw_image.js
+./webgl/js/shader_draw_primitives.js
+./webgl/js/typed_array_ext.js
+./webgl/js/MaxRectsBinPack.js
+./webgl/js/utils.js
+./webgl/js/auto_packer.js
+./webgl/js/CanvasRenderingContext2DWebGL.js

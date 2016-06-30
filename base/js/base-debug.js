@@ -1,10 +1,19 @@
+
+/*
+ * File:    browser.js
+ * Author:  Li XianJing <xianjimli@hotmail.com>
+ * Brief:   detect browser
+ * 
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016  Holaverse Inc.
+ * 
+ */
 function browser() {
 }
 
 browser.init = function() {
 	var u = navigator.userAgent, app = navigator.appVersion;
 
-	browser = {};
 	browser.ie9 = u.indexOf('MSIE 9.0') >=0;
 	browser.ie10 = u.indexOf('MSIE 10.0') >=0;
 	browser.ie = u.indexOf('MSIE') >=0 || u.indexOf('Trident') >=0;
@@ -20,6 +29,9 @@ browser.init = function() {
 	browser.weixin = u.indexOf("MicroMessenger") >= 0;
 	browser.weibo = u.indexOf("weibo") >= 0;
 	browser.qq = u.indexOf("QQ") >= 0;
+	browser.linux = u.indexOf("Linux") >= 0;
+	browser.windows = u.indexOf("Windows") >= 0;
+	browser.macosx = u.indexOf("Mac OS X") >= 0;
 
 	if(browser.iPhone) {
 		var a = u.match(/iPhone; CPU iPhone OS \d+/g);
@@ -60,7 +72,7 @@ browser.init = function() {
 	}
 	
 	browser.isMobile = browser.android || browser.iPhone || browser.blackberry
-		|| browser.windowPhone || browser.firefoxMobile;
+		|| browser.windowPhone || browser.firefoxMobile || browser.iPad;
 
 	if(browser.isMobile) {
 		window.console.logStr = "";
@@ -116,6 +128,18 @@ function isMobile() {
 	return browser.isMobile;
 }
 
+browser.isWindows = function() {
+	return !browser.isMobile && browser.windows;
+}
+
+browser.isLinux = function() {
+	return !browser.isMobile && browser.linux;
+}
+
+browser.isMacOSX = function() {
+	return !browser.isMobile && browser.macosx;
+}
+
 function isAndroid() {
 	return browser.android;
 }
@@ -125,7 +149,7 @@ function isIPhone() {
 }
 
 function isIPad() {
-	return browser.ipad;
+	return browser.iPad;
 }
 
 function isWinPhone() {
@@ -144,6 +168,10 @@ function isFirefoxOS () {
 	return browser.firefoxOS;
 }
 
+function isHolaPlay() {
+	return window.cantkRTV8;
+}
+
 function isPhoneGap() {
 	return (window.cordova || window.Cordova || window.PhoneGap || window.phonegap) 
 		&& /^file:\/{3}[^\/]/i.test(window.location.href) 
@@ -158,7 +186,207 @@ function browserVersion() {
 	return browser.number;
 }
 
+if (typeof KeyEvent === "undefined") {
+    var KeyEvent = {
+        DOM_VK_CANCEL: 3,
+        DOM_VK_HELP: 6,
+        DOM_VK_BACK_SPACE: 8,
+        DOM_VK_TAB: 9,
+        DOM_VK_CLEAR: 12,
+        DOM_VK_RETURN: 13,
+        DOM_VK_ENTER: 14,
+        DOM_VK_SHIFT: 16,
+        DOM_VK_CONTROL: 17,
+        DOM_VK_ALT: 18,
+        DOM_VK_PAUSE: 19,
+        DOM_VK_CAPS_LOCK: 20,
+        DOM_VK_ESCAPE: 27,
+        DOM_VK_SPACE: 32,
+        DOM_VK_PAGE_UP: 33,
+        DOM_VK_PAGE_DOWN: 34,
+        DOM_VK_END: 35,
+        DOM_VK_HOME: 36,
+        DOM_VK_LEFT: 37,
+        DOM_VK_UP: 38,
+        DOM_VK_RIGHT: 39,
+        DOM_VK_DOWN: 40,
+        DOM_VK_PRINTSCREEN: 44,
+        DOM_VK_INSERT: 45,
+        DOM_VK_DELETE: 46,
+        DOM_VK_0: 48,
+        DOM_VK_1: 49,
+        DOM_VK_2: 50,
+        DOM_VK_3: 51,
+        DOM_VK_4: 52,
+        DOM_VK_5: 53,
+        DOM_VK_6: 54,
+        DOM_VK_7: 55,
+        DOM_VK_8: 56,
+        DOM_VK_9: 57,
+        DOM_VK_SEMICOLON: 59,
+        DOM_VK_EQUALS: 61,
+        DOM_VK_A: 65,
+        DOM_VK_B: 66,
+        DOM_VK_C: 67,
+        DOM_VK_D: 68,
+        DOM_VK_E: 69,
+        DOM_VK_F: 70,
+        DOM_VK_G: 71,
+        DOM_VK_H: 72,
+        DOM_VK_I: 73,
+        DOM_VK_J: 74,
+        DOM_VK_K: 75,
+        DOM_VK_L: 76,
+        DOM_VK_M: 77,
+        DOM_VK_N: 78,
+        DOM_VK_O: 79,
+        DOM_VK_P: 80,
+        DOM_VK_Q: 81,
+        DOM_VK_R: 82,
+        DOM_VK_S: 83,
+        DOM_VK_T: 84,
+        DOM_VK_U: 85,
+        DOM_VK_V: 86,
+        DOM_VK_W: 87,
+        DOM_VK_X: 88,
+        DOM_VK_Y: 89,
+        DOM_VK_Z: 90,
+        DOM_VK_CONTEXT_MENU: 93,
+        DOM_VK_NUMPAD0: 96,
+        DOM_VK_NUMPAD1: 97,
+        DOM_VK_NUMPAD2: 98,
+        DOM_VK_NUMPAD3: 99,
+        DOM_VK_NUMPAD4: 100,
+        DOM_VK_NUMPAD5: 101,
+        DOM_VK_NUMPAD6: 102,
+        DOM_VK_NUMPAD7: 103,
+        DOM_VK_NUMPAD8: 104,
+        DOM_VK_NUMPAD9: 105,
+        DOM_VK_MULTIPLY: 106,
+        DOM_VK_ADD: 107,
+        DOM_VK_SEPARATOR: 108,
+        DOM_VK_SUBTRACT: 109,
+        DOM_VK_DECIMAL: 110,
+        DOM_VK_DIVIDE: 111,
+        DOM_VK_BACK_BUTTON: 115, /*F4*/
+        DOM_VK_MENU_BUTTON: 118, /*F7*/
+        DOM_VK_SEARCH_BUTTON: 120, /*F9*/
+        DOM_VK_F1: 112,
+        DOM_VK_F2: 113,
+        DOM_VK_F3: 114,
+        DOM_VK_F4: 115,
+        DOM_VK_F5: 116,
+        DOM_VK_F6: 117,
+        DOM_VK_F7: 118,
+        DOM_VK_F8: 119,
+        DOM_VK_F9: 120,
+        DOM_VK_F10: 121,
+        DOM_VK_F11: 122,
+        DOM_VK_F12: 123,
+        DOM_VK_F13: 124,
+        DOM_VK_F14: 125,
+        DOM_VK_F15: 126,
+        DOM_VK_F16: 127,
+        DOM_VK_F17: 128,
+        DOM_VK_F18: 129,
+        DOM_VK_F19: 130,
+        DOM_VK_F20: 131,
+        DOM_VK_F21: 132,
+        DOM_VK_F22: 133,
+        DOM_VK_F23: 134,
+        DOM_VK_F24: 135,
+        DOM_VK_NUM_LOCK: 144,
+        DOM_VK_SCROLL_LOCK: 145,
+        DOM_VK_COMMA: 188,
+        DOM_VK_PERIOD: 190,
+        DOM_VK_SLASH: 191,
+        DOM_VK_BACK_QUOTE: 192,
+        DOM_VK_OPEN_BRACKET: 219,
+        DOM_VK_BACK_SLASH: 220,
+        DOM_VK_CLOSE_BRACKET: 221,
+        DOM_VK_QUOTE: 222,
+        DOM_VK_META: 224
+    };
+}
+KeyEvent.DOM_VK_BACK = 225;
+
 browser.init();
+
+/*
+ * File:    locales.js
+ * Author:  Li XianJing <xianjimli@hotmail.com>
+ * Brief:   functions to handle locale strings.
+ * 
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016  Holaverse Inc.
+ * 
+ */
+
+Locales = {};
+
+Locales.getLang = function() {
+	var lang = navigator.language || navigator.userLanguage;
+
+	return lang;
+}
+
+Locales.getLanguageName = Locales.getLang;
+
+Locales.setTextTable = function(textTable) {
+	Locales.textTable = textTable;
+
+	return;
+}
+
+Locales.setLanguageSupportList = function(langList) {
+    Locales.languageList = langList;
+}
+
+Locales.getLanguageSupportList = function() {
+    return Locales.languageList;
+}
+
+Locales.getTextTable = function() {
+	return Locales.textTable;
+}
+
+Locales.addTextTable = function(textTable) {
+	if(!Locales.textTable) {
+		Locales.textTable = {};
+	}
+
+	for(var key in textTable) {
+		Locales.textTable[key] = textTable[key];
+	}
+
+	return;
+}
+
+Locales.getText = function(text) {
+	var str = null;
+	
+	if(Locales.textTable) {
+		str = Locales.textTable[text];
+		if(!str) {
+			Locales.textTable[text] = text;
+		}
+	}
+
+	return str ? str : text;
+}
+
+window.dappGetText = function(text) {	
+	return Locales.getText(text);
+}
+
+window.dappGetTitle = function(text) {	
+	return dappGetText(text) + ":";
+}
+
+window.cantkGetLocale = function() {
+	return Locales.getLang();
+}
+window.Locales = Locales;
 
 /*
  * File:   cantk-rt.js
@@ -168,64 +396,54 @@ browser.init();
  * Copyright (c) 2015 - 2015 Tangram HD Inc.
  * 
  */
- 
 function CantkRT() {
 }
 
-CantkRT.isNative = function() {
-	return !!CantkRT.rt;
+CantkRT.init = function(onDeviceReady) {
+	window.onload = onDeviceReady;
 }
 
-CantkRT.init = function(onReady) {
-	function onDeviceReady() {
-		try {
-			CantkRT.rt = cordova.require("com.tangide.cantk.CantkRuntime");	
-		}catch(e) {
-			console.log("com.tangide.cantk.CantkRuntime not found.");
-		}
+CantkRT.isNative = function() {
+	return CantkRT.isCantkRTV8() || CantkRT.isCantkRTCordova();
+}
 
-		if(CantkRT.rt) {
-			CantkRT.rt.init();
-			CantkRT.setShowFPS(true);
-		}
+CantkRT.isCantkRTV8 = function() {
+	return !!window.cantkRTV8;
+}
 
-		onReady();
+CantkRT.loadFont = function(name, url) {
+	if(window.loadFont) {
+		window.loadFont(name, url);
 	}
+	console.log("load font " + name + ":" + url);
+}
 
-	if(window.cordova) {
-		document.addEventListener('deviceready', onDeviceReady, false);
-	}
-	else {
-		window.addEventListener('load', onReady, false);
-	}
-
-	return;
+CantkRT.isCantkRTCordova = function() {
+	return !!window.cantkRTCordova;
 }
 
 CantkRT.getViewPort = function() {
 	var width;
 	var height;
 
-	if(CantkRT.rt) {
-		return CantkRT.rt.getViewPort();
+	if(window.displayInfo) {
+		width = window.displayInfo.width;
+		height = window.displayInfo.height;
 	}
-	else {
-		if (typeof window.innerWidth != 'undefined'){
-			width = window.innerWidth;
-			height = window.innerHeight;
-		}
-		else if (typeof document.documentElement != 'undefined'
-		&& typeof document.documentElement.clientWidth !=
-		'undefined' && document.documentElement.clientWidth != 0)
-		{
-			width = document.documentElement.clientWidth;
-			height = document.documentElement.clientHeight;
-		}
-		else{
-			width = document.getElementsByTagName('body')[0].clientWidth;
-			height = document.getElementsByTagName('body')[0].clientHeight;
-		}
-
+	else if (typeof window.innerWidth != 'undefined'){
+		width = window.innerWidth;
+		height = window.innerHeight;
+	}
+	else if (typeof document.documentElement != 'undefined'
+	&& typeof document.documentElement.clientWidth !=
+	'undefined' && document.documentElement.clientWidth != 0)
+	{
+		width = document.documentElement.clientWidth;
+		height = document.documentElement.clientHeight;
+	}
+	else{
+		width = document.getElementsByTagName('body')[0].clientWidth;
+		height = document.getElementsByTagName('body')[0].clientHeight;
 	}
 	
 	return {width:width, height:height};
@@ -238,17 +456,19 @@ CantkRT.getMainCanvas = function() {
 		return CantkRT.canvas;
 	}
 
-	if(CantkRT.rt) {
-		canvas = CantkRT.rt.createCanvas();
-		console.log("CantkRT.rt.createCanvas");
-	}
-	else {
+	canvas = document.getElementById('main_canvas');
+	if(!canvas) {
 		canvas = document.createElement("canvas");
-		
-		canvas.id = "main-canvas";
+		canvas.id = "main_canvas";
 		canvas.style.zIndex = 0;
 		document.body.appendChild(canvas);
-	
+	}
+
+	if(canvas.setAsMainCanvas) {
+		canvas.setAsMainCanvas();
+	}
+
+	if(!canvas.flush) {
 		canvas.flush = function() {}
 	}
 
@@ -257,52 +477,91 @@ CantkRT.getMainCanvas = function() {
 	return canvas;
 }
 
+CantkRT.mainCanvasW = 0;
+CantkRT.mainCanvasH = 0;
+CantkRT.mainCanvasScale = {x:1, y:1};
+CantkRT.mainCanvasPostion = {x:0, y:0};
+
+CantkRT.moveMainCanvas = function(x, y) {
+	var canvas = CantkRT.getMainCanvas();
+	canvas.style.position = "absolute";
+	canvas.style.top = y + "px";
+	canvas.style.left = x + "px";
+	CantkRT.mainCanvasPostion.x = x;
+	CantkRT.mainCanvasPostion.y = y;
+}
+
+CantkRT.resizeMainCanvas = function(w, h, styleW, styleH) {
+	var canvas = CantkRT.getMainCanvas();
+
+	canvas.width = w;
+	canvas.height = h;
+	canvas.style.width = styleW + "px";
+	canvas.style.height = styleH + "px";
+	CantkRT.mainCanvasW = w;
+	CantkRT.mainCanvasH = h;
+	CantkRT.mainCanvasScale.x = w/styleW;
+	CantkRT.mainCanvasScale.y = h/styleH;
+}
+
+CantkRT.getMainCanvasScale = function() {
+	return CantkRT.mainCanvasScale;
+}
+
+CantkRT.getMainCanvasPosition = function() {
+	return CantkRT.mainCanvasPostion;
+}
+
 CantkRT.isResSupportCrossOrgin = function(src) {
-	return src && (src.indexOf("upaiyun.com") > 0 || src.indexOf("bcs.duapp.com") > 0);
+	if(src && src.indexOf("file://") < 0 
+		&& src.indexOf("data:image") !== 0 
+		&& src.indexOf("api.map.baidu.com") < 0 
+		&& src.indexOf("maps.googleapis.com") < 0 
+		&& src.indexOf(location.host) < 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 CantkRT.createImage = function(src, onLoad, onError) {
 	var image = null;
-	if(CantkRT.rt) {
-		image = CantkRT.rt.createImage(src, onLoad, onError);
+	image = new Image();
+	image.onload = function() {
+		if(onLoad) {
+			onLoad(image);
+		}
 	}
-	else {
-		image = new Image();
-		image.onload = function() {
-			if(onLoad) {
-				onLoad(image);
-			}
+	
+	image.onerror = function(e) {
+		if(e) {
+			console.log(this.src + " load error: " + e.message);
 		}
-		
-		image.onerror = function(e) {
-			if(e) {
-				console.log(this.src + " load error: " + e.message);
-			}
-			else {
-				console.log(this.src + " load error");
-			}
-
-			if(image.crossOrigin) {
-				var src = image.src;
-				image.crossOrigin = null;
-				image.src = null;
-				image.src = src;
-				console.log("try without image.crossOrigin:" + src);
-				return;
-			}
-
-			if(onError) {
-				onError(image);
-			}
-
-		}
-		
-		if(CantkRT.isResSupportCrossOrgin(src)) {
-			image.crossOrigin = "Anonymous";
+		else {
+			console.log(this.src + " load error");
 		}
 
-		image.src = src;
+		if(image.crossOrigin) {
+			var src = image.src;
+			image.crossOrigin = null;
+			image.src = null;
+			image.src = src;
+			console.log("try without image.crossOrigin:" + src);
+			return;
+		}
+
+		if(onError) {
+			onError(image);
+		}
+
 	}
+	
+	if(CantkRT.isResSupportCrossOrgin(src)) {
+		image.crossOrigin = "Anonymous";
+	}
+
+	image.src = src;
 
 	return image;
 }
@@ -316,57 +575,11 @@ CantkRT.createImageFromCanvas = function(canvas, onLoad, onError) {
 		return null;
 	}
 
-	if(CantkRT.rt) {
-		return CantkRT.rt.createImage(canvas.toDataURL(), onLoad, onError);
-	}
-	else {
-		if(onLoad) {
-			onLoad(canvas);
-		}
-		return canvas;
-	}
-}
-
-CantkRT.setShowFPS = function(value) {
-	console.log("CantkRT.setShowFPS");
-	if(CantkRT.rt) {
-		return CantkRT.rt.setShowFPS(value);
-	}
-	else {
-		return;
-	}
-}
-
-CantkRT.createSoundEffect = function(url, onLoad, onError) {
-	if(CantkRT.rt) {
-		return CantkRT.rt.createSoundEffect(url, onLoad, onError);
+	if(onLoad) {
+		onLoad(canvas);
 	}
 
-	return null;
-}
-
-CantkRT.createSoundMusic = function(url, onLoad, onError) {
-	if(CantkRT.rt) {
-		return CantkRT.rt.createSoundMusic(url, onLoad, onError);
-	}
-
-	return null;
-}
-
-CantkRT.createSingleLineTextEditor = function() {
-	if(CantkRT.rt) {
-		return CantkRT.rt.createSingleLineTextEditor();
-	}
-
-	return null;
-}
-
-CantkRT.createMultiLineTextEditor= function() {
-	if(CantkRT.rt) {
-		return CantkRT.rt.createMultiLineTextEditor();
-	}
-
-	return null;
+	return canvas;
 }
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame 
@@ -374,16 +587,34 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequest
 
 CantkRT.requestAnimFrame = function(callback) {
 	return window.requestAnimationFrame(callback);
-/*
-	if(CantkRT.rt) {
-		return window.setTimeout(callback, 10);
-	}
-	else {
-		return window.requestAnimationFrame(callback);
-	}
-*/	
 }
 
+CantkRT.createSound = function(src, soundEffect, onDone, onFail) {
+	var audio = new Audio();
+
+	audio.setAsSoundEffect(soundEffect);
+	audio.onload = function() {
+		if(onDone) {
+			onDone(audio);
+		}
+	}
+	audio.onerror = function(e) {
+		if(onFail) {
+			onFail(e);
+		}
+	}
+	audio.src = src;
+
+	return audio;
+}
+
+CantkRT.createSoundEffect = function(src, onDone, onFail) {
+	return CantkRT.createSound(src, true, onDone, onFail);
+}
+
+CantkRT.createSoundMusic = function(src, onDone, onFail) {
+	return CantkRT.createSound(src, false, onDone, onFail);
+}
 /*
  * File: utils.js
  * Author:  Li XianJing <xianjimli@hotmail.com>
@@ -709,125 +940,6 @@ function drawDashedLine(canvas, start_p, end_p, f, e) {
 	return;
 }
 
-var C_ARROW_NONE   = 0;
-var C_ARROW_NORMAL = 1;
-var C_ARROW_CIRCLE = 2;
-var C_ARROW_RECT   = 3;
-var C_ARROW_DIAMOND  = 4;
-var C_ARROW_TRI    = 5;
-var C_ARROW_FILL_CIRCLE = 1 << 8 | C_ARROW_CIRCLE;
-var C_ARROW_FILL_RECT   = 1 << 8 | C_ARROW_RECT;
-var C_ARROW_FILL_DIAMOND  = 1 << 8 | C_ARROW_DIAMOND;
-var C_ARROW_FILL_TRI    = 1 << 8 | C_ARROW_TRI;
-
-function drawArrowHeaderNormal(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.moveTo(-size/2, -size/2);
-	canvas.lineTo(size/2, 0);
-	canvas.lineTo(-size/2, size/2);
-	canvas.stroke();
-	canvas.beginPath();
-
-	return;
-}
-
-function drawArrowHeaderTri(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.moveTo(size/2, 0);
-	canvas.lineTo(-size/2, -size/2);
-	canvas.lineTo(-size/2, size/2);
-	canvas.lineTo(size/2, 0);
-	
-	return;
-}
-
-function drawArrowHeaderCircle(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.arc(0, 0, size/2, Math.PI*2, 0);
-	
-	return;
-}
-
-function drawArrowHeaderRect(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.rect(-size/2, -size/2, size, size);
-	
-	return;
-}
-
-function drawArrowHeaderRRect(canvas, size) {
-	canvas.translate(-size/2, 0);
-	canvas.rotate(Math.PI/4);
-	canvas.rect(-size/2, -size/2, size, size);
-		
-	return;
-}
-
-var arrow_draw_header = 
-[
-	null,
-	drawArrowHeaderNormal,
-	drawArrowHeaderCircle,
-	drawArrowHeaderRect,
-	drawArrowHeaderRRect,
-	drawArrowHeaderTri
-];
-
-function drawArrow(canvas, type, start_p, end_p, a_size) {
-	var size = 10;
-	if(!canvas || !start_p || !end_p) return;
-	var fill = type >> 8;
-	
-	type = type & 0xff;	
-	if(type <= 0 || type >= arrow_draw_header.length) {
-		return;
-	}
-	
-	if(a_size) {
-		size = a_size;
-	}
-	
-	var k = (end_p.y - start_p.y)/(end_p.x - start_p.x)
-	var angle = Math.atan(k);
-	
-
-	if(end_p.x < start_p.x) {
-		angle = angle + Math.PI;
-	}
-	
-	var fillStyle =  canvas.fillStyle;
-	var strokeStyle = canvas.strokeStyle;
-	
-	canvas.save();
-	
-	canvas.translate(end_p.x, end_p.y);
-	canvas.rotate(angle);
-	
-	canvas.beginPath();
-	size = size + canvas.lineWidth - 1;
-	arrow_draw_header[type](canvas, size);
-	canvas.closePath();
-	
-	if(fill) {
-		canvas.fillStyle = strokeStyle;
-	}
-	else {
-		canvas.fillStyle = "White";
-	}
-
-	if(type > 1) {
-		canvas.fill();
-	}
-	canvas.stroke();
-
-	canvas.restore();
-	
-	canvas.fillStyle =  fillStyle;
-	canvas.strokeStyle = strokeStyle;
-	
-	return;
-}
-
 var gCacheCanvas = null;
 function CacheCanvasGet(width, height) {
 	if(!gCacheCanvas) {
@@ -851,130 +963,81 @@ function CacheCanvasGet(width, height) {
 	return gCacheCanvas;
 }
 
-if(isWebkit()) {
-	drawNinePatchEx = function(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
-		var dx = 0;
-		var dy = 0;
-		var tw = 0;
-		var th = 0;
-		var cw = 0;
-		var ch = 0;
-		var dcw = 0;
-		var dch = 0;
-		
-		if(!image) {
-			context.fillRect(x, y, w, h);
-			return;
-		}
+function drawNinePatchEx(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
+	var dx = 0;
+	var dy = 0;
+	var tw = 0;
+	var th = 0;
+	var cw = 0;
+	var ch = 0;
+	var dcw = 0;
+	var dch = 0;
+	
+	if(!image) {
+		context.fillRect(x, y, w, h);
+		return;
+	}
 
-		if(!s_w || s_w > image.width) {
-			s_w = image.width;
-		}
+	if(!s_w || s_w > image.width) {
+		s_w = image.width;
+	}
 
-		if(!s_h || s_h > image.height) {
-			s_h = image.height;
-		}
+	if(!s_h || s_h > image.height) {
+		s_h = image.height;
+	}
 
-		if(w < s_w && h < s_h) {
-			context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
-
-			return;
-		}
-
-		tw = Math.floor(s_w/3);
-		th = Math.floor(s_h/3);
-		cw = s_w - tw - tw;
-		ch = s_h - th - th;
-		
-		dcw = w - tw - tw;
-		dch = h - th - th;
-
-		/*draw four corner*/
-		context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
-		context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
-
-		//top/bottom center
-		if(dcw > 0) {
-			context.drawImage(image, s_x+tw, s_y, cw, th, x+tw, y, dcw, th);
-			context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw, y+h-th, dcw, th);
-		}
-
-		//left/right middle 
-		if(dch > 0) {
-			context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th, tw, dch);
-			context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th, tw, dch);
-		}
-
-		//center + middle
-		if(dcw > 0 && dch > 0) {
-			context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw, y+th, dcw, dch);
-		}
+	if(w < s_w && h < s_h && (s_w < 3 || s_h < 3)) {
+		context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
 
 		return;
 	}
-} else {
-	drawNinePatchEx = function(context, image, s_x, s_y, s_w, s_h, x, y, w, h) {
-		var dx = 0;
-		var dy = 0;
-		var tw = 0;
-		var th = 0;
-		var cw = 0;
-		var ch = 0;
-		var dcw = 0;
-		var dch = 0;
-		
-		if(!image) {
-			context.fillRect(x, y, w, h);
-			return;
-		}
 
-		if(!s_w || s_w > image.width) {
-			s_w = image.width;
-		}
-
-		if(!s_h || s_h > image.height) {
-			s_h = image.height;
-		}
-
-		if(w < s_w && h < s_h) {
-			context.drawImage(image, s_x, s_y, s_w, s_h, x, y, w, h);
-
-			return;
-		}
-
-		tw = Math.floor(s_w/3);
-		th = Math.floor(s_h/3);
-		cw = s_w - tw - tw;
-		ch = s_h - th - th;
-		
-		dcw = w - tw - tw;
-		dch = h - th - th;
-
-		/*draw four corner*/
-		context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
-		context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
-		context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
-
-		if(dcw > 0) {
-			context.drawImage(image, s_x+tw, s_y, cw, th, x+tw-1, y, dcw+2, th);
-			context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw-1, y+h-th, dcw+2, th);
-		}
-
-		if(dch > 0) {
-			context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th-0.5, tw, dch+1);
-			context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th-0.5, tw, dch+1);
-		}
-
-		//center
-		if(dcw > 0 && dch > 0) {
-			context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw-1, y+th-1, dcw+2, dch+2);
-		}
-
-		return;
+	if(w < s_w) {
+		tw = w/2;
+		dcw = 0;
+		cw = 0;
 	}
+	else {
+		tw = Math.floor(s_w/3);
+		dcw = w - tw - tw;
+		cw = s_w - tw - tw;
+	}
+
+	if(h < s_h) {
+		th = h/2;
+		dch = 0;
+		ch = 0;
+	}
+	else {
+		th = Math.floor(s_h/3);
+		dch = h - th - th;
+		ch = s_h - th - th;
+	}
+
+	/*draw four corner*/
+	context.drawImage(image, s_x, s_y, tw, th, x, y, tw, th);
+	context.drawImage(image, s_x+s_w-tw, s_y, tw, th, x+w-tw, y, tw, th);
+	context.drawImage(image, s_x, s_y+s_h-th, tw, th, x, y+h-th, tw, th);
+	context.drawImage(image, s_x+s_w-tw, s_y+s_h-th, tw, th, x+w-tw, y+h-th, tw, th);
+
+	//top/bottom center
+	if(dcw > 0) {
+		context.drawImage(image, s_x+tw, s_y, cw, th, x+tw, y, dcw, th);
+		context.drawImage(image, s_x+tw, s_y+s_h-th, cw, th, x+tw, y+h-th, dcw, th);
+	}
+
+	//left/right middle 
+	if(dch > 0) {
+		context.drawImage(image, s_x, s_y+th, tw, ch, x, y+th, tw, dch);
+		context.drawImage(image, s_x+s_w-tw, s_y+th, tw, ch, x+w-tw, y+th, tw, dch);
+	}
+
+	//center + middle
+	if(dcw > 0 && dch > 0) {
+		context.drawImage(image, s_x+tw, s_y+th, cw, ch, x+tw, y+th, dcw, dch);
+	}
+
+	return;
 }
 
 function drawNinePatch(context, image, x, y, w, h) {
@@ -1081,7 +1144,7 @@ if(!window.orgViewPort) {
 }
 
 function layoutText(canvas, fontSize, str, width, flexibleWidth) {
-	if(width <= 0 || !str) {
+	if(width <= 0 || !width || !str) {
 		return [];
 	}
 
@@ -1480,71 +1543,91 @@ function httpGetJSON(url, onDone, autoProxy, withCredentials) {
 	return;
 }
 
+window.jsonpIndex = 0;
+function httpGetJSONP(url, onDone, options) {
+	var jsonp = "callback";
+	var name =  "jsonpCallBack" + window.jsonpIndex++;
+
+	window[name] = function(data) {
+		if(onDone) {
+			try {
+				onDone(data);
+			}catch(e) {
+				console.log(e.message);
+			}
+		}
+		console.log("jsonp data:" + url + "\n" + JSON.stringify(data));
+		delete window[name];
+	}
+
+	if(options && options.jsonp) {
+		jsonp = options.jsonp;
+	}
+
+	if(url.indexOf("?") > 0) {
+		url += "&"+jsonp+"="+name;
+	}
+	else {
+		url += "?"+jsonp+"="+name;
+	}
+
+	var node = document.head ? document.head : document.body;
+	var script = document.createElement("script");
+	script.onload = function() { 
+		console.log("jsonp success:" + url);
+	}
+
+	script.onerror = script.onabort = script.oncancel = function(e) {
+		console.log("jsonp error:" + url);
+	}
+
+	script.src = url;
+	node.appendChild(script);
+
+	return;
+}
+
 function cantkRestoreViewPort() {
 	cantkInitViewPort(1);
 
 	return;
 }
 
-function cantkSetViewPortWidth(width) {
-	var value = "";
-	var head = document.getElementsByTagName('head')[0];
-	var meta = document.querySelector("meta[name=viewport]");
-
-	if(!meta) {
-		meta = document.createElement('meta');
-		meta.name = 'viewport';
-		head.appendChild(meta);
-	}
-	
-	var content = 'width='+ width +'; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;';
-	meta.setAttribute('content', content);
-
-	return;
-}
-
-function cantkInitViewPort(scale) {
+function cantkInitViewPort() {
 	var value = "";
 	var meta = document.createElement('meta');
 	var head = document.getElementsByTagName('head')[0];
-	
-	if(window.devicePixelRatio && window.devicePixelRatio > 2) {
-		window.realDevicePixelRatio = window.devicePixelRatio;
-		window.devicePixelRatio = 2;
-	}
-
-	var defaultRatio = window.devicePixelRatio ? window.devicePixelRatio : 1;
-
-	scale = scale ? scale : (1/defaultRatio);
+	var scale = 1/(window.devicePixelRatio||1);	
+	var scale1Values = 'initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
 	var scaleValues = "initial-scale="+scale+", minimum-scale="+scale+", maximum-scale="+scale+", user-scalable=0";
 
+	var metaScale = 'width=device-width, ' + scaleValues;
+	var metaDensity = 'target-densitydpi=device-dpi, width=device-width, ' + scale1Values;
+
 	if(isIPhone()) {
-	  value = 'width=device-width, ' + scaleValues;
+		value = metaScale;
 	}
 	else if(isAndroid()) {
 		var ver = browserVersion();
 		if(ver < 537.00 || isWeiXin() || isWeiBo() || isQQ()) {
-			window.devicePixelRatio = window.realDevicePixelRatio;
-			value = 'target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+			value = metaDensity;
 		}
 		else { 
-			//target-densitydpi is not supported any longer in new version.
-			value =  'width=device-width, ' + scaleValues; 
+			value = metaScale;
 		}
 	}
 	else if(isFirefoxMobile()) {
-      var vp = cantkGetViewPort();
-	  value =  'width='+vp.width+', ' + scaleValues; 
+		var vp = cantkGetViewPort();
+		value = 'width='+vp.width+', ' + scaleValues; 
 	}
 	else {
-	  value =  'width=device-width, ' + scaleValues; 
+		value =  metaScale;;
 	}
 
 	meta.name = 'viewport';
 	meta.content = value;
-
-	console.log("viewport: " + value);
 	head.appendChild(meta);
+	console.log("viewport: " + value);
 
 	return;
 }
@@ -1645,25 +1728,6 @@ function isScriptLoaded(url) {
 
 
 /////////////////////////////////////////////////////////
-Locales = {};
-Locales.getLanguageName = function() {
-	var lang = "";
-	if(navigator.language) {
-		lang = navigator.language;
-	}
-	else if(navigator.userLanguage) {
-		lang = navigator.userLanguage;
-	}
-
-	lang = lang.toLowerCase();
-
-	return lang;
-}
-
-function cantkGetLocale() {
-	return Locales.getLanguageName();
-}
-	
 var requestAnimFrame = CantkRT.requestAnimFrame;
 
 function getQueryParameter(key) {
@@ -1713,7 +1777,9 @@ function basename(path) {
 }
 
 function dirname(path) {
-	return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+	var str = path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+
+	return str ? str : "/";
 }
 
 String.prototype.basename = function(withoutExt) {
@@ -1729,6 +1795,22 @@ String.prototype.basename = function(withoutExt) {
 	return filename;
 }
 
+String.prototype.toRelativeURL = function() {
+	var str = this;
+    var host;
+    if(window.location.protocol === "file:") {
+		host = dirname(window.location.href) + "/";
+	}
+	else {
+		host = window.location.protocol + "//" + window.location.host + "/";
+	}
+
+    if(str.startWith(host)) {
+        return str.substring(host.length, str.length);    
+    }
+    return str;
+}
+
 String.prototype.extname = function() {	
 	var extName = "";
 	var index = this.lastIndexOf('.');
@@ -1742,6 +1824,22 @@ String.prototype.extname = function() {
 
 String.prototype.dirname = function() {
 	return this.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+}
+
+String.prototype.isLower = function() {
+	return /^[a-z]+$/.test(this); 
+}
+
+String.prototype.isUpper = function() {
+	return /^[A-Z]+$/.test(this); 
+}
+
+String.prototype.isDigit = function() {
+	return /^[0-9]+$/.test(this); 
+}
+
+String.prototype.isValidName = function() {
+	return /^[0-9]+$|^[A-Z]+$|^[a-z]+$|_/.test(this); 
 }
 
 function cantkIsFullscreen() {
@@ -1763,19 +1861,31 @@ function cantkRequestFullscreen(onDone) {
 		return true;
 	}
 
-    var element = document.documentElement;
-    if (document.documentElement.requestFullscreen) {
+	var element = document.documentElement;
+	if (document.documentElement.requestFullscreen) {
 		element.addEventListener('fullscreenchange', onFullscreenChanged, true);
-    	return element.requestFullscreen();
-    } else if (document.documentElement.mozRequestFullScreen) {
+		return element.requestFullscreen();
+	} else if (document.documentElement.mozRequestFullScreen) {
 		element.addEventListener('mozfullscreenchange', onFullscreenChanged, true);
-    	return element.mozRequestFullScreen();
-    } else if (document.documentElement.webkitRequestFullScreen) {
+		return element.mozRequestFullScreen();
+	} else if (document.documentElement.webkitRequestFullScreen) {
 		element.addEventListener('webkitfullscreenchange', onFullscreenChanged, true);
-    	return element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-    }
+		return element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+	}
 	
 	return false;
+}
+
+function cantkCancelFullscreen() {
+	if(document.cancelFullScreen) {
+		document.cancelFullScreen();
+	}
+	else if(document.webkitCancelFullScreen) {
+		document.webkitCancelFullScreen();
+	}
+	else if(document.mozCancelFullScreen) {
+		document.mozCancelFullScreen();
+	}
 }
 
 function saveStrToFile(fileName, content) {
@@ -1976,283 +2086,6 @@ window.setStatisticsData = function(data) {
 	return;
 }
 
-/*
- * JavaScript MD5 1.0.1
- * https://github.com/blueimp/JavaScript-MD5
- *
- * Copyright 2011, Sebastian Tschan
- * https://blueimp.net
- *
- * Licensed under the MIT license:
- * http://www.opensource.org/licenses/MIT
- * 
- * Based on
- * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
- * Digest Algorithm, as defined in RFC 1321.
- * Version 2.2 Copyright (C) Paul Johnston 1999 - 2009
- * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
- * Distributed under the BSD License
- * See http://pajhome.org.uk/crypt/md5 for more info.
- */
-
-/*jslint bitwise: true */
-/*global unescape, define */
-
-(function ($) {
-    'use strict';
-
-    /*
-    * Add integers, wrapping at 2^32. This uses 16-bit operations internally
-    * to work around bugs in some JS interpreters.
-    */
-    function safe_add(x, y) {
-        var lsw = (x & 0xFFFF) + (y & 0xFFFF),
-            msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-        return (msw << 16) | (lsw & 0xFFFF);
-    }
-
-    /*
-    * Bitwise rotate a 32-bit number to the left.
-    */
-    function bit_rol(num, cnt) {
-        return (num << cnt) | (num >>> (32 - cnt));
-    }
-
-    /*
-    * These functions implement the four basic operations the algorithm uses.
-    */
-    function md5_cmn(q, a, b, x, s, t) {
-        return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s), b);
-    }
-    function md5_ff(a, b, c, d, x, s, t) {
-        return md5_cmn((b & c) | ((~b) & d), a, b, x, s, t);
-    }
-    function md5_gg(a, b, c, d, x, s, t) {
-        return md5_cmn((b & d) | (c & (~d)), a, b, x, s, t);
-    }
-    function md5_hh(a, b, c, d, x, s, t) {
-        return md5_cmn(b ^ c ^ d, a, b, x, s, t);
-    }
-    function md5_ii(a, b, c, d, x, s, t) {
-        return md5_cmn(c ^ (b | (~d)), a, b, x, s, t);
-    }
-
-    /*
-    * Calculate the MD5 of an array of little-endian words, and a bit length.
-    */
-    function binl_md5(x, len) {
-        /* append padding */
-        x[len >> 5] |= 0x80 << (len % 32);
-        x[(((len + 64) >>> 9) << 4) + 14] = len;
-
-        var i, olda, oldb, oldc, oldd,
-            a =  1732584193,
-            b = -271733879,
-            c = -1732584194,
-            d =  271733878;
-
-        for (i = 0; i < x.length; i += 16) {
-            olda = a;
-            oldb = b;
-            oldc = c;
-            oldd = d;
-
-            a = md5_ff(a, b, c, d, x[i],       7, -680876936);
-            d = md5_ff(d, a, b, c, x[i +  1], 12, -389564586);
-            c = md5_ff(c, d, a, b, x[i +  2], 17,  606105819);
-            b = md5_ff(b, c, d, a, x[i +  3], 22, -1044525330);
-            a = md5_ff(a, b, c, d, x[i +  4],  7, -176418897);
-            d = md5_ff(d, a, b, c, x[i +  5], 12,  1200080426);
-            c = md5_ff(c, d, a, b, x[i +  6], 17, -1473231341);
-            b = md5_ff(b, c, d, a, x[i +  7], 22, -45705983);
-            a = md5_ff(a, b, c, d, x[i +  8],  7,  1770035416);
-            d = md5_ff(d, a, b, c, x[i +  9], 12, -1958414417);
-            c = md5_ff(c, d, a, b, x[i + 10], 17, -42063);
-            b = md5_ff(b, c, d, a, x[i + 11], 22, -1990404162);
-            a = md5_ff(a, b, c, d, x[i + 12],  7,  1804603682);
-            d = md5_ff(d, a, b, c, x[i + 13], 12, -40341101);
-            c = md5_ff(c, d, a, b, x[i + 14], 17, -1502002290);
-            b = md5_ff(b, c, d, a, x[i + 15], 22,  1236535329);
-
-            a = md5_gg(a, b, c, d, x[i +  1],  5, -165796510);
-            d = md5_gg(d, a, b, c, x[i +  6],  9, -1069501632);
-            c = md5_gg(c, d, a, b, x[i + 11], 14,  643717713);
-            b = md5_gg(b, c, d, a, x[i],      20, -373897302);
-            a = md5_gg(a, b, c, d, x[i +  5],  5, -701558691);
-            d = md5_gg(d, a, b, c, x[i + 10],  9,  38016083);
-            c = md5_gg(c, d, a, b, x[i + 15], 14, -660478335);
-            b = md5_gg(b, c, d, a, x[i +  4], 20, -405537848);
-            a = md5_gg(a, b, c, d, x[i +  9],  5,  568446438);
-            d = md5_gg(d, a, b, c, x[i + 14],  9, -1019803690);
-            c = md5_gg(c, d, a, b, x[i +  3], 14, -187363961);
-            b = md5_gg(b, c, d, a, x[i +  8], 20,  1163531501);
-            a = md5_gg(a, b, c, d, x[i + 13],  5, -1444681467);
-            d = md5_gg(d, a, b, c, x[i +  2],  9, -51403784);
-            c = md5_gg(c, d, a, b, x[i +  7], 14,  1735328473);
-            b = md5_gg(b, c, d, a, x[i + 12], 20, -1926607734);
-
-            a = md5_hh(a, b, c, d, x[i +  5],  4, -378558);
-            d = md5_hh(d, a, b, c, x[i +  8], 11, -2022574463);
-            c = md5_hh(c, d, a, b, x[i + 11], 16,  1839030562);
-            b = md5_hh(b, c, d, a, x[i + 14], 23, -35309556);
-            a = md5_hh(a, b, c, d, x[i +  1],  4, -1530992060);
-            d = md5_hh(d, a, b, c, x[i +  4], 11,  1272893353);
-            c = md5_hh(c, d, a, b, x[i +  7], 16, -155497632);
-            b = md5_hh(b, c, d, a, x[i + 10], 23, -1094730640);
-            a = md5_hh(a, b, c, d, x[i + 13],  4,  681279174);
-            d = md5_hh(d, a, b, c, x[i],      11, -358537222);
-            c = md5_hh(c, d, a, b, x[i +  3], 16, -722521979);
-            b = md5_hh(b, c, d, a, x[i +  6], 23,  76029189);
-            a = md5_hh(a, b, c, d, x[i +  9],  4, -640364487);
-            d = md5_hh(d, a, b, c, x[i + 12], 11, -421815835);
-            c = md5_hh(c, d, a, b, x[i + 15], 16,  530742520);
-            b = md5_hh(b, c, d, a, x[i +  2], 23, -995338651);
-
-            a = md5_ii(a, b, c, d, x[i],       6, -198630844);
-            d = md5_ii(d, a, b, c, x[i +  7], 10,  1126891415);
-            c = md5_ii(c, d, a, b, x[i + 14], 15, -1416354905);
-            b = md5_ii(b, c, d, a, x[i +  5], 21, -57434055);
-            a = md5_ii(a, b, c, d, x[i + 12],  6,  1700485571);
-            d = md5_ii(d, a, b, c, x[i +  3], 10, -1894986606);
-            c = md5_ii(c, d, a, b, x[i + 10], 15, -1051523);
-            b = md5_ii(b, c, d, a, x[i +  1], 21, -2054922799);
-            a = md5_ii(a, b, c, d, x[i +  8],  6,  1873313359);
-            d = md5_ii(d, a, b, c, x[i + 15], 10, -30611744);
-            c = md5_ii(c, d, a, b, x[i +  6], 15, -1560198380);
-            b = md5_ii(b, c, d, a, x[i + 13], 21,  1309151649);
-            a = md5_ii(a, b, c, d, x[i +  4],  6, -145523070);
-            d = md5_ii(d, a, b, c, x[i + 11], 10, -1120210379);
-            c = md5_ii(c, d, a, b, x[i +  2], 15,  718787259);
-            b = md5_ii(b, c, d, a, x[i +  9], 21, -343485551);
-
-            a = safe_add(a, olda);
-            b = safe_add(b, oldb);
-            c = safe_add(c, oldc);
-            d = safe_add(d, oldd);
-        }
-        return [a, b, c, d];
-    }
-
-    /*
-    * Convert an array of little-endian words to a string
-    */
-    function binl2rstr(input) {
-        var i,
-            output = '';
-        for (i = 0; i < input.length * 32; i += 8) {
-            output += String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xFF);
-        }
-        return output;
-    }
-
-    /*
-    * Convert a raw string to an array of little-endian words
-    * Characters >255 have their high-byte silently ignored.
-    */
-    function rstr2binl(input) {
-        var i,
-            output = [];
-        output[(input.length >> 2) - 1] = undefined;
-        for (i = 0; i < output.length; i += 1) {
-            output[i] = 0;
-        }
-        for (i = 0; i < input.length * 8; i += 8) {
-            output[i >> 5] |= (input.charCodeAt(i / 8) & 0xFF) << (i % 32);
-        }
-        return output;
-    }
-
-    /*
-    * Calculate the MD5 of a raw string
-    */
-    function rstr_md5(s) {
-        return binl2rstr(binl_md5(rstr2binl(s), s.length * 8));
-    }
-
-    /*
-    * Calculate the HMAC-MD5, of a key and some data (raw strings)
-    */
-    function rstr_hmac_md5(key, data) {
-        var i,
-            bkey = rstr2binl(key),
-            ipad = [],
-            opad = [],
-            hash;
-        ipad[15] = opad[15] = undefined;
-        if (bkey.length > 16) {
-            bkey = binl_md5(bkey, key.length * 8);
-        }
-        for (i = 0; i < 16; i += 1) {
-            ipad[i] = bkey[i] ^ 0x36363636;
-            opad[i] = bkey[i] ^ 0x5C5C5C5C;
-        }
-        hash = binl_md5(ipad.concat(rstr2binl(data)), 512 + data.length * 8);
-        return binl2rstr(binl_md5(opad.concat(hash), 512 + 128));
-    }
-
-    /*
-    * Convert a raw string to a hex string
-    */
-    function rstr2hex(input) {
-        var hex_tab = '0123456789abcdef',
-            output = '',
-            x,
-            i;
-        for (i = 0; i < input.length; i += 1) {
-            x = input.charCodeAt(i);
-            output += hex_tab.charAt((x >>> 4) & 0x0F) +
-                hex_tab.charAt(x & 0x0F);
-        }
-        return output;
-    }
-
-    /*
-    * Encode a string as utf-8
-    */
-    function str2rstr_utf8(input) {
-        return unescape(encodeURIComponent(input));
-    }
-
-    /*
-    * Take string arguments and return either raw or hex encoded strings
-    */
-    function raw_md5(s) {
-        return rstr_md5(str2rstr_utf8(s));
-    }
-    function hex_md5(s) {
-        return rstr2hex(raw_md5(s));
-    }
-    function raw_hmac_md5(k, d) {
-        return rstr_hmac_md5(str2rstr_utf8(k), str2rstr_utf8(d));
-    }
-    function hex_hmac_md5(k, d) {
-        return rstr2hex(raw_hmac_md5(k, d));
-    }
-
-    function md5(string, key, raw) {
-        if (!key) {
-            if (!raw) {
-                return hex_md5(string);
-            }
-            return raw_md5(string);
-        }
-        if (!raw) {
-            return hex_hmac_md5(key, string);
-        }
-        return raw_hmac_md5(key, string);
-    }
-
-    if (typeof define === 'function' && define.amd) {
-        define(function () {
-            return md5;
-        });
-    } else {
-        $.md5 = md5;
-    }
-    window.md5 = md5;
-    window.sum = md5;
-}(this));
-
 function showFileDialog(accept, multiple, capture, onDone) {
 	var input = document.createElement("input");
 	var form = document.getElementById("defform");
@@ -2278,6 +2111,325 @@ function showFileDialog(accept, multiple, capture, onDone) {
 
 	input.click();
 }
+
+/////////////////////////////////////////////////////
+//Promise
+window.Promise = window.Promise || (function(root) {
+	function Promise(func) {
+		if(typeof func !== 'function') {
+			throw new TypeError('func must a function');
+		}
+
+		this.state = Promise.STATE_UNFULFILLED;
+		this.outcome = void 0;
+		this.queue = [];
+
+		if(func !== INTERNAL) {
+			Promise.resolveThenable(this, func);
+		}
+	}
+
+	Promise.STATE_RESOLVE = 'resolve';
+	Promise.STATE_REJECT  = 'reject';
+	Promise.STATE_UNFULFILLED = 'unfulfilled';
+
+	function INTERNAL() {}
+
+	Promise.resolveThenable = function(promise, thenable) {
+		var called = false;
+
+		function onSucceed(value) {
+			if(!called) {
+				called = true;
+				Promise.doResolve(promise, value);
+			}
+		}
+
+		function onError(error) {
+			if(!called) {
+				called = true;
+				Promise.doReject(promise, error);
+			}
+		}
+
+		function wrapTheanble() {
+			thenable(onSucceed, onError);
+		}
+
+		var ret = Promise.safeCall(wrapTheanble);
+		if(ret.state === 'error') {
+			onError(ret.value);
+		}
+	};
+
+	Promise.getThen = function(obj) {
+		var then = obj && obj.then;
+		return typeof obj === 'object' && typeof then  === 'function' && function() {
+			then.apply(obj, arguments);
+		};
+	};
+
+	Promise.safeCall = function(func, param) {
+		var ret= {};
+
+		try {
+			ret.value = func(param);
+			ret.state = 'success';
+		}
+		catch(err) {
+			ret.value = err;
+			ret.state = 'error';
+		}
+
+		return ret;
+	};
+
+	Promise.doResolve = function(promise, value) {
+		var result = Promise.safeCall(Promise.getThen, value);
+
+		if(result.state === 'error') {
+			return Promise.doReject(promise, result.value);
+		}
+
+		if(result.value) {
+			Promise.resolveThenable(promise, result.value);	
+		}
+		else {
+			promise.state = Promise.STATE_RESOLVE;
+			promise.outcome = value;
+			promise.queue.forEach(function(iter) {
+				if(typeof iter.onResolve === 'function') {
+					Promise.callNextTick(iter.promise, iter.onResolve, value);
+				}
+				else {
+					Promise.doResolve(iter.promise, value);
+				}
+			});
+		}
+
+		return promise;
+	};
+
+	Promise.doReject = function(promise, error) {
+		promise.state = Promise.STATE_REJECT;
+		promise.outcome = error;
+
+		promise.queue.forEach(function(iter) {
+			if(typeof iter.onReject === 'function') {
+				Promise.callNextTick(iter.promise, iter.onReject, error);
+			}
+			else {
+				Promise.doReject(iter.promise, error);
+			}
+		});
+
+		return promise;
+	};
+
+	Promise.callNextTick = function(promise, hander, param) {
+		setTimeout(function() {
+			var ret;
+			try {
+				ret = hander(param);
+			}
+			catch(err) {
+				return Promise.doReject(promise, err);
+			}
+
+			if(ret === promise) {
+				Promise.doReject(promise, new TypeError('Cannot resolve promise with itself'));
+			}
+			else {
+				Promise.doResolve(promise, ret);
+			}
+		}, 0);
+	};
+
+	Promise.prototype.then = function(onFulfilled, onReject) {
+		if(typeof onFulfilled !== 'function' && this.state === Promise.STATE_RESOLVE
+			|| typeof onReject !== 'function' && this.state === Promise.STATE_REJECT) {
+			return this;
+		}
+
+		var newPromise = new this.constructor(INTERNAL);
+		if(this.state !== Promise.STATE_UNFULFILLED) {
+			var hander = this.state === Promise.STATE_REJECT ? onReject : onFulfilled;
+			Promise.callNextTick(newPromise, hander, this.outcome);
+		}
+		else {
+			this.queue.push({promise: newPromise, onResolve: onFulfilled, onReject: onReject});
+		}
+
+		return newPromise;
+	};
+
+	Promise.prototype.catch = function(onReject) {
+		return this.then(null, onReject);
+	};
+
+	Promise.resolve = function(value) {
+		if(value instanceof this) {
+			return value;
+		}
+		var promise = new this(INTERNAL);
+		return Promise.doResolve(promise, value);
+	};
+
+	Promise.reject = function(reason) {
+		var promise = new this(INTERNAL);
+		return Promise.doReject(promise, reason);
+	};
+
+	Promise.optimizeThumb = function(doit) {
+		return function(iterable) {
+			if(!Array.isArray(iterable)) {
+				return Promise.reject(new TypeError('iterable must be array'));
+			}
+			if(!iterable.length) {
+				return Promise.resolve([]);
+			}
+			var promise = new Promise(INTERNAL);
+			doit(promise, iterable);
+
+			return promise;
+		};
+	};
+
+	Promise.all = Promise.optimizeThumb(function(promise, iterable) {
+		var result = [],
+			called = false,
+			count = iterable.length;
+
+		for(var i = 0; i < count; i++) {
+			var iter = iterable[i];
+			Promise.resolve(iter)
+			.then(function(value) {
+				result.push(value);
+				if(!called && result.length === count) {
+					called = true;
+					Promise.doResolve(promise, result);
+				}
+			}, function(error) {
+				if(!called) {
+					called = true;
+					Promise.doReject(promise, error);
+				}
+			});
+		}
+	});
+
+	Promise.race = Promise.optimizeThumb(function(promise, iterable) {
+		var called = false;
+
+		for(var i = 0; i < iterable.length; i++) {
+			var iter = iterable[i];
+			Promise.resolve(iter)
+			.then(function(value) {
+				if(!called) {
+					called = true;
+					Promise.doResolve(promise, value);
+				}
+			}, function(error) {
+				if(!called) {
+					called = true;
+					Promise.doReject(promise, error);
+				}
+			});
+		}
+	});
+	return Promise;
+})(this);
+
+window.Deferred = window.Deferred || (function(root) {
+	var Promise = root.Promise;
+
+	function Deferred() {
+		if(!(this instanceof Deferred)) {
+			return new Deferred();
+		}
+
+		var self = this;
+		this.promise = new Promise(function(resolve, reject) {
+			self.reject = reject;
+			self.resolve = resolve;
+		});
+	}
+
+	Deferred.prototype.makeResolver = function() {
+		var self = this;
+		return function(err, data) {
+			if(err) {
+				self.reject(err);
+			}
+			else if(arguments.length > 2) {
+				self.resolve(Array.prototype.slice.call(arguments, 1));
+			}
+			else {
+				self.resolve(data);
+			}
+		};
+	};
+	return Deferred;
+})(this);
+
+void function(global) {
+	var isBoolean = function(obj) {
+		return obj === true || obj === false || Object.prototype.toString.call(obj) === '[Object Boolean]';
+	}
+	global.unique = function(array, isSorted, iteratee, context) {
+		if(!isBoolean(isSorted)) {
+			context = iteratee;
+			iteratee = isSorted;
+			isSorted = false;
+		}
+		var result = [],
+			seen = [];
+		for(var i = 0; i < array.length; i++) {
+			var value = array[i],
+				computed = iteratee ? iteratee.call(context, value, i, array) : value;
+			if(isSorted) {
+				if(!i || seen !== computed) {
+					result.push(computed);
+				}
+				seen = computed;
+			}
+			else if(iteratee) {
+				if(seen.indexOf(computed) === -1) {
+					seen.push(computed);
+					result.push(value);
+				}
+			}
+			else if(result.indexOf(value) === -1) {
+				result.push(value);
+			}
+		}
+
+		return result;
+	};
+}(this);
+
+function filterResults(n_win, n_docel, n_body) {
+	var n_result = n_win ? n_win : 0;
+	if (n_docel && (!n_result || (n_result > n_docel)))
+		n_result = n_docel;
+	return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
+};
+
+function getScrollLeft() {
+	return filterResults (
+		window.pageXOffset ? window.pageXOffset : 0,
+		document.documentElement ? document.documentElement.scrollLeft : 0,
+		document.body ? document.body.scrollLeft : 0
+	);
+};
+
+function getScrollTop() {
+	return filterResults (
+		window.pageYOffset ? window.pageYOffset : 0,
+		document.documentElement ? document.documentElement.scrollTop : 0,
+		document.body ? document.body.scrollTop : 0
+	);
+};
 
 
 /*
@@ -2405,1462 +2557,12 @@ Rect.subtract2 = function(r1, r2, r3) {
 	}
 
 	return all;
-}
-
-/*
- * File: canvas.js
- * Author:  Li XianJing <xianjimli@hotmail.com>
- * Brief: functions to wrap html5 canvas.
- * 
- * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
- * 
- */
-
-if (typeof KeyEvent === "undefined") {
-    var KeyEvent = {
-        DOM_VK_CANCEL: 3,
-        DOM_VK_HELP: 6,
-        DOM_VK_BACK_SPACE: 8,
-        DOM_VK_TAB: 9,
-        DOM_VK_CLEAR: 12,
-        DOM_VK_RETURN: 13,
-        DOM_VK_ENTER: 14,
-        DOM_VK_SHIFT: 16,
-        DOM_VK_CONTROL: 17,
-        DOM_VK_ALT: 18,
-        DOM_VK_PAUSE: 19,
-        DOM_VK_CAPS_LOCK: 20,
-        DOM_VK_ESCAPE: 27,
-        DOM_VK_SPACE: 32,
-        DOM_VK_PAGE_UP: 33,
-        DOM_VK_PAGE_DOWN: 34,
-        DOM_VK_END: 35,
-        DOM_VK_HOME: 36,
-        DOM_VK_LEFT: 37,
-        DOM_VK_UP: 38,
-        DOM_VK_RIGHT: 39,
-        DOM_VK_DOWN: 40,
-        DOM_VK_PRINTSCREEN: 44,
-        DOM_VK_INSERT: 45,
-        DOM_VK_DELETE: 46,
-        DOM_VK_0: 48,
-        DOM_VK_1: 49,
-        DOM_VK_2: 50,
-        DOM_VK_3: 51,
-        DOM_VK_4: 52,
-        DOM_VK_5: 53,
-        DOM_VK_6: 54,
-        DOM_VK_7: 55,
-        DOM_VK_8: 56,
-        DOM_VK_9: 57,
-        DOM_VK_SEMICOLON: 59,
-        DOM_VK_EQUALS: 61,
-        DOM_VK_A: 65,
-        DOM_VK_B: 66,
-        DOM_VK_C: 67,
-        DOM_VK_D: 68,
-        DOM_VK_E: 69,
-        DOM_VK_F: 70,
-        DOM_VK_G: 71,
-        DOM_VK_H: 72,
-        DOM_VK_I: 73,
-        DOM_VK_J: 74,
-        DOM_VK_K: 75,
-        DOM_VK_L: 76,
-        DOM_VK_M: 77,
-        DOM_VK_N: 78,
-        DOM_VK_O: 79,
-        DOM_VK_P: 80,
-        DOM_VK_Q: 81,
-        DOM_VK_R: 82,
-        DOM_VK_S: 83,
-        DOM_VK_T: 84,
-        DOM_VK_U: 85,
-        DOM_VK_V: 86,
-        DOM_VK_W: 87,
-        DOM_VK_X: 88,
-        DOM_VK_Y: 89,
-        DOM_VK_Z: 90,
-        DOM_VK_CONTEXT_MENU: 93,
-        DOM_VK_NUMPAD0: 96,
-        DOM_VK_NUMPAD1: 97,
-        DOM_VK_NUMPAD2: 98,
-        DOM_VK_NUMPAD3: 99,
-        DOM_VK_NUMPAD4: 100,
-        DOM_VK_NUMPAD5: 101,
-        DOM_VK_NUMPAD6: 102,
-        DOM_VK_NUMPAD7: 103,
-        DOM_VK_NUMPAD8: 104,
-        DOM_VK_NUMPAD9: 105,
-        DOM_VK_MULTIPLY: 106,
-        DOM_VK_ADD: 107,
-        DOM_VK_SEPARATOR: 108,
-        DOM_VK_SUBTRACT: 109,
-        DOM_VK_DECIMAL: 110,
-        DOM_VK_DIVIDE: 111,
-        DOM_VK_BACK_BUTTON: 115, /*F4*/
-        DOM_VK_MENU_BUTTON: 118, /*F7*/
-        DOM_VK_SEARCH_BUTTON: 120, /*F9*/
-        DOM_VK_F1: 112,
-        DOM_VK_F2: 113,
-        DOM_VK_F3: 114,
-        DOM_VK_F4: 115,
-        DOM_VK_F5: 116,
-        DOM_VK_F6: 117,
-        DOM_VK_F7: 118,
-        DOM_VK_F8: 119,
-        DOM_VK_F9: 120,
-        DOM_VK_F10: 121,
-        DOM_VK_F11: 122,
-        DOM_VK_F12: 123,
-        DOM_VK_F13: 124,
-        DOM_VK_F14: 125,
-        DOM_VK_F15: 126,
-        DOM_VK_F16: 127,
-        DOM_VK_F17: 128,
-        DOM_VK_F18: 129,
-        DOM_VK_F19: 130,
-        DOM_VK_F20: 131,
-        DOM_VK_F21: 132,
-        DOM_VK_F22: 133,
-        DOM_VK_F23: 134,
-        DOM_VK_F24: 135,
-        DOM_VK_NUM_LOCK: 144,
-        DOM_VK_SCROLL_LOCK: 145,
-        DOM_VK_COMMA: 188,
-        DOM_VK_PERIOD: 190,
-        DOM_VK_SLASH: 191,
-        DOM_VK_BACK_QUOTE: 192,
-        DOM_VK_OPEN_BRACKET: 219,
-        DOM_VK_BACK_SLASH: 220,
-        DOM_VK_CLOSE_BRACKET: 221,
-        DOM_VK_QUOTE: 222,
-        DOM_VK_META: 224
-    };
-}
-KeyEvent.DOM_VK_BACK = 225;
-
-var C_EVT_POINTER_DOWN = 1;
-var C_EVT_POINTER_MOVE = 0;
-var C_EVT_POINTER_UP = -1;
-
-var C_EVT_KEY_DOWN = 2;
-var C_EVT_KEY_UP = 3;
-var C_EVT_DOUBLE_CLICK = 4;
-var C_EVT_CONTEXT_MENU = 5;
-var C_EVT_LONG_PRESS = 6;
-var C_EVT_SCALE = 7;
-
-var gCancelDefaultAction = false;
-
-function canvasAttachManager(canvas, manager, app) {
-	if(window.cantkRTV8) {
-		window.pointer.emitPointers(canvas);
-	}
-	else if(!canvas.isNative) {
-		window.pointer.emitPointers(canvas);
-	}
-
-	function getEvent(e) {
-		return e ? e: window.event;
-	}
-	
-	function onKeyDown(e) {
-		e = getEvent(e);
-		var code = e.keyCode;
-		
-		if(code === KeyEvent.DOM_VK_F5 || code === KeyEvent.DOM_VK_F12 || code === KeyEvent.DOM_VK_F11) {
-			return true;
-		}
-		
-		if(targetIsEditor(e)) {
-			return true;
-		}
-
-		if(!manager.preprocessEvent(C_EVT_KEY_DOWN, e, code)) {
-			return true;
-		}
-		
-		manager.onKeyDown(code);
-	
-		if(code === KeyEvent.DOM_VK_F8) {
-			//test code
-			var gesture = {scale:1, rotation:0};
-			
-			gesture.isStart = true;
-			manager.onGesture(gesture);
-
-			gesture.isStart = false;
-			gesture.isChange = true;
-			manager.onGesture(gesture);
-			
-			gesture.isChange = false;
-			gesture.isEnd = true;
-			manager.onGesture(gesture);
-		}
-
-		return returnDefaultAction(e);
-	}
-
-	function onKeyUp(e) {
-		e = getEvent(e);
-		var code = e.keyCode;
-		if(code === KeyEvent.DOM_VK_F5 || code === KeyEvent.DOM_VK_F12 || code === KeyEvent.DOM_VK_F11) {
-			return true;
-		}
-		
-		if(targetIsEditor(e)) {
-			return true;
-		}
-
-		if(!manager.preprocessEvent(C_EVT_KEY_UP, e, code)) {
-			return true;
-		}
-
-		manager.onKeyUp(code);
-
-		return returnDefaultAction(e);
-	}
-
-	if(isTizen()) {
-		document.addEventListener('tizenhwkey', function(e) {
-			if (e.keyName == "back") {
-				manager.onKeyDown(KeyEvent.DOM_VK_BACK_BUTTON);
-				manager.onKeyUp(KeyEvent.DOM_VK_BACK_BUTTON);
-				console.log("tizenhwkey back button.");
-			}
-			else if (e.keyName == "menu") {
-				manager.onKeyDown(KeyEvent.DOM_VK_MENU_BUTTON);
-				manager.onKeyUp(KeyEvent.DOM_VK_MENU_BUTTON);
-				console.log("tizenhwkey menu button.");
-			}
-		});
-	}
-	else if(isPhoneGap()) {
-		function onBackKeyDown() {
-			manager.onKeyDown(KeyEvent.DOM_VK_BACK_BUTTON);
-			manager.onKeyUp(KeyEvent.DOM_VK_BACK_BUTTON);
-
-			return true;
-     	}
-
-		function onMenuKeyDown() {
-			manager.onKeyDown(KeyEvent.DOM_VK_MENU_BUTTON);
-			manager.onKeyUp(KeyEvent.DOM_VK_MENU_BUTTON);
-
-			return true;
-		}
-
-  		function onSearchKeyDown() {
-			manager.onKeyDown(KeyEvent.DOM_VK_SEARCH_BUTTON);
-			manager.onKeyUp(KeyEvent.DOM_VK_SEARCH_BUTTON);
-
-			return true;
-		}
-
-		document.addEventListener("backbutton", onBackKeyDown, false);
-		document.addEventListener("menubutton", onMenuKeyDown, false);
-  		document.addEventListener("searchbutton", onSearchKeyDown, false);
-    }
-	else if(!isMobile()) {
-		cantkAddEventListener('keyup', onKeyUp);
-		cantkAddEventListener('keydown', onKeyDown);
-		
-		function onWheelEvent(event) {
-			event = window.event || event ;
-			if(EditorElement.imeOpen) return true;
-
-			if(event && event.target && event.target.localName !== "canvas"){
-				return cancelDefaultAction(event);
-			}
-
-			var delta = event.wheelDelta ? event.wheelDelta : 0;
-			if(delta) {
-				if(manager.onWheel(delta)) {
-					return cancelDefaultAction(event);
-				}
-			}
-			return true;
-		}
-
-		cantkAddEventListener('mousewheel', onWheelEvent);
-		cantkAddEventListener('DOMMouseScroll', onWheelEvent);
-	}
-
-///////////////////////////////////////////////////////////////
-
-	function getAbsPoint (pointer) {
-		var x = Math.max(pointer.pageX, pointer.x);
-		var y = Math.max(pointer.pageY, pointer.y);
-
-		return {x:x, y:y};
-	}
-
-	function isMultiTouchEvent(e) {
-		return e.originalEvent && e.originalEvent.touches && e.originalEvent.touches.length > 1;
-	}
-		
-	function getLastPointerPoint() {
-		var point = {};
-		point.x = manager.lastPointerPoint.x;
-		point.y = manager.lastPointerPoint.y;
-
-		return point;
-	}
-
-	function onPointerDown(e) {
-		var pointers = e.getPointerList();
-		
-		if(isMultiTouchEvent(e)) {
-			console.log("onPointerDown Multi touch.");
-			return cancelDefaultAction(e);
-		}
-
-		if(isRightMouseEvent(e.originalEvent)) {
-			console.log("Right button.");
-			return cancelDefaultAction(e);
-		}
-
-		var pointer = pointers[0];
-		var point = getAbsPoint(pointer);
-		var id      = pointer.identifier || 0;
-		if(manager.preprocessEvent(C_EVT_POINTER_DOWN, e, point)) {
-			manager.onPointerDown(point);
-		}
-	
-//		console.log("onPointerDown.");
-		return cancelDefaultAction(e);
-	}
-
-	function onPointerMove(e) {
-		var pointers = e.getPointerList();
-		
-		if(isMultiTouchEvent(e)) {
-			console.log("onPointerMove Multi touch.");
-			return cancelDefaultAction(e);
-		}
-
-		if(isRightMouseEvent(e.originalEvent)) {
-			console.log("Right button.");
-			return cancelDefaultAction(e);
-		}
-
-		var pointer = pointers[0];
-		var point = getAbsPoint(pointer);
-		if(manager.preprocessEvent(C_EVT_POINTER_MOVE, e, point)) {
-			manager.onPointerMove(point);
-		}
-
-		return cancelDefaultAction(e);
-	}
-
-	function onPointerUp(e) {
-		if(isMultiTouchEvent(e)) {
-			console.log("onPointerUp Multi touch.");
-			return cancelDefaultAction(e);
-		}
-
-		var point = getLastPointerPoint();
-		if(isRightMouseEvent(e.originalEvent)) {
-			console.log("Right mouse up");
-			if(manager.preprocessEvent(C_EVT_CONTEXT_MENU, e, point)) {
-				manager.onContextMenu(point);
-			}
-			return true;
-		}
-		else {
-			if(manager.preprocessEvent(C_EVT_POINTER_UP, e, point)) {
-				manager.onPointerUp(point);
-			}
-		}
-		
-//		console.log("onPointerUp.");
-		return cancelDefaultAction(e);
-	}
-
-	canvas.addEventListener('pointerdown', onPointerDown, false);
-	canvas.addEventListener('pointermove', onPointerMove, false);
-	canvas.addEventListener('pointerup',   onPointerUp, false);
-///////////////////////////////////////////////////////////////	
-	function onGestureScale(e) {
-		var scale = e.scale;
-		var gesture = {scale:scale, rotation:0};
-		
-		gesture.isChange = false;
-		gesture.isStart = e.scaleStart;
-		gesture.isEnd = e.scaleEnd;
-
-		if(gesture.isStart) {
-			console.log("scaleStart");
-		}
-		
-		if(gesture.isEnd) {
-			console.log("scaleEnd");
-		}
-
-		manager.onGesture(gesture);
-		console.log("onGestureScale:" + scale);
-
-		return;
-	}
-	
-	function onGestureLongPress(e) {
-		var point = {};
-		point.x = manager.lastPointerPoint.x;
-		point.y = manager.lastPointerPoint.y;
-
-		manager.onLongPress(point);
-
-		//test
-		//e.scale = 0.5;
-		//onGestureScale(e);
-		console.log("onGestureLongPress");
-		return cancelDefaultAction(e);
-	}
-	
-	function onGestureDoubleTap(e) {
-		var point = getLastPointerPoint();
-
-		manager.onDoubleClick(point);
-		console.log("onGestureDoubleTap");
-		return cancelDefaultAction(e);
-	}
-
-	if(app.type == AppBase.TYPE_WEBAPP || app.type == AppBase.TYPE_PREVIEW ) {
-		document.oncontextmenu = function(e) {
-			var target = e.target;
-			if(target && target.tagName === "CANVAS") {
-				var point = {};
-				point.x = e.x + getScrollLeft();
-				point.y = e.y + getScrollTop();
-
-				manager.onPointerDown(point);
-				manager.onLongPress(point);
-				manager.onPointerUp(point);
-
-				console.log("onGestureLongPress");
-				return cancelDefaultAction(e);
-			}
-			else {
-				return true;
-			}
-		}
-	}
-
-	canvas.addEventListener('gesturedoubletap', onGestureDoubleTap);
-	canvas.addEventListener('gesturelongpress', onGestureLongPress);
-	canvas.addEventListener('gesturescale', onGestureScale);
-///////////////////////////////////////////////////////////////	
-	var gViewPort = cantkGetViewPort();
-	var gScreenHeight = screen.height;
-
-	function handleInputMethodShow() {
-//		console.log("input method show");
-	}
-
-	function handleInputMethodHide() {
-//		console.log("input method hide");
-	}
-
-	function handleScreenSizeChanged() {
-		var vp = cantkGetViewPort();
-	   if(gViewPort.width != vp.width || gViewPort.height != vp.height) {
-	   		if(gViewPort.width === vp.width) {
-	   			if(gViewPort.height < vp.height) {
-	   				handleInputMethodHide();
-	   			}
-	   			else {
-	   				handleInputMethodShow();
-	   			}
-
-	   			return;
-	   		}
-
-			app.onSizeChanged();
-			gViewPort = vp;
-	   }
-	}
-
-	window.onresize = function(e) {
-		setTimeout(handleScreenSizeChanged, 50);	
-		return;
-	}
-
-	var gWindowOrientation = window.orientation;
-	function handleOrientationChanged() {
-	   if(gWindowOrientation !== window.orientation) {
-			app.onSizeChanged();
-			gWindowOrientation = window.orientation;
-	   }
-	}
-
-	window.onorientationchange = function(e) {
-		setTimeout(handleOrientationChanged, 50);	
-		return;
-	}
-	
-	document.ontouchend = function(e){
-		return true;
-	}
-
-	return;
-}
-
-function cancelDefaultAction(e) {
-	var evt = e ? e: window.event;
-	if (evt.preventDefault) {
-		evt.preventDefault();
-	}
-	else {
-		evt.returnValue = false;
-	}
-
-	return false;
-}
-
-function filterResults(n_win, n_docel, n_body) {
-	var n_result = n_win ? n_win : 0;
-	if (n_docel && (!n_result || (n_result > n_docel)))
-		n_result = n_docel;
-	return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
-}
-
-function getScrollLeft() {
-	return filterResults (
-		window.pageXOffset ? window.pageXOffset : 0,
-		document.documentElement ? document.documentElement.scrollLeft : 0,
-		document.body ? document.body.scrollLeft : 0
-	);
-}
-
-function getScrollTop() {
-	return filterResults (
-		window.pageYOffset ? window.pageYOffset : 0,
-		document.documentElement ? document.documentElement.scrollTop : 0,
-		document.body ? document.body.scrollTop : 0
-	);
-}
-
-function isRightMouseEvent(event) {
-	var ret = false;
-    if (event.which === null) {
-       /* IE case */
-       ret = (event.button > 2 && event.button !== 4);
-	}
-    else {
-       /* All others */
-       ret = (event.which > 2 && event.which !== 2);
-	}
-
-	return ret;
-}
-
-function setCancelDefaultAction(value) {
-	gCancelDefaultAction = value;
-
-	return;
-}
-
-function returnDefaultAction(e) {
-	return (gCancelDefaultAction) ? cancelDefaultAction(e) : true;
-}
-
-function targetIsEditor(e) {
-	var tag = e.srcElement ? e.srcElement : e.target; 
-	var name = tag.localName ? tag.localName : tag.tagName;
-
-	name = name.toLowerCase();
-	if(name != "body" && name != "canvas") {
-		return true;
-	}
-	
-	return false;
-}
-
-function targetIsCanvas(e) {
-	var tag = e.srcElement ? e.srcElement : e.target; 
-	var name = tag.localName ? tag.localName : tag.tagName;
-
-	name = name.toLowerCase();
-	if(name === "canvas") {
-		return true;
-	}
-	
-	return false;
-}
-
-
-
-/* Modernizr 2.5.3 (Custom Build) | MIT & BSD
- * Build: http://www.modernizr.com/download/#-touch-teststyles-prefixes
- */
-
-
-
-window.Modernizr = (function( window, document, undefined ) {
-
-    var version = '2.5.3',
-
-    Modernizr = {},
-
-
-    docElement = document.documentElement,
-
-    mod = 'modernizr',
-    modElem = document.createElement(mod),
-    mStyle = modElem.style,
-
-    inputElem  ,
-
-
-    toString = {}.toString,
-
-    prefixes = ' -webkit- -moz- -o- -ms- '.split(' '),
-
-
-
-    tests = {},
-    inputs = {},
-    attrs = {},
-
-    classes = [],
-
-    slice = classes.slice,
-
-    featureName, 
-
-
-    injectElementWithStyles = function( rule, callback, nodes, testnames ) {
-
-      var style, ret, node,
-          div = document.createElement('div'),
-                body = document.body, 
-                fakeBody = body ? body : document.createElement('body');
-
-      if ( parseInt(nodes, 10) ) {
-                      while ( nodes-- ) {
-              node = document.createElement('div');
-              node.id = testnames ? testnames[nodes] : mod + (nodes + 1);
-              div.appendChild(node);
-          }
-      }
-
-                style = ['&#173;','<style>', rule, '</style>'].join('');
-      div.id = mod;
-          (body ? div : fakeBody).innerHTML += style;
-      fakeBody.appendChild(div);
-      if(!body){
-                fakeBody.style.background = "";
-          docElement.appendChild(fakeBody);
-      }
-
-      ret = callback(div, rule);
-        !body ? fakeBody.parentNode.removeChild(fakeBody) : div.parentNode.removeChild(div);
-
-      return !!ret;
-
-    },
-    _hasOwnProperty = ({}).hasOwnProperty, hasOwnProperty;
-
-    if ( !is(_hasOwnProperty, 'undefined') && !is(_hasOwnProperty.call, 'undefined') ) {
-      hasOwnProperty = function (object, property) {
-        return _hasOwnProperty.call(object, property);
-      };
-    }
-    else {
-      hasOwnProperty = function (object, property) { 
-        return ((property in object) && is(object.constructor.prototype[property], 'undefined'));
-      };
-    }
-
-
-    if (!Function.prototype.bind) {
-      Function.prototype.bind = function bind(that) {
-
-        var target = this;
-
-        if (typeof target != "function") {
-            throw new TypeError();
-        }
-
-        var args = slice.call(arguments, 1),
-            bound = function () {
-
-            if (this instanceof bound) {
-
-              var F = function(){};
-              F.prototype = target.prototype;
-              var self = new F;
-
-              var result = target.apply(
-                  self,
-                  args.concat(slice.call(arguments))
-              );
-              if (Object(result) === result) {
-                  return result;
-              }
-              return self;
-
-            } else {
-
-              return target.apply(
-                  that,
-                  args.concat(slice.call(arguments))
-              );
-
-            }
-
-        };
-
-        return bound;
-      };
-    }
-
-    function setCss( str ) {
-        mStyle.cssText = str;
-    }
-
-    function setCssAll( str1, str2 ) {
-        return setCss(prefixes.join(str1 + ';') + ( str2 || '' ));
-    }
-
-    function is( obj, type ) {
-        return typeof obj === type;
-    }
-
-    function contains( str, substr ) {
-        return !!~('' + str).indexOf(substr);
-    }
-
-
-    function testDOMProps( props, obj, elem ) {
-        for ( var i in props ) {
-            var item = obj[props[i]];
-            if ( item !== undefined) {
-
-                            if (elem === false) return props[i];
-
-                            if (is(item, 'function')){
-                                return item.bind(elem || obj);
-                }
-
-                            return item;
-            }
-        }
-        return false;
-    }
-
-
-    var testBundle = (function( styles, tests ) {
-        var style = styles.join(''),
-            len = tests.length;
-
-        injectElementWithStyles(style, function( node, rule ) {
-            var style = document.styleSheets[document.styleSheets.length - 1],
-                                                    cssText = style ? (style.cssRules && style.cssRules[0] ? style.cssRules[0].cssText : style.cssText || '') : '',
-                children = node.childNodes, hash = {};
-
-            while ( len-- ) {
-                hash[children[len].id] = children[len];
-            }
-
-                       Modernizr['touch'] = ('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch || (hash['touch'] && hash['touch'].offsetTop) === 9; 
-                                }, len, tests);
-
-    })([
-                       ,['@media (',prefixes.join('touch-enabled),('),mod,')',
-                                '{#touch{top:9px;position:absolute}}'].join('')           ],
-      [
-                       ,'touch'                ]);
-
-
-
-    tests['touch'] = function() {
-        return Modernizr['touch'];
-    };
-
-
-
-    for ( var feature in tests ) {
-        if ( hasOwnProperty(tests, feature) ) {
-                                    featureName  = feature.toLowerCase();
-            Modernizr[featureName] = tests[feature]();
-
-            classes.push((Modernizr[featureName] ? '' : 'no-') + featureName);
-        }
-    }
-    setCss('');
-    modElem = inputElem = null;
-
-
-    Modernizr._version      = version;
-
-    Modernizr._prefixes     = prefixes;
-
-    Modernizr.testStyles    = injectElementWithStyles;
-    return Modernizr;
-
-})(this, this.document);
-;
-
-(function(exports) {
-  var MOUSE_ID = 1;
-
-  function Pointer(identifier, type, event) {
-    this.screenX = event.screenX || 0;
-    this.screenY = event.screenY || 0;
-    this.pageX = event.pageX || 0;
-    this.pageY = event.pageY || 0;
-    this.x = event.x || 0;
-    this.y = event.y || 0;
-    this.clientX = event.clientX || 0;
-    this.clientY = event.clientY || 0;
-    this.tiltX = event.tiltX || 0;
-    this.tiltY = event.tiltY || 0;
-    this.pressure = event.pressure || 0.0;
-    this.hwTimestamp = event.hwTimestamp || 0;
-    this.pointerType = type;
-    this.identifier = identifier;
-  }
-
-  var PointerTypes = {
-    TOUCH: 'touch',
-    MOUSE: 'mouse',
-    PEN:   'pen'
-  };
-
-  function setMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = mouseEvent;
-  }
-
-  function unsetMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = null;
-  }
-
-  function setTouch(touchEvent) {
-    touchEvent.target.touchList = touchEvent.targetTouches;
-  }
-
-  /**
-   * Returns an array of all pointers currently on the screen.
-   */
-  function getPointerList() {
-    // Note: "this" is the element.
-    var pointers = [];
-    var pointer;
-    if (this.touchList) {
-      for (var i = 0; i < this.touchList.length; i++) {
-        var touch = this.touchList[i];
-        // Add 2 to avoid clashing with the mouse identifier.
-        pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
-        pointers.push(pointer);
-      }
-    } else if (this.msPointerList) {
-      for (var identifier in this.msPointerList) {
-        if (!this.msPointerList.hasOwnProperty(identifier)) continue;
-        pointer = this.msPointerList[identifier];
-        pointer = new Pointer(identifier, pointer.textPointerType, pointer);
-        pointers.push(pointer);
-      }
-    }
-    if (this.mouseEvent) {
-      pointers.push(new Pointer(MOUSE_ID, PointerTypes.MOUSE, this.mouseEvent));
-    }
-    return pointers;
-  }
-
-  function createCustomEvent(eventName, target, payload) {
-    //var event = document.createEvent('Event');
-    //event.initEvent(eventName, true, true);
-    var event = {};
-    for (var k in payload) {
-      event[k] = payload[k];
-    }
-    event.type = eventName;
-    event.target = target;
-    if(target.dispatchCustomEvent) {
-		target.dispatchCustomEvent(event);
-    }
-    else {
-    	target.dispatchEvent(event);
-    }
-  }
-
-  /*************** Mouse event handlers *****************/
-
-  function mouseDownHandler(event) {
-    event.preventDefault();
-    setMouse(event);
-    var payload = {
-      pointerType: 'mouse',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointerdown', event.target, payload);
-  }
-
-  function mouseMoveHandler(event) {
-    event.preventDefault();
-    //if (event.target.mouseEvent) {
-    setMouse(event);
-   //}
-    var payload = {
-      pointerType: 'mouse',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointermove', event.target, payload);
-  }
-
-  function mouseUpHandler(event) {
-    event.preventDefault();
-    //unsetMouse(event);
-    setMouse(event);
-    var payload = {
-      pointerType: 'mouse',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointerup', event.target, payload);
-  }
-
-  /*************** Touch event handlers *****************/
-
-  function touchStartHandler(event) {
-    event.preventDefault();
-    setTouch(event);
-    var payload = {
-      pointerType: 'touch',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointerdown', event.target, payload);
-  }
-
-  function touchMoveHandler(event) {
-    event.preventDefault();
-    setTouch(event);
-    var payload = {
-      pointerType: 'touch',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointermove', event.target, payload);
-  }
-
-  function touchEndHandler(event) {
-    event.preventDefault();
-    setTouch(event);
-    var payload = {
-      pointerType: 'touch',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointerup', event.target, payload);
-  }
-
-  function mouseOutHandler(event) {
-    if (event.target.mouseEvent) {
-      event.preventDefault();
-      //unsetMouse(event);
-      var payload = {
-        pointerType: 'mouse',
-        getPointerList: getPointerList.bind(this),
-        originalEvent: event
-      };
-      createCustomEvent('pointerup', event.target, payload);
-    }
-  }
-
-  /*************** MSIE Pointer event handlers *****************/
-
-  function pointerDownHandler(event) {
-    if (event.pointerType == 2) {
-      event.textPointerType = PointerTypes.TOUCH;
-    } else if (event.pointerType == 3) {
-      event.textPointerType = PointerTypes.PEN;
-    } else if (event.pointerType == 4) {
-      event.textPointerType = PointerTypes.MOUSE;
-    }
-    if (event.textPointerType == PointerTypes.MOUSE) {
-        event.target.msMouseDown = true;
-    }
-    if (!event.target.msPointerList) event.target.msPointerList = {};
-    event.target.msPointerList[event.pointerId] = event;
-    var payload = {
-      pointerType: event.textPointerType,
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-
-    createCustomEvent('pointerdown', event.target, payload);
-  }
-
-  function pointerMoveHandler(event) {
-    if (event.pointerType == 2) {
-      event.textPointerType = PointerTypes.TOUCH;
-    } else if (event.pointerType == 3) {
-      event.textPointerType = PointerTypes.PEN;
-    } else if (event.pointerType == 4) {
-      event.textPointerType = PointerTypes.MOUSE;
-    }
-    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
-      return;
-    }
-    if (!event.target.msPointerList) event.target.msPointerList = {};
-    event.target.msPointerList[event.pointerId] = event;
-    var payload = {
-      pointerType: event.textPointerType,
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointermove', event.target, payload);
-  }
-
-  function pointerUpHandler(event) {
-    if (event.target.msPointerList) {
-      delete event.target.msPointerList[event.pointerId];
-    }
-    if (event.pointerType == 2) {
-      event.textPointerType = PointerTypes.TOUCH;
-    } else if (event.pointerType == 3) {
-      event.textPointerType = PointerTypes.PEN;
-    } else if (event.pointerType == 4) {
-      event.textPointerType = PointerTypes.MOUSE;
-    }
-    if (event.textPointerType == PointerTypes.MOUSE) {
-        event.target.msMouseDown = false;
-    }
-    var payload = {
-      pointerType: event.textPointerType,
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createCustomEvent('pointerup', event.target, payload);
-  }
-
-  /**
-   * Causes the passed in element to broadcast pointer events instead
-   * of mouse/touch/etc events.
-   */
-  function emitPointers(el) {
-    if (!el.isPointerEmitter) {
-      // Latch on to all relevant events for this element.
-      if (isPointer()) {
-        el.addEventListener('pointerdown', pointerDownHandler);
-        el.addEventListener('pointermove', pointerMoveHandler);
-        el.addEventListener('pointerup', pointerUpHandler);
-      } else if (isMSPointer()) {
-        el.addEventListener('MSPointerDown', pointerDownHandler);
-        el.addEventListener('MSPointerMove', pointerMoveHandler);
-        el.addEventListener('MSPointerUp', pointerUpHandler);
-      } else {
-        if (isTouch()) {
-          el.addEventListener('touchstart', touchStartHandler);
-          el.addEventListener('touchmove', touchMoveHandler);
-          el.addEventListener('touchend', touchEndHandler);
-        }
-
-        if(!isAndroid()) {
-			el.addEventListener('mousedown', mouseDownHandler);
-			el.addEventListener('mousemove', mouseMoveHandler);
-			el.addEventListener('mouseup', mouseUpHandler);
-			// Necessary for the edge case that the mouse is down and you drag out of
-			// the area.
-			el.addEventListener('mouseout', mouseOutHandler);
-        }
-      }
-
-      el.listeners = {};
-      el.addEventListener = function(type, listener, useCapture) {
-      	var listeners = el.listeners[type] ? el.listeners[type] : [];
-      	listeners.push(listener);
-      	el.listeners[type] = listeners;
-//      	console.log("addEventListener: " + type);
-      	return;
-      }
-
-      el.dispatchCustomEvent = function(event) {
-      	var type = event.type;
-      	var listeners = el.listeners[type] ? el.listeners[type] : [];
-
-        for(var i = 0; i < listeners.length; i++) {
-        	var iter = listeners[i];
-        	iter(event);
-        }
-
-        return;
-      }
-      
-      for(var type in Gesture._gestureHandlers) {
-          var handler = Gesture._gestureHandlers[type];
-		  if (handler) {
-			handler(el);
-		  }
-      }
-
-      el.isPointerEmitter = true;
-    }
-  }
-
-  /**
-   * @return {Boolean} Returns true iff this user agent supports touch events.
-   */
-  function isTouch() {
-    return Modernizr.touch;
-  }
-
-  /**
-   * @return {Boolean} Returns true iff this user agent supports MSIE pointer
-   * events.
-   */
-  function isMSPointer() {
-    return window.navigator.msPointerEnabled;
-  }
-
-   /**
-   * @return {Boolean} Returns true iff this user agent supports pointer
-   * events.
-   */
-  function isPointer() {
-    return window.navigator.pointerEnabled;
-  }
-
-  /**
-   * Option 1: Require emitPointers call on all pointer event emitters.
-   */
-  exports.pointer = {
-    emitPointers: emitPointers
-  };
-
-  /**
-   * Option 2: Replace addEventListener with a custom version.
-   */
-  function augmentAddEventListener(baseElementClass, customEventListener) {
-    var oldAddEventListener = baseElementClass.prototype.addEventListener;
-    baseElementClass.prototype.addEventListener = function(type, listener, useCapture) {
-      customEventListener.call(this, type, listener, useCapture);
-      oldAddEventListener.call(this, type, listener, useCapture);
-    };
-  }
-
-//  function synthesizePointerEvents(type, listener, useCapture) {
-//    if (type.indexOf('pointer') === 0) {
-//      emitPointers(this);
-//    }
-//  }
-//
-//  // Note: Firefox doesn't work like other browsers... overriding HTMLElement
-//  // doesn't actually affect anything. Special case for Firefox:
-//  if (navigator.userAgent.match(/Firefox/)) {
-//    // TODO: fix this for the general case.
-//    augmentAddEventListener(HTMLDivElement, synthesizePointerEvents);
-//    augmentAddEventListener(HTMLCanvasElement, synthesizePointerEvents);
-//  } else {
-//    augmentAddEventListener(HTMLElement, synthesizePointerEvents);
-//  }
-
-  exports._createCustomEvent = createCustomEvent;
-  exports._augmentAddEventListener = augmentAddEventListener;
-  exports.PointerTypes = PointerTypes;
-})(window);
-
-(function(exports) {
-
-  function synthesizeGestureEvents(type, listener, useCapture) {
-    if (type.indexOf('gesture') === 0) {
-      var handler = Gesture._gestureHandlers[type];
-      if (handler) {
-        handler(this);
-      } else {
-        console.error('Warning: no handler found for {{evt}}.'
-                      .replace('{{evt}}', type));
-      }
-    }
-  }
-
-  // Note: Firefox doesn't work like other browsers... overriding HTMLElement
-  // doesn't actually affect anything. Special case for Firefox:
-  //if (navigator.userAgent.match(/Firefox/)) {
-  // TODO: fix this for the general case.
-  //  window._augmentAddEventListener(HTMLDivElement, synthesizeGestureEvents);
-  //  window._augmentAddEventListener(HTMLCanvasElement, synthesizeGestureEvents);
-  //} else {
-  //  window._augmentAddEventListener(HTMLElement, synthesizeGestureEvents);
-  //}
-  //window._augmentAddEventListener(HTMLCanvasElement, synthesizeGestureEvents);
-
-  exports.Gesture = exports.Gesture || {};
-  exports.Gesture._gestureHandlers = exports.Gesture._gestureHandlers || {};
-
-})(window);
-
-/**
- * Gesture recognizer for the `doubletap` gesture.
- *
- * Taps happen when an element is pressed and then released.
- */
-(function(exports) {
-  var DOUBLETAP_TIME = isMobile() ? 500 : 300;
-  var WIGGLE_THRESHOLD = 30;
-
-  /**
-   * A simple object for storing the position of a pointer.
-   */
-  function PointerPosition(pointer) {
-    this.x = pointer.clientX;
-    this.y = pointer.clientY;
-  }
-
-  /**
-   * calculate the squared distance of the given pointer from this 
-   * PointerPosition's pointer
-   */
-  PointerPosition.prototype.calculateSquaredDistance = function(pointer) {
-    var dx = this.x - pointer.clientX;
-    var dy = this.y - pointer.clientY;
-    return dx*dx + dy*dy;
-  };
-
-  function pointerDown(e) {
-    var pointers = e.getPointerList();
-    if (pointers.length != 1) return;
-    var now = new Date();
-    var rightButton = e.originalEvent && isRightMouseEvent(e.originalEvent);
-    if (now - this.lastDownTime < DOUBLETAP_TIME && this.lastPosition && this.lastPosition.calculateSquaredDistance(pointers[0]) < WIGGLE_THRESHOLD * WIGGLE_THRESHOLD && !rightButton) {
-      this.isDoubleTap = true;
-      this.eTarget = e.target;
-    }
-    this.lastPosition = new PointerPosition(pointers[0]);
-    this.lastDownTime = now;
-  }
-  
-  function pointerUp(e) {
-      if(this.isDoubleTap) {
-		  this.isDoubleTap = false;
-		  this.lastDownTime = 0;
-		  this.lastPosition = null;
-
-		  var payload = {
-		  };
-		  clearTimeout(this.longPressTimer);
-		  window._createCustomEvent('gesturedoubletap', this.eTarget, payload);
-      }
-  }
-
-  /**
-   * Make the specified element create gesturetap events.
-   */
-  function emitDoubleTaps(el) {
-    el.addEventListener('pointerdown', pointerDown);
-    el.addEventListener('pointerup', pointerUp);
-  }
-
-  exports.Gesture._gestureHandlers.gesturedoubletap = emitDoubleTaps;
-
-})(window);
-
-/**
- * Gesture recognizer for the `longpress` gesture.
- *
- * Longpress happens when pointer is pressed and doesn't get released
- * for a while (without movement).
- */
-(function(exports) {
-  var LONGPRESS_TIME = 600;
-  var WIGGLE_THRESHOLD = 5;
-
-  /**
-   * A simple object for storing the position of a pointer.
-   */
-  function PointerPosition(pointer) {
-    this.x = pointer.clientX;
-    this.y = pointer.clientY;
-  }
-
-  /**
-   * calculate the squared distance of the given pointer from this 
-   * PointerPosition's pointer
-   */
-  PointerPosition.prototype.calculateSquaredDistance = function(pointer) {
-    var dx = this.x - pointer.clientX;
-    var dy = this.y - pointer.clientY;
-    return dx*dx + dy*dy;
-  };
-
-
-  function pointerDown(e) {
-
-    // Something went down. Clear the last press if there was one.
-    clearTimeout(this.longPressTimer);
-
-    var pointers = e.getPointerList();
-
-    // check that we only have one pointer down
-    if(pointers.length === 1) {
-
-      // cache the position of the pointer on the target
-      e.target.longpressInitPosition = new PointerPosition(pointers[0]);
-
-      // Start a timer.
-      this.longPressTimer = setTimeout(function() {
-        payload = {};
-        window._createCustomEvent('gesturelongpress', e.target, payload);
-      }, LONGPRESS_TIME);
-
-    }
-    
-  }
-
-  function pointerMove(e) {
-    var pointers = e.getPointerList();
-    
-    if(e.pointerType === PointerTypes.MOUSE) {
-      // if the pointer is a mouse we cancel the longpress 
-      // as soon as it starts wiggling around
-      clearTimeout(this.longPressTimer);
-    }
-    else if(pointers.length === 1) {
-      // but if the pointer is something else we allow a 
-      // for a bit of smudge space
-      var pos = e.target.longpressInitPosition;
-      
-      if(pos && pos.calculateSquaredDistance(pointers[0]) > WIGGLE_THRESHOLD * WIGGLE_THRESHOLD) {
-        clearTimeout(this.longPressTimer);
-      }
-    }
-    
-  }
-
-  function pointerUp(e) {
-    clearTimeout(this.longPressTimer);
-  }
-
-  /**
-   * Make the specified element create gesturetap events.
-   */
-  function emitLongPresses(el) {
-    el.addEventListener('pointerdown', pointerDown);
-    el.addEventListener('pointermove', pointerMove);
-    el.addEventListener('pointerup', pointerUp);
-  }
-
-  exports.Gesture._gestureHandlers.gesturelongpress = emitLongPresses;
-
-})(window);
-
-/**
- * Gesture recognizer for the `scale` gesture.
- *
- * Scale happens when two fingers are placed on the screen, and then
- * they move so the the distance between them is greater or less than a
- * certain threshold.
- */
-(function(exports) {
-
-  var SCALE_THRESHOLD = 0.2;
-
-  function PointerPair(p1, p2) {
-    this.p1 = p1;
-    this.p2 = p2;
-  }
-
-  /**
-   * Calculate the center of the two pointers.
-   */
-  PointerPair.prototype.center = function() {
-    return [(this.p1.pageX + this.p2.pageX) / 2, (this.p1.pageY + this.p2.pageY) / 2];
-  };
-
-  /**
-   * Calculate the distance between the two pointers.
-   */
-  PointerPair.prototype.span = function() {
-    var dx = this.p1.pageX - this.p2.pageX;
-    var dy = this.p1.pageY - this.p2.pageY;
-    return Math.sqrt(dx*dx + dy*dy);
-  };
-
-  /**
-   * Given a reference pair, calculate the scale multiplier difference.
-   */
-  PointerPair.prototype.scaleSince = function(referencePair) {
-    var originalSpan = this.span();
-    var referenceSpan = referencePair.span();
-    if (referenceSpan === 0) {
-      return 0;
-    }
-    else return originalSpan / referenceSpan;
-  };
-
-  function pointerDown(e) {
-    var pointerList = e.getPointerList();
-    // If there are exactly two pointers down,
-    if (pointerList.length == 2) {
-      // Record the initial pointer pair.
-      e.target.scaleReferencePair = new PointerPair(pointerList[0],
-                                                    pointerList[1]);
-        var payload = {
-          scale: 1,
-          scaleStart: true
-        };
-        window._createCustomEvent('gesturescale', e.target, payload);
-        this.isGestureScale = true;
-    }
-    else {
-        this.isGestureScale = false;
-    }
-  }
-
-  function pointerMove(e) {
-    var pointerList = e.getPointerList();
-    // If there are two pointers down, compare to the initial pointer pair.
-    if (pointerList.length == 2 && e.target.scaleReferencePair) {
-      var pair = new PointerPair(pointerList[0], pointerList[1]);
-      // Compute the scaling value according to the difference.
-      var scale = pair.scaleSince(e.target.scaleReferencePair);
-      // If the movement is drastic enough:
-      if (Math.abs(1 - scale) > SCALE_THRESHOLD) {
-        // Create the scale event as a result.
-        var payload = {
-          scale: scale,
-          centerX: (e.target.scaleReferencePair.p1.clientX + e.target.scaleReferencePair.p2.clientX) / 2,
-          centerY: (e.target.scaleReferencePair.p1.clientY + e.target.scaleReferencePair.p2.clientY) / 2
-        };
-        window._createCustomEvent('gesturescale', e.target, payload);
-      }
-    }
-  }
-
-  function pointerUp(e) {
-  	if(this.isGestureScale) {
-        var payload = {
-          scale: 1,
-          scaleEnd: true
-        };
-        window._createCustomEvent('gesturescale', e.target, payload);
-	}
-
-    e.target.scaleReferencePair = null;
-  }
-
-  /**
-   * Make the specified element create gesturetap events.
-   */
-  function emitScale(el) {
-    el.addEventListener('pointerdown', pointerDown);
-    el.addEventListener('pointermove', pointerMove);
-    el.addEventListener('pointerup', pointerUp);
-  }
-
-  exports.Gesture._gestureHandlers.gesturescale = emitScale;
-
-})(window);
+};
 /*!
- *  howler.js v2.0.0-beta
+ *  howler.js v2.0.0-beta8
  *  howlerjs.com
  *
- *  (c) 2013-2015, James Simpson of GoldFire Studios
+ *  (c) 2013-2016, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -3874,14 +2576,9 @@ window.Modernizr = (function( window, document, undefined ) {
   var ctx = null;
   var usingWebAudio = true;
   var noAudio = false;
+  var masterGain = null;
+  var canPlayEvent = 'canplaythrough';
   setupAudioContext();
-
-  // Create a master gain node.
-  if (usingWebAudio) {
-    var masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
-    masterGain.gain.value = 1;
-    masterGain.connect(ctx.destination);
-  }
 
   /** Global Methods **/
   /***************************************************************************/
@@ -3907,8 +2604,15 @@ window.Modernizr = (function( window, document, undefined ) {
       self._muted = false;
       self._volume = 1;
 
+      // Keeps track of the suspend/resume state of the AudioContext.
+      self.state = ctx ? ctx.state || 'running' : 'running';
+      self.autoSuspend = true;
+
+      // Automatically begin the 30-second suspend process
+      self._autoSuspend();
+
       // Set to false to disable the auto iOS enabler.
-      self.iOSAutoEnable = true;
+      self.mobileAutoEnable = true;
 
       // No audio is available on this system if this is set to true.
       self.noAudio = noAudio;
@@ -3918,6 +2622,9 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // Expose the AudioContext when using Web Audio.
       self.ctx = ctx;
+
+      // Expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
+      self.masterGain = masterGain;
 
       // Check for supported codecs.
       if (!noAudio) {
@@ -4002,6 +2709,28 @@ window.Modernizr = (function( window, document, undefined ) {
     },
 
     /**
+     * Unload and destroy all currently loaded Howl objects.
+     * @return {Howler}
+     */
+    unload: function() {
+      var self = this || Howler;
+
+      for (var i=self._howls.length-1; i>=0; i--) {
+        self._howls[i].unload();
+      }
+
+      // Create a new AudioContext to make sure it is fully reset.
+      if (self.usingWebAudio && typeof ctx.close !== 'undefined') {
+        self.ctx = null;
+        ctx.close();
+        setupAudioContext();
+        self.ctx = ctx;
+      }
+
+      return self;
+    },
+
+    /**
      * Check for codec support of specific extension.
      * @param  {String} ext Audio file extention.
      * @return {Boolean}
@@ -4018,43 +2747,48 @@ window.Modernizr = (function( window, document, undefined ) {
       var self = this || Howler;
       var audioTest = new Audio();
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
-      
+      var isOpera = /OPR\//.test(navigator.userAgent);
+
       self._codecs = {
-        mp3: !!(mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, '')),
+        mp3: !!(!isOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
         mpeg: !!mpegTest,
         opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
         ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
+        oga: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
         wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
         aac: !!audioTest.canPlayType('audio/aac;').replace(/^no$/, ''),
+        caf: !!audioTest.canPlayType('audio/x-caf;').replace(/^no$/, ''),
         m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
-        webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')
+        webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
+        dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, '')
       };
 
-		console.log("codec:" + JSON.stringify(self._codecs, null, "\t"));
       return self;
     },
 
     /**
-     * iOS will only allow audio to be played after a user interaction.
+     * Mobile browsers will only allow audio to be played after a user interaction.
      * Attempt to automatically unlock audio on the first user interaction.
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
-    _enableiOSAudio: function() {
+    _enableMobileAudio: function() {
       var self = this || Howler;
 
       // Only run this on iOS if audio isn't already eanbled.
-      if (ctx && (self._iOSEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent))) {
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk/i.test(navigator.userAgent);
+      var isTouch = !!(('ontouchend' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0));
+      if (ctx && (self._mobileEnabled || !isMobile || !isTouch)) {
         return;
       }
 
-      self._iOSEnabled = false;
+      self._mobileEnabled = false;
 
       // Call this method on touch start to create and play a buffer,
       // then check if the audio actually played to determine if
-      // audio has now been unlocked on iOS.
+      // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
         // Create an empty buffer.
         var buffer = ctx.createBuffer(1, 1, 22050);
@@ -4070,20 +2804,95 @@ window.Modernizr = (function( window, document, undefined ) {
         }
 
         // Setup a timeout to check that we are unlocked on the next event loop.
-        setTimeout(function() {
-          if ((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
-            // Update the unlocked state and prevent this check from happening again.
-            self._iOSEnabled = true;
-            self.iOSAutoEnable = false;
+        source.onended = function() {
+          source.disconnect(0);
 
-            // Remove the touch start listener.
-            window.removeEventListener('touchstart', unlock, false);
-          }
-        }, 0);
+          // Update the unlocked state and prevent this check from happening again.
+          self._mobileEnabled = true;
+          self.mobileAutoEnable = false;
+
+          // Remove the touch start listener.
+          document.removeEventListener('touchend', unlock, true);
+        };
       };
 
       // Setup a touch start listener to attempt an unlock in.
-      window.addEventListener('touchstart', unlock, false);
+      document.addEventListener('touchend', unlock, true);
+
+      return self;
+    },
+
+    /**
+     * Automatically suspend the Web Audio AudioContext after no sound has played for 30 seconds.
+     * This saves processing/energy and fixes various browser-specific bugs with audio getting stuck.
+     * @return {Howler}
+     */
+    _autoSuspend: function() {
+      var self = this;
+
+      if (!self.autoSuspend || !ctx || typeof ctx.suspend === 'undefined' || !usingWebAudio) {
+        return;
+      }
+
+      // Check if any sounds are playing.
+      for (var i=0; i<self._howls.length; i++) {
+        if (self._howls[i]._webAudio) {
+          for (var j=0; j<self._howls[i]._sounds.length; j++) {
+            if (!self._howls[i]._sounds[j]._paused) {
+              return self;
+            }
+          }
+        }
+      }
+
+      // If no sound has played after 30 seconds, suspend the context.
+      self._suspendTimer = setTimeout(function() {
+        if (!self.autoSuspend) {
+          return;
+        }
+
+        self._suspendTimer = null;
+        self.state = 'suspending';
+        ctx.suspend().then(function() {
+          self.state = 'suspended';
+
+          if (self._resumeAfterSuspend) {
+            delete self._resumeAfterSuspend;
+            self._autoResume();
+          }
+        });
+      }, 30000);
+
+      return self;
+    },
+
+    /**
+     * Automatically resume the Web Audio AudioContext when a new sound is played.
+     * @return {Howler}
+     */
+    _autoResume: function() {
+      var self = this;
+
+      if (!ctx || typeof ctx.resume === 'undefined' || !usingWebAudio) {
+        return;
+      }
+
+      if (self.state === 'running' && self._suspendTimer) {
+        clearTimeout(self._suspendTimer);
+        self._suspendTimer = null;
+      } else if (self.state === 'suspended') {
+        self.state = 'resuming';
+        ctx.resume().then(function() {
+          self.state = 'running';
+        });
+
+        if (self._suspendTimer) {
+          clearTimeout(self._suspendTimer);
+          self._suspendTimer = null;
+        }
+      } else if (self.state === 'suspending') {
+        self._resumeAfterSuspend = true;
+      }
 
       return self;
     }
@@ -4121,7 +2930,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // Setup user-defined default properties.
       self._autoplay = o.autoplay || false;
-      self._ext = o.ext || null;
+      self._format = (typeof o.format !== 'string') ? o.format : [o.format];
       self._html5 = o.html5 || false;
       self._muted = o.mute || false;
       self._loop = o.loop || false;
@@ -4134,24 +2943,30 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // Setup all other default properties.
       self._duration = 0;
-      self._loaded = false;
+      self._state = 'unloaded';
       self._sounds = [];
       self._endTimers = {};
+      self._queue = [];
 
       // Setup event listeners.
       self._onend = o.onend ? [{fn: o.onend}] : [];
-      self._onfaded = o.onfaded ? [{fn: o.onfaded}] : [];
+      self._onfade = o.onfade ? [{fn: o.onfade}] : [];
       self._onload = o.onload ? [{fn: o.onload}] : [];
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
+      self._onstop = o.onstop ? [{fn: o.onstop}] : [];
+      self._onmute = o.onmute ? [{fn: o.onmute}] : [];
+      self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
+      self._onrate = o.onrate ? [{fn: o.onrate}] : [];
+      self._onseek = o.onseek ? [{fn: o.onseek}] : [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = usingWebAudio && !self._html5;
 
       // Automatically try to enable audio on iOS.
-      if (typeof ctx !== 'undefined' && ctx && Howler.iOSAutoEnable) {
-        Howler._enableiOSAudio();
+      if (typeof ctx !== 'undefined' && ctx && Howler.mobileAutoEnable) {
+        Howler._enableMobileAudio();
       }
 
       // Keep track of this Howl group in the global controller.
@@ -4175,7 +2990,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // If no audio is available, quit immediately.
       if (noAudio) {
-        self._emit('loaderror');
+        self._emit('loaderror', null, 'No audio support.');
         return;
       }
 
@@ -4188,9 +3003,9 @@ window.Modernizr = (function( window, document, undefined ) {
       for (var i=0; i<self._src.length; i++) {
         var ext, str;
 
-        if (self._ext && self._ext[i]) {
+        if (self._format && self._format[i]) {
           // If an extension was specified, use that instead.
-          ext = self._ext[i];
+          ext = self._format[i];
         } else {
           // Extract the file extension from the URL or base64 data URI.
           str = self._src[i];
@@ -4202,8 +3017,7 @@ window.Modernizr = (function( window, document, undefined ) {
           if (ext) {
             ext = ext[1].toLowerCase();
           }
-          
-          //tangide
+
           if(ext === "php") {
           	ext = str.extname();
           }
@@ -4214,17 +3028,22 @@ window.Modernizr = (function( window, document, undefined ) {
           url = self._src[i];
           break;
         }
-        else {
-        	console.log("not found codecs for:" + self._src[i]);
-        }
       }
 
       if (!url) {
-        self._emit('loaderror');
+        self._emit('loaderror', null, 'No codec support for selected audio sources.');
         return;
       }
 
       self._src = url;
+      self._state = 'loading';
+
+      // If the hosting page is HTTPS and the source isn't,
+      // drop down to HTML5 Audio to avoid Mixed Content errors.
+      if (window.location.protocol === 'https:' && url.slice(0, 5) === 'http:') {
+        self._html5 = true;
+        self._webAudio = false;
+      }
 
       // Create a new sound object and add it to the pool.
       new Sound(self);
@@ -4287,16 +3106,32 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // If we have no sprite and the sound hasn't loaded, we must wait
       // for the sound to load to get our audio's duration.
-      if (!self._loaded && !self._sprite[sprite]) {
-        self.once('load', function() {
-          self.play(self._soundById(sound._id) ? sound._id : undefined);
+      if (self._state !== 'loaded' && !self._sprite[sprite]) {
+        self._queue.push({
+          event: 'play',
+          action: function() {
+            self.play(self._soundById(sound._id) ? sound._id : undefined);
+          }
         });
+
         return sound._id;
       }
 
       // Don't play the sound if an id was passed and it is already playing.
       if (id && !sound._paused) {
+        // Trigger the play event, in order to keep iterating through queue.
+        if (!args[1]) {
+          setTimeout(function() {
+            self._emit('play', sound._id);
+          }, 0);
+        }
+
         return sound._id;
+      }
+
+      // Make sure the AudioContext isn't suspended, and resume it if it is.
+      if (self._webAudio) {
+        Howler._autoResume();
       }
 
       // Determine how long to play for and where to start playing.
@@ -4304,43 +3139,10 @@ window.Modernizr = (function( window, document, undefined ) {
       var duration = ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek;
 
       // Create a timer to fire at the end of playback or the start of a new loop.
-      var ended = function() {
-        // Should this sound loop?
-        var loop = !!(sound._loop || self._sprite[sprite][2]);
-
-        // Fire the ended event.
-        self._emit('end', sound._id);
-
-        // Restart the playback for HTML5 Audio loop.
-        if (!self._webAudio && loop) {
-          self.stop(sound._id).play(sound._id);
-        }
-
-        // Restart this timer if on a Web Audio loop.
-        if (self._webAudio && loop) {
-          self._emit('play', sound._id);
-          sound._seek = sound._start || 0;
-          sound._playStart = ctx.currentTime;
-          self._endTimers[sound._id] = setTimeout(ended, ((sound._stop - sound._start) * 1000) / Math.abs(self._rate));
-        }
-
-        // Mark the node as paused.
-        if (self._webAudio && !loop) {
-          sound._paused = true;
-          sound._ended = true;
-          sound._seek = sound._start || 0;
-          self._clearTimer(sound._id);
-
-          // Clean up the buffer source.
-          sound._node.bufferSource = null;
-        }
-
-        // When using a sprite, end the track.
-        if (!self._webAudio && !loop) {
-          self.stop(sound._id);
-        }
-      };
-      self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
+      var timeout = (duration * 1000) / Math.abs(sound._rate);
+      if (timeout !== Infinity) {
+        self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+      }
 
       // Update the parameters of the sound
       sound._paused = false;
@@ -4365,14 +3167,14 @@ window.Modernizr = (function( window, document, undefined ) {
 
           // Play the sound using the supported method.
           if (typeof node.bufferSource.start === 'undefined') {
-            node.bufferSource.noteGrainOn(0, seek, duration);
+            sound._loop ? node.bufferSource.noteGrainOn(0, seek, 86400) : node.bufferSource.noteGrainOn(0, seek, duration);
           } else {
-            node.bufferSource.start(0, seek, duration);
+            sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
           }
 
           // Start a new timer if none is present.
-          if (!self._endTimers[sound._id]) {
-            self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
+          if (!self._endTimers[sound._id] && timeout !== Infinity) {
+            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
           }
 
           if (!args[1]) {
@@ -4382,11 +3184,11 @@ window.Modernizr = (function( window, document, undefined ) {
           }
         };
 
-        if (self._loaded) {
+        if (self._state === 'loaded') {
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
-          self.once('load', playWebAudio);
+          self.once('load', playWebAudio, sound._id);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -4397,7 +3199,7 @@ window.Modernizr = (function( window, document, undefined ) {
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
-          node.playbackRate = self._rate;
+          node.playbackRate = sound._rate;
           setTimeout(function() {
             node.play();
             if (!args[1]) {
@@ -4407,20 +3209,22 @@ window.Modernizr = (function( window, document, undefined ) {
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
-        if (node.readyState === 4 || !node.readyState && navigator.isCocoonJS) {
+        if (self._state === 'loaded') {
           playHtml5();
         } else {
           var listener = function() {
             // Setup the new end timer.
-            self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
+            if (timeout !== Infinity) {
+              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            }
 
             // Begin playback.
             playHtml5();
 
             // Clear this listener.
-            node.removeEventListener('canplaythrough', listener, false);
+            node.removeEventListener(canPlayEvent, listener, false);
           };
-          node.addEventListener('canplaythrough', listener, false);
+          node.addEventListener(canPlayEvent, listener, false);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -4438,10 +3242,13 @@ window.Modernizr = (function( window, document, undefined ) {
     pause: function(id) {
       var self = this;
 
-      // Wait for the sound to begin playing before pausing it.
-      if (!self._loaded) {
-        self.once('play', function() {
-          self.pause(id);
+      // If the sound hasn't loaded, add it to the load queue to pause when capable.
+      if (self._state !== 'loaded') {
+        self._queue.push({
+          event: 'pause',
+          action: function() {
+            self.pause(id);
+          }
         });
 
         return self;
@@ -4462,22 +3269,27 @@ window.Modernizr = (function( window, document, undefined ) {
           sound._seek = self.seek(ids[i]);
           sound._paused = true;
 
-          if (self._webAudio) {
-            // make sure the sound has been created
-            if (!sound._node.bufferSource) {
-              return self;
-            }
+          // Stop currently running fades.
+          self._stopFade(ids[i]);
 
-            if (typeof sound._node.bufferSource.stop === 'undefined') {
-              sound._node.bufferSource.noteOff(0);
-            } else {
-              sound._node.bufferSource.stop(0);
-            }
+          if (sound._node) {
+            if (self._webAudio) {
+              // make sure the sound has been created
+              if (!sound._node.bufferSource) {
+                return self;
+              }
 
-            // Clean up the buffer source.
-            sound._node.bufferSource = null;
-          } else if (!isNaN(sound._node.duration)) {
-            sound._node.pause();
+              if (typeof sound._node.bufferSource.stop === 'undefined') {
+                sound._node.bufferSource.noteOff(0);
+              } else {
+                sound._node.bufferSource.stop(0);
+              }
+
+              // Clean up the buffer source.
+              sound._node.bufferSource = null;
+            } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
+              sound._node.pause();
+            }
           }
 
           // Fire the pause event, unless `true` is passed as the 2nd argument.
@@ -4498,13 +3310,14 @@ window.Modernizr = (function( window, document, undefined ) {
     stop: function(id) {
       var self = this;
 
-      // Wait for the sound to begin playing before stopping it.
-      if (!self._loaded) {
-        if (typeof self._sounds[0]._sprite !== 'undefined') {
-          self.once('play', function() {
+      // If the sound hasn't loaded, add it to the load queue to stop when capable.
+      if (self._state !== 'loaded') {
+        self._queue.push({
+          event: 'stop',
+          action: function() {
             self.stop(id);
-          });
-        }
+          }
+        });
 
         return self;
       }
@@ -4525,24 +3338,33 @@ window.Modernizr = (function( window, document, undefined ) {
           sound._paused = true;
           sound._ended = true;
 
-          if (self._webAudio && sound._node) {
-            // make sure the sound has been created
-            if (!sound._node.bufferSource) {
-              return self;
-            }
+          // Stop currently running fades.
+          self._stopFade(ids[i]);
 
-            if (typeof sound._node.bufferSource.stop === 'undefined') {
-              sound._node.bufferSource.noteOff(0);
-            } else {
-              sound._node.bufferSource.stop(0);
-            }
+          if (sound._node) {
+            if (self._webAudio) {
+              // make sure the sound has been created
+              if (!sound._node.bufferSource) {
+                return self;
+              }
 
-            // Clean up the buffer source.
-            sound._node.bufferSource = null;
-          } else if (sound._node && !isNaN(sound._node.duration)) {
-            sound._node.pause();
-            sound._node.currentTime = sound._start || 0;
+              if (typeof sound._node.bufferSource.stop === 'undefined') {
+                sound._node.bufferSource.noteOff(0);
+              } else {
+                sound._node.bufferSource.stop(0);
+              }
+
+              // Clean up the buffer source.
+              sound._node.bufferSource = null;
+            } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
+              sound._node.pause();
+              sound._node.currentTime = sound._start || 0;
+            }
           }
+        }
+
+        if (sound) {
+          self._emit('stop', sound._id);
         }
       }
 
@@ -4558,10 +3380,13 @@ window.Modernizr = (function( window, document, undefined ) {
     mute: function(muted, id) {
       var self = this;
 
-      // Wait for the sound to begin playing before muting it.
-      if (!self._loaded) {
-        self.once('play', function() {
-          self.mute(muted, id);
+      // If the sound hasn't loaded, add it to the load queue to mute when capable.
+      if (self._state !== 'loaded') {
+        self._queue.push({
+          event: 'mute',
+          action: function() {
+            self.mute(muted, id);
+          }
         });
 
         return self;
@@ -4591,6 +3416,8 @@ window.Modernizr = (function( window, document, undefined ) {
           } else if (sound._node) {
             sound._node.muted = Howler._muted ? true : muted;
           }
+
+          self._emit('mute', sound._id);
         }
       }
 
@@ -4623,7 +3450,7 @@ window.Modernizr = (function( window, document, undefined ) {
         } else {
           vol = parseFloat(args[0]);
         }
-      } else if (args.length === 2) {
+      } else if (args.length >= 2) {
         vol = parseFloat(args[0]);
         id = parseInt(args[1], 10);
       }
@@ -4631,10 +3458,13 @@ window.Modernizr = (function( window, document, undefined ) {
       // Update the volume or return the current volume.
       var sound;
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
-        // Wait for the sound to begin playing before changing the volume.
-        if (!self._loaded) {
-          self.once('play', function() {
-            self.volume.apply(self, args);
+        // If the sound hasn't loaded, add it to the load queue to change volume when capable.
+        if (self._state !== 'loaded') {
+          self._queue.push({
+            event: 'volume',
+            action: function() {
+              self.volume.apply(self, args);
+            }
           });
 
           return self;
@@ -4654,11 +3484,18 @@ window.Modernizr = (function( window, document, undefined ) {
           if (sound) {
             sound._volume = vol;
 
-            if (self._webAudio && sound._node) {
+            // Stop currently running fades.
+            if (!args[2]) {
+              self._stopFade(id[i]);
+            }
+
+            if (self._webAudio && sound._node && !sound._muted) {
               sound._node.gain.setValueAtTime(vol * Howler.volume(), ctx.currentTime);
-            } else if (sound._node) {
+            } else if (sound._node && !sound._muted) {
               sound._node.volume = vol * Howler.volume();
             }
+
+            self._emit('volume', sound._id);
           }
         }
       } else {
@@ -4680,10 +3517,13 @@ window.Modernizr = (function( window, document, undefined ) {
     fade: function(from, to, len, id) {
       var self = this;
 
-      // Wait for the sound to play before fading.
-      if (!self._loaded) {
-        self.once('play', function() {
-          self.fade(from, to, len, id);
+      // If the sound hasn't loaded, add it to the load queue to fade when capable.
+      if (self._state !== 'loaded') {
+        self._queue.push({
+          event: 'fade',
+          action: function() {
+            self.fade(from, to, len, id);
+          }
         });
 
         return self;
@@ -4700,7 +3540,12 @@ window.Modernizr = (function( window, document, undefined ) {
 
         // Create a linear fade or fall back to timeouts with HTML5 Audio.
         if (sound) {
-          if (self._webAudio) {
+          // Stop the previous fade if no sprite is being used (otherwise, volume handles this).
+          if (!id) {
+            self._stopFade(ids[i]);
+          }
+
+          if (self._webAudio && !sound._muted) {
             var currentTime = ctx.currentTime;
             var end = currentTime + (len / 1000);
             sound._volume = from;
@@ -4708,10 +3553,11 @@ window.Modernizr = (function( window, document, undefined ) {
             sound._node.gain.linearRampToValueAtTime(to, end);
 
             // Fire the event when complete.
-            setTimeout(function(id, sound) {
+            sound._timeout = setTimeout(function(id, sound) {
+              delete sound._timeout;
               setTimeout(function() {
                 sound._volume = to;
-                self._emit('faded', id);
+                self._emit('fade', id);
               }, end - ctx.currentTime > 0 ? Math.ceil((end - ctx.currentTime) * 1000) : 0);
             }.bind(self, ids[i], sound), len);
           } else {
@@ -4719,10 +3565,10 @@ window.Modernizr = (function( window, document, undefined ) {
             var dir = from > to ? 'out' : 'in';
             var steps = diff / 0.01;
             var stepLen = len / steps;
-            
+
             (function() {
               var vol = from;
-              var interval = setInterval(function(id) {
+              sound._interval = setInterval(function(id, sound) {
                 // Update the volume amount.
                 vol += (dir === 'in' ? 0.01 : -0.01);
 
@@ -4734,17 +3580,42 @@ window.Modernizr = (function( window, document, undefined ) {
                 vol = Math.round(vol * 100) / 100;
 
                 // Change the volume.
-                self.volume(vol, id);
+                self.volume(vol, id, true);
 
                 // When the fade is complete, stop it and fire event.
                 if (vol === to) {
-                  clearInterval(interval);
-                  self._emit('faded', id);
+                  clearInterval(sound._interval);
+                  delete sound._interval;
+                  self._emit('fade', id);
                 }
-              }.bind(self, ids[i]), stepLen);
+              }.bind(self, ids[i], sound), stepLen);
             })();
           }
         }
+      }
+
+      return self;
+    },
+
+    /**
+     * Internal method that stops the currently playing fade when
+     * a new fade starts, volume is changed or the sound is stopped.
+     * @param  {Number} id The sound id.
+     * @return {Howl}
+     */
+    _stopFade: function(id) {
+      var self = this;
+      var sound = self._soundById(id);
+
+      if (sound._interval) {
+        clearInterval(sound._interval);
+        delete sound._interval;
+        self._emit('fade', id);
+      } else if (sound._timeout) {
+        clearTimeout(sound._timeout);
+        delete sound._timeout;
+        sound._node.gain.cancelScheduledValues(ctx.currentTime);
+        self._emit('fade', id);
       }
 
       return self;
@@ -4788,10 +3659,96 @@ window.Modernizr = (function( window, document, undefined ) {
 
         if (sound) {
           sound._loop = loop;
-          if (self._webAudio && sound._node) {
+          if (self._webAudio && sound._node && sound._node.bufferSource) {
             sound._node.bufferSource.loop = loop;
           }
         }
+      }
+
+      return self;
+    },
+
+    /**
+     * Get/set the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
+     *   rate() -> Returns the first sound node's current playback rate.
+     *   rate(id) -> Returns the sound id's current playback rate.
+     *   rate(rate) -> Sets the playback rate of all sounds in this Howl group.
+     *   rate(rate, id) -> Sets the playback rate of passed sound id.
+     * @return {Howl/Number} Returns self or the current playback rate.
+     */
+    rate: function() {
+      var self = this;
+      var args = arguments;
+      var rate, id;
+
+      // Determine the values based on arguments.
+      if (args.length === 0) {
+        // We will simply return the current rate of the first node.
+        id = self._sounds[0]._id;
+      } else if (args.length === 1) {
+        // First check if this is an ID, and if not, assume it is a new rate value.
+        var ids = self._getSoundIds();
+        var index = ids.indexOf(args[0]);
+        if (index >= 0) {
+          id = parseInt(args[0], 10);
+        } else {
+          rate = parseFloat(args[0]);
+        }
+      } else if (args.length === 2) {
+        rate = parseFloat(args[0]);
+        id = parseInt(args[1], 10);
+      }
+
+      // Update the playback rate or return the current value.
+      var sound;
+      if (typeof rate === 'number') {
+        // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
+        if (self._state !== 'loaded') {
+          self._queue.push({
+            event: 'rate',
+            action: function() {
+              self.rate.apply(self, args);
+            }
+          });
+
+          return self;
+        }
+
+        // Set the group rate.
+        if (typeof id === 'undefined') {
+          self._rate = rate;
+        }
+
+        // Update one or all volumes.
+        id = self._getSoundIds(id);
+        for (var i=0; i<id.length; i++) {
+          // Get the sound.
+          sound = self._soundById(id[i]);
+
+          if (sound) {
+            sound._rate = rate;
+
+            // Change the playback rate.
+            if (self._webAudio && sound._node && sound._node.bufferSource) {
+              sound._node.bufferSource.playbackRate.value = rate;
+            } else if (sound._node) {
+              sound._node.playbackRate = rate;
+            }
+
+            // Reset the timers.
+            var seek = self.seek(id[i]);
+            var duration = ((self._sprite[sound._sprite][0] + self._sprite[sound._sprite][1]) / 1000) - seek;
+            var timeout = (duration * 1000) / Math.abs(sound._rate);
+
+            self._clearTimer(id[i]);
+            self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
+
+            self._emit('rate', sound._id);
+          }
+        }
+      } else {
+        sound = self._soundById(id);
+        return sound ? sound._rate : self._rate;
       }
 
       return self;
@@ -4834,10 +3791,13 @@ window.Modernizr = (function( window, document, undefined ) {
         return self;
       }
 
-      // Wait for the sound to load before seeking it.
-      if (!self._loaded) {
-        self.once('load', function() {
-          self.seek.apply(self, args);
+      // If the sound hasn't loaded, add it to the load queue to seek when capable.
+      if (self._state !== 'loaded') {
+        self._queue.push({
+          event: 'seek',
+          action: function() {
+            self.seek.apply(self, args);
+          }
         });
 
         return self;
@@ -4862,9 +3822,11 @@ window.Modernizr = (function( window, document, undefined ) {
           if (playing) {
             self.play(id, true);
           }
+
+          self._emit('seek', id);
         } else {
           if (self._webAudio) {
-            return (sound._seek + self.playing(id) ? ctx.currentTime - sound._playStart : 0);
+            return (sound._seek + (self.playing(id) ? ctx.currentTime - sound._playStart : 0));
           } else {
             return sound._node.currentTime;
           }
@@ -4888,10 +3850,22 @@ window.Modernizr = (function( window, document, undefined ) {
 
     /**
      * Get the duration of this sound.
+     * @param  {Number} id The sound id to check. If none is passed, first sound is used.
      * @return {Number} Audio duration.
      */
-    duration: function() {
-      return this._duration;
+    duration: function(id) {
+      var self = this;
+      var sound = self._soundById(id) || self._sounds[0];
+
+      return self._duration / sound._rate;
+    },
+
+    /**
+     * Returns the current loaded state of this Howl.
+     * @return {String} 'unloaded', 'loading', 'loaded'
+     */
+    state: function() {
+      return this._state;
     },
 
     /**
@@ -4917,7 +3891,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
-          sounds[i]._node.removeEventListener('canplaythrough', sounds[i]._loadFn, false);
+          sounds[i]._node.removeEventListener(canPlayEvent, sounds[i]._loadFn, false);
         }
 
         // Empty out all of the nodes.
@@ -4939,6 +3913,8 @@ window.Modernizr = (function( window, document, undefined ) {
       }
 
       // Clear out `self`.
+      self._state = 'unloaded';
+      self._sounds = [];
       self = null;
 
       return null;
@@ -4949,21 +3925,22 @@ window.Modernizr = (function( window, document, undefined ) {
      * @param  {String}   event Event name.
      * @param  {Function} fn    Listener to call.
      * @param  {Number}   id    (optional) Only listen to events for this sound.
+     * @param  {Number}   once  (INTERNAL) Marks event to fire only once.
      * @return {Howl}
      */
-    on: function(event, fn, id) {
+    on: function(event, fn, id, once) {
       var self = this;
       var events = self['_on' + event];
 
       if (typeof fn === 'function') {
-        events.push({id: id, fn: fn});
+        events.push(once ? {id: id, fn: fn, once: once} : {id: id, fn: fn});
       }
 
       return self;
     },
 
     /**
-     * Remove a custom event.
+     * Remove a custom event. Call without parameters to remove all events.
      * @param  {String}   event Event name.
      * @param  {Function} fn    Listener to remove. Leave empty to remove all.
      * @param  {Number}   id    (optional) Only remove events for this sound.
@@ -4981,9 +3958,17 @@ window.Modernizr = (function( window, document, undefined ) {
             break;
           }
         }
-      } else {
+      } else if (event) {
         // Clear out all events of this type.
-        events = [];
+        self['_on' + event] = [];
+      } else {
+        // Clear out all events of every type.
+        var keys = Object.keys(self);
+        for (var i=0; i<keys.length; i++) {
+          if ((keys[i].indexOf('_on') === 0) && Array.isArray(self[keys[i]])) {
+            self[keys[i]] = [];
+          }
+        }
       }
 
       return self;
@@ -4999,17 +3984,8 @@ window.Modernizr = (function( window, document, undefined ) {
     once: function(event, fn, id) {
       var self = this;
 
-      // Create the listener method.
-      var listener = function() {
-        // Call the passed function.
-        fn.apply(self, arguments);
-
-        // Clear the listener.
-        self.off(event, listener, id);
-      };
-
       // Setup the event listener.
-      self.on(event, listener, id);
+      self.on(event, fn, id, 1);
 
       return self;
     },
@@ -5024,17 +4000,97 @@ window.Modernizr = (function( window, document, undefined ) {
     _emit: function(event, id, msg) {
       var self = this;
       var events = self['_on' + event];
-      
+
       // Loop through event store and fire all functions.
-      for (var i=0; i<events.length; i++) {
-        if (!events[i].id || events[i].id === id) {
+      for (var i=events.length-1; i>=0; i--) {
+        if (!events[i].id || events[i].id === id || event === 'load') {
           setTimeout(function(fn) {
             fn.call(this, id, msg);
           }.bind(self, events[i].fn), 0);
+
+          // If this event was setup with `once`, remove it.
+          if (events[i].once) {
+            self.off(event, events[i].fn, events[i].id);
+          }
         }
       }
 
-      console.log("howler emit:" + event);
+      return self;
+    },
+
+    /**
+     * Queue of actions initiated before the sound has loaded.
+     * These will be called in sequence, with the next only firing
+     * after the previous has finished executing (even if async like play).
+     * @return {Howl}
+     */
+    _loadQueue: function() {
+      var self = this;
+
+      if (self._queue.length > 0) {
+        var task = self._queue[0];
+
+        // don't move onto the next task until this one is done
+        self.once(task.event, function() {
+          self._queue.shift();
+          self._loadQueue();
+        });
+
+        task.action();
+      }
+
+      return self;
+    },
+
+    /**
+     * Fired when playback ends at the end of the duration.
+     * @param  {Sound} sound The sound object to work with.
+     * @return {Howl}
+     */
+    _ended: function(sound) {
+      var self = this;
+      var sprite = sound._sprite;
+
+      // Should this sound loop?
+      var loop = !!(sound._loop || self._sprite[sprite][2]);
+
+      // Fire the ended event.
+      self._emit('end', sound._id);
+
+      // Restart the playback for HTML5 Audio loop.
+      if (!self._webAudio && loop) {
+        self.stop(sound._id).play(sound._id);
+      }
+
+      // Restart this timer if on a Web Audio loop.
+      if (self._webAudio && loop) {
+        self._emit('play', sound._id);
+        sound._seek = sound._start || 0;
+        sound._playStart = ctx.currentTime;
+
+        var timeout = ((sound._stop - sound._start) * 1000) / Math.abs(sound._rate);
+        self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+      }
+
+      // Mark the node as paused.
+      if (self._webAudio && !loop) {
+        sound._paused = true;
+        sound._ended = true;
+        sound._seek = sound._start || 0;
+        self._clearTimer(sound._id);
+
+        // Clean up the buffer source.
+        sound._node.bufferSource = null;
+
+        // Attempt to auto-suspend AudioContext if no sounds are still playing.
+        Howler._autoSuspend();
+      }
+
+      // When using a sprite, end the track.
+      if (!self._webAudio && !loop) {
+        self.stop(sound._id);
+      }
+
       return self;
     },
 
@@ -5208,9 +4264,11 @@ window.Modernizr = (function( window, document, undefined ) {
       self._loop = parent._loop;
       self._volume = parent._volume;
       self._muted = parent._muted;
+      self._rate = parent._rate;
       self._seek = 0;
       self._paused = true;
       self._ended = true;
+      self._sprite = '__default';
 
       // Generate a unique ID for this sound.
       self._id = Math.round(Date.now() * Math.random());
@@ -5248,7 +4306,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
         // Listen for 'canplaythrough' event to let us know the sound is ready.
         self._loadFn = self._loadListener.bind(self);
-        self._node.addEventListener('canplaythrough', self._loadFn, false);
+        self._node.addEventListener(canPlayEvent, self._loadFn, false);
 
         // Setup the new audio node.
         self._node.src = parent._src;
@@ -5275,10 +4333,11 @@ window.Modernizr = (function( window, document, undefined ) {
       self._loop = parent._loop;
       self._volume = parent._volume;
       self._muted = parent._muted;
+      self._rate = parent._rate;
       self._seek = 0;
       self._paused = true;
       self._ended = true;
-      self._sprite = null;
+      self._sprite = '__default';
 
       // Generate a new ID so that it isn't confused with the previous sound.
       self._id = Math.round(Date.now() * Math.random());
@@ -5298,7 +4357,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // Fire an error event and pass back the code.
       self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
-      
+
       // Clear the event listener.
       self._node.removeEventListener('error', self._errorListener, false);
     },
@@ -5318,9 +4377,10 @@ window.Modernizr = (function( window, document, undefined ) {
         parent._sprite = {__default: [0, parent._duration * 1000]};
       }
 
-      if (!parent._loaded) {
-        parent._loaded = true;
+      if (parent._state !== 'loaded') {
+        parent._state = 'loaded';
         parent._emit('load');
+        parent._loadQueue();
       }
 
       if (parent._autoplay) {
@@ -5328,7 +4388,7 @@ window.Modernizr = (function( window, document, undefined ) {
       }
 
       // Clear the event listener.
-      self._node.removeEventListener('canplaythrough', self._loadFn, false);
+      self._node.removeEventListener(canPlayEvent, self._loadFn, false);
     }
   };
 
@@ -5361,22 +4421,41 @@ window.Modernizr = (function( window, document, undefined ) {
       if (/^data:[^;]+;base64,/.test(url)) {
         // Setup polyfill for window.atob to support IE9.
         // Modified from: https://github.com/davidchambers/Base64.js
+        window.atob = window.atob || function(input) {
+          var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+          var str = String(input).replace(/=+$/, '');
+          for (
+            var bc = 0, bs, buffer, idx = 0, output = '';
+            buffer = str.charAt(idx++);
+            ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer, bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+          ) {
+            buffer = chars.indexOf(buffer);
+          }
+
+          return output;
+        };
+
         // Decode the base64 data URI without XHR, since some browsers don't support it.
         var data = atob(url.split(',')[1]);
         var dataView = new Uint8Array(data.length);
         for (var i=0; i<data.length; ++i) {
           dataView[i] = data.charCodeAt(i);
         }
-        
+
         decodeAudioData(dataView.buffer, self);
       } else {
         // Load the buffer from the URL.
         var xhr = new XMLHttpRequest();
-
-        xhr.crossOrigin = "Anonymous";
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
+          // Make sure we get a successful response back.
+          var code = (xhr.status + '')[0];
+          if (code !== '0' && code !== '2' && code !== '3') {
+            self._emit('loaderror', null, 'Failed loading audio file with status: ' + xhr.status + '.');
+            return;
+          }
+
           decodeAudioData(xhr.response, self);
         };
         xhr.onerror = function() {
@@ -5412,20 +4491,13 @@ window.Modernizr = (function( window, document, undefined ) {
      */
     var decodeAudioData = function(arraybuffer, self) {
       // Decode the buffer into an audio source.
-
-      console.log("to decodeAudioData: " + self._src + " length:" + arraybuffer.byteLength);
       ctx.decodeAudioData(arraybuffer, function(buffer) {
-        if (buffer) {
+        if (buffer && self._sounds.length > 0) {
           cache[self._src] = buffer;
           loadSound(self, buffer);
-          console.log("load " + self._src + " duration:" + buffer.duration);
-        }
-        else {
-          console.log("load " + self._src + " error buffer is null");
         }
       }, function() {
-        self._emit('loaderror');
-          console.log("load " + self._src + " error: decodeAudioData failed.");
+        self._emit('loaderror', null, 'Decoding audio data failed.');
       });
     };
 
@@ -5446,9 +4518,10 @@ window.Modernizr = (function( window, document, undefined ) {
       }
 
       // Fire the loaded event.
-      if (!self._loaded) {
-        self._loaded = true;
+      if (self._state !== 'loaded') {
+        self._state = 'loaded';
         self._emit('load');
+        self._loadQueue();
       }
 
       // Begin playback if specified.
@@ -5466,23 +4539,24 @@ window.Modernizr = (function( window, document, undefined ) {
     try {
       if (typeof AudioContext !== 'undefined') {
         ctx = new AudioContext();
-        console.log("AudioContext supported");
       } else if (typeof webkitAudioContext !== 'undefined') {
         ctx = new webkitAudioContext();
-        console.log("webkitAudioContext supported");
       } else {
         usingWebAudio = false;
-        console.log("Web Audio not supported");
       }
     } catch(e) {
       usingWebAudio = false;
-      console.log(JSON.stringify(e));
     }
 
     if (!usingWebAudio) {
       if (typeof Audio !== 'undefined') {
         try {
-          new Audio();
+          var test = new Audio();
+
+          // Check if the canplaythrough event is available.
+          if (typeof test.oncanplaythrough === 'undefined') {
+            canPlayEvent = 'canplay';
+          }
         } catch(e) {
           noAudio = true;
         }
@@ -5491,17 +4565,37 @@ window.Modernizr = (function( window, document, undefined ) {
       }
     }
 
-    if(noAudio) {
-    	console.log("No Audio Support.");
+    // Test to make sure audio isn't disabled in Internet Explorer
+    try {
+      var test = new Audio();
+      if (test.muted) {
+        noAudio = true;
+      }
+    } catch (e) {}
+
+    // Check if a webview is being used on iOS8 or earlier (rather than the browser).
+    // If it is, disable Web Audio as it causes crashing.
+    var iOS = (/iP(hone|od|ad)/.test(navigator.platform));
+    var appVersion = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    var version = appVersion ? parseInt(appVersion[1], 10) : null;
+    if (iOS && version && version < 9) {
+      var safari = /safari/.test(window.navigator.userAgent.toLowerCase());
+      if (window.navigator.standalone && !safari || !window.navigator.standalone && !safari) {
+        usingWebAudio = false;
+      }
     }
-    if(!usingWebAudio) {
-    	console.log("Not Using WebAudio");
+
+    // Create a master gain node.
+    if (usingWebAudio) {
+      masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
+      masterGain.gain.value = 1;
+      masterGain.connect(ctx.destination);
     }
   }
 
   // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
   if (typeof define === 'function' && define.amd) {
-    define('howler', function() {
+    define([], function() {
       return {
         Howler: Howler,
         Howl: Howl
@@ -5521,1501 +4615,872 @@ window.Modernizr = (function( window, document, undefined ) {
     window.Howler = Howler;
     window.Howl = Howl;
     window.Sound = Sound;
+  } else if (typeof global !== 'undefined') { // Add to global in Node.js (for testing, etc).
+    global.HowlerGlobal = HowlerGlobal;
+    global.Howler = Howler;
+    global.Howl = Howl;
+    global.Sound = Sound;
   }
 })();
-
-// Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
-// This work is free. You can redistribute it and/or modify it
-// under the terms of the WTFPL, Version 2
-// For more information see LICENSE.txt or http://www.wtfpl.net/
-//
-// For more information, the home page:
-// http://pieroxy.net/blog/pages/lz-string/testing.html
-//
-// LZ-based compression algorithm, version 1.3.3
-var LZString = {
-  
-  
-  // private property
-  _keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-  _f : String.fromCharCode,
-  
-  compressToBase64 : function (input) {
-    if (input == null) return "";
-    var output = "";
-    var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-    var i = 0;
-    
-    input = LZString.compress(input);
-    
-    while (i < input.length*2) {
-      
-      if (i%2==0) {
-        chr1 = input.charCodeAt(i/2) >> 8;
-        chr2 = input.charCodeAt(i/2) & 255;
-        if (i/2+1 < input.length) 
-          chr3 = input.charCodeAt(i/2+1) >> 8;
-        else 
-          chr3 = NaN;
-      } else {
-        chr1 = input.charCodeAt((i-1)/2) & 255;
-        if ((i+1)/2 < input.length) {
-          chr2 = input.charCodeAt((i+1)/2) >> 8;
-          chr3 = input.charCodeAt((i+1)/2) & 255;
-        } else 
-          chr2=chr3=NaN;
-      }
-      i+=3;
-      
-      enc1 = chr1 >> 2;
-      enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-      enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-      enc4 = chr3 & 63;
-      
-      if (isNaN(chr2)) {
-        enc3 = enc4 = 64;
-      } else if (isNaN(chr3)) {
-        enc4 = 64;
-      }
-      
-      output = output +
-        LZString._keyStr.charAt(enc1) + LZString._keyStr.charAt(enc2) +
-          LZString._keyStr.charAt(enc3) + LZString._keyStr.charAt(enc4);
-      
-    }
-    
-    return output;
-  },
-  
-  decompressFromBase64 : function (input) {
-    if (input == null) return "";
-    var output = "",
-        ol = 0, 
-        output_,
-        chr1, chr2, chr3,
-        enc1, enc2, enc3, enc4,
-        i = 0, f=LZString._f;
-    
-    input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-    
-    while (i < input.length) {
-      
-      enc1 = LZString._keyStr.indexOf(input.charAt(i++));
-      enc2 = LZString._keyStr.indexOf(input.charAt(i++));
-      enc3 = LZString._keyStr.indexOf(input.charAt(i++));
-      enc4 = LZString._keyStr.indexOf(input.charAt(i++));
-      
-      chr1 = (enc1 << 2) | (enc2 >> 4);
-      chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-      chr3 = ((enc3 & 3) << 6) | enc4;
-      
-      if (ol%2==0) {
-        output_ = chr1 << 8;
-        
-        if (enc3 != 64) {
-          output += f(output_ | chr2);
-        }
-        if (enc4 != 64) {
-          output_ = chr3 << 8;
-        }
-      } else {
-        output = output + f(output_ | chr1);
-        
-        if (enc3 != 64) {
-          output_ = chr2 << 8;
-        }
-        if (enc4 != 64) {
-          output += f(output_ | chr3);
-        }
-      }
-      ol+=3;
-    }
-    
-    return LZString.decompress(output);
-    
-  },
-
-  compressToUTF16 : function (input) {
-    if (input == null) return "";
-    var output = "",
-        i,c,
-        current,
-        status = 0,
-        f = LZString._f;
-    
-    input = LZString.compress(input);
-    
-    for (i=0 ; i<input.length ; i++) {
-      c = input.charCodeAt(i);
-      switch (status++) {
-        case 0:
-          output += f((c >> 1)+32);
-          current = (c & 1) << 14;
-          break;
-        case 1:
-          output += f((current + (c >> 2))+32);
-          current = (c & 3) << 13;
-          break;
-        case 2:
-          output += f((current + (c >> 3))+32);
-          current = (c & 7) << 12;
-          break;
-        case 3:
-          output += f((current + (c >> 4))+32);
-          current = (c & 15) << 11;
-          break;
-        case 4:
-          output += f((current + (c >> 5))+32);
-          current = (c & 31) << 10;
-          break;
-        case 5:
-          output += f((current + (c >> 6))+32);
-          current = (c & 63) << 9;
-          break;
-        case 6:
-          output += f((current + (c >> 7))+32);
-          current = (c & 127) << 8;
-          break;
-        case 7:
-          output += f((current + (c >> 8))+32);
-          current = (c & 255) << 7;
-          break;
-        case 8:
-          output += f((current + (c >> 9))+32);
-          current = (c & 511) << 6;
-          break;
-        case 9:
-          output += f((current + (c >> 10))+32);
-          current = (c & 1023) << 5;
-          break;
-        case 10:
-          output += f((current + (c >> 11))+32);
-          current = (c & 2047) << 4;
-          break;
-        case 11:
-          output += f((current + (c >> 12))+32);
-          current = (c & 4095) << 3;
-          break;
-        case 12:
-          output += f((current + (c >> 13))+32);
-          current = (c & 8191) << 2;
-          break;
-        case 13:
-          output += f((current + (c >> 14))+32);
-          current = (c & 16383) << 1;
-          break;
-        case 14:
-          output += f((current + (c >> 15))+32, (c & 32767)+32);
-          status = 0;
-          break;
-      }
-    }
-    
-    return output + f(current + 32);
-  },
-  
-
-  decompressFromUTF16 : function (input) {
-    if (input == null) return "";
-    var output = "",
-        current,c,
-        status=0,
-        i = 0,
-        f = LZString._f;
-    
-    while (i < input.length) {
-      c = input.charCodeAt(i) - 32;
-      
-      switch (status++) {
-        case 0:
-          current = c << 1;
-          break;
-        case 1:
-          output += f(current | (c >> 14));
-          current = (c&16383) << 2;
-          break;
-        case 2:
-          output += f(current | (c >> 13));
-          current = (c&8191) << 3;
-          break;
-        case 3:
-          output += f(current | (c >> 12));
-          current = (c&4095) << 4;
-          break;
-        case 4:
-          output += f(current | (c >> 11));
-          current = (c&2047) << 5;
-          break;
-        case 5:
-          output += f(current | (c >> 10));
-          current = (c&1023) << 6;
-          break;
-        case 6:
-          output += f(current | (c >> 9));
-          current = (c&511) << 7;
-          break;
-        case 7:
-          output += f(current | (c >> 8));
-          current = (c&255) << 8;
-          break;
-        case 8:
-          output += f(current | (c >> 7));
-          current = (c&127) << 9;
-          break;
-        case 9:
-          output += f(current | (c >> 6));
-          current = (c&63) << 10;
-          break;
-        case 10:
-          output += f(current | (c >> 5));
-          current = (c&31) << 11;
-          break;
-        case 11:
-          output += f(current | (c >> 4));
-          current = (c&15) << 12;
-          break;
-        case 12:
-          output += f(current | (c >> 3));
-          current = (c&7) << 13;
-          break;
-        case 13:
-          output += f(current | (c >> 2));
-          current = (c&3) << 14;
-          break;
-        case 14:
-          output += f(current | (c >> 1));
-          current = (c&1) << 15;
-          break;
-        case 15:
-          output += f(current | c);
-          status=0;
-          break;
-      }
-      
-      
-      i++;
-    }
-    
-    return LZString.decompress(output);
-    //return output;
-    
-  },
-
-
-  
-  compress: function (uncompressed) {
-    if (uncompressed == null) return "";
-    var i, value,
-        context_dictionary= {},
-        context_dictionaryToCreate= {},
-        context_c="",
-        context_wc="",
-        context_w="",
-        context_enlargeIn= 2, // Compensate for the first entry which should not count
-        context_dictSize= 3,
-        context_numBits= 2,
-        context_data_string="", 
-        context_data_val=0, 
-        context_data_position=0,
-        ii,
-        f=LZString._f;
-    
-    for (ii = 0; ii < uncompressed.length; ii += 1) {
-      context_c = uncompressed.charAt(ii);
-      if (!Object.prototype.hasOwnProperty.call(context_dictionary,context_c)) {
-        context_dictionary[context_c] = context_dictSize++;
-        context_dictionaryToCreate[context_c] = true;
-      }
-      
-      context_wc = context_w + context_c;
-      if (Object.prototype.hasOwnProperty.call(context_dictionary,context_wc)) {
-        context_w = context_wc;
-      } else {
-        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
-          if (context_w.charCodeAt(0)<256) {
-            for (i=0 ; i<context_numBits ; i++) {
-              context_data_val = (context_data_val << 1);
-              if (context_data_position == 15) {
-                context_data_position = 0;
-                context_data_string += f(context_data_val);
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-            }
-            value = context_w.charCodeAt(0);
-            for (i=0 ; i<8 ; i++) {
-              context_data_val = (context_data_val << 1) | (value&1);
-              if (context_data_position == 15) {
-                context_data_position = 0;
-                context_data_string += f(context_data_val);
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          } else {
-            value = 1;
-            for (i=0 ; i<context_numBits ; i++) {
-              context_data_val = (context_data_val << 1) | value;
-              if (context_data_position == 15) {
-                context_data_position = 0;
-                context_data_string += f(context_data_val);
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = 0;
-            }
-            value = context_w.charCodeAt(0);
-            for (i=0 ; i<16 ; i++) {
-              context_data_val = (context_data_val << 1) | (value&1);
-              if (context_data_position == 15) {
-                context_data_position = 0;
-                context_data_string += f(context_data_val);
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          }
-          context_enlargeIn--;
-          if (context_enlargeIn == 0) {
-            context_enlargeIn = Math.pow(2, context_numBits);
-            context_numBits++;
-          }
-          delete context_dictionaryToCreate[context_w];
-        } else {
-          value = context_dictionary[context_w];
-          for (i=0 ; i<context_numBits ; i++) {
-            context_data_val = (context_data_val << 1) | (value&1);
-            if (context_data_position == 15) {
-              context_data_position = 0;
-              context_data_string += f(context_data_val);
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-          
-          
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        // Add wc to the dictionary.
-        context_dictionary[context_wc] = context_dictSize++;
-        context_w = String(context_c);
-      }
-    }
-    
-    // Output the code for w.
-    if (context_w !== "") {
-      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
-        if (context_w.charCodeAt(0)<256) {
-          for (i=0 ; i<context_numBits ; i++) {
-            context_data_val = (context_data_val << 1);
-            if (context_data_position == 15) {
-              context_data_position = 0;
-              context_data_string += f(context_data_val);
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-          }
-          value = context_w.charCodeAt(0);
-          for (i=0 ; i<8 ; i++) {
-            context_data_val = (context_data_val << 1) | (value&1);
-            if (context_data_position == 15) {
-              context_data_position = 0;
-              context_data_string += f(context_data_val);
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        } else {
-          value = 1;
-          for (i=0 ; i<context_numBits ; i++) {
-            context_data_val = (context_data_val << 1) | value;
-            if (context_data_position == 15) {
-              context_data_position = 0;
-              context_data_string += f(context_data_val);
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = 0;
-          }
-          value = context_w.charCodeAt(0);
-          for (i=0 ; i<16 ; i++) {
-            context_data_val = (context_data_val << 1) | (value&1);
-            if (context_data_position == 15) {
-              context_data_position = 0;
-              context_data_string += f(context_data_val);
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        delete context_dictionaryToCreate[context_w];
-      } else {
-        value = context_dictionary[context_w];
-        for (i=0 ; i<context_numBits ; i++) {
-          context_data_val = (context_data_val << 1) | (value&1);
-          if (context_data_position == 15) {
-            context_data_position = 0;
-            context_data_string += f(context_data_val);
-            context_data_val = 0;
-          } else {
-            context_data_position++;
-          }
-          value = value >> 1;
-        }
-        
-        
-      }
-      context_enlargeIn--;
-      if (context_enlargeIn == 0) {
-        context_enlargeIn = Math.pow(2, context_numBits);
-        context_numBits++;
-      }
-    }
-    
-    // Mark the end of the stream
-    value = 2;
-    for (i=0 ; i<context_numBits ; i++) {
-      context_data_val = (context_data_val << 1) | (value&1);
-      if (context_data_position == 15) {
-        context_data_position = 0;
-        context_data_string += f(context_data_val);
-        context_data_val = 0;
-      } else {
-        context_data_position++;
-      }
-      value = value >> 1;
-    }
-    
-    // Flush the last char
-    while (true) {
-      context_data_val = (context_data_val << 1);
-      if (context_data_position == 15) {
-        context_data_string += f(context_data_val);
-        break;
-      }
-      else context_data_position++;
-    }
-    return context_data_string;
-  },
-  
-  decompress: function (compressed) {
-    if (compressed == null) return "";
-    if (compressed == "") return null;
-    var dictionary = [],
-        next,
-        enlargeIn = 4,
-        dictSize = 4,
-        numBits = 3,
-        entry = "",
-        result = "",
-        i,
-        w,
-        bits, resb, maxpower, power,
-        c,
-        f = LZString._f,
-        data = {string:compressed, val:compressed.charCodeAt(0), position:32768, index:1};
-    
-    for (i = 0; i < 3; i += 1) {
-      dictionary[i] = i;
-    }
-    
-    bits = 0;
-    maxpower = Math.pow(2,2);
-    power=1;
-    while (power!=maxpower) {
-      resb = data.val & data.position;
-      data.position >>= 1;
-      if (data.position == 0) {
-        data.position = 32768;
-        data.val = data.string.charCodeAt(data.index++);
-      }
-      bits |= (resb>0 ? 1 : 0) * power;
-      power <<= 1;
-    }
-    
-    switch (next = bits) {
-      case 0: 
-          bits = 0;
-          maxpower = Math.pow(2,8);
-          power=1;
-          while (power!=maxpower) {
-            resb = data.val & data.position;
-            data.position >>= 1;
-            if (data.position == 0) {
-              data.position = 32768;
-              data.val = data.string.charCodeAt(data.index++);
-            }
-            bits |= (resb>0 ? 1 : 0) * power;
-            power <<= 1;
-          }
-        c = f(bits);
-        break;
-      case 1: 
-          bits = 0;
-          maxpower = Math.pow(2,16);
-          power=1;
-          while (power!=maxpower) {
-            resb = data.val & data.position;
-            data.position >>= 1;
-            if (data.position == 0) {
-              data.position = 32768;
-              data.val = data.string.charCodeAt(data.index++);
-            }
-            bits |= (resb>0 ? 1 : 0) * power;
-            power <<= 1;
-          }
-        c = f(bits);
-        break;
-      case 2: 
-        return "";
-    }
-    dictionary[3] = c;
-    w = result = c;
-    while (true) {
-      if (data.index > data.string.length) {
-        return "";
-      }
-      
-      bits = 0;
-      maxpower = Math.pow(2,numBits);
-      power=1;
-      while (power!=maxpower) {
-        resb = data.val & data.position;
-        data.position >>= 1;
-        if (data.position == 0) {
-          data.position = 32768;
-          data.val = data.string.charCodeAt(data.index++);
-        }
-        bits |= (resb>0 ? 1 : 0) * power;
-        power <<= 1;
-      }
-
-      switch (c = bits) {
-        case 0: 
-          bits = 0;
-          maxpower = Math.pow(2,8);
-          power=1;
-          while (power!=maxpower) {
-            resb = data.val & data.position;
-            data.position >>= 1;
-            if (data.position == 0) {
-              data.position = 32768;
-              data.val = data.string.charCodeAt(data.index++);
-            }
-            bits |= (resb>0 ? 1 : 0) * power;
-            power <<= 1;
-          }
-
-          dictionary[dictSize++] = f(bits);
-          c = dictSize-1;
-          enlargeIn--;
-          break;
-        case 1: 
-          bits = 0;
-          maxpower = Math.pow(2,16);
-          power=1;
-          while (power!=maxpower) {
-            resb = data.val & data.position;
-            data.position >>= 1;
-            if (data.position == 0) {
-              data.position = 32768;
-              data.val = data.string.charCodeAt(data.index++);
-            }
-            bits |= (resb>0 ? 1 : 0) * power;
-            power <<= 1;
-          }
-          dictionary[dictSize++] = f(bits);
-          c = dictSize-1;
-          enlargeIn--;
-          break;
-        case 2: 
-          return result;
-      }
-      
-      if (enlargeIn == 0) {
-        enlargeIn = Math.pow(2, numBits);
-        numBits++;
-      }
-      
-      if (dictionary[c]) {
-        entry = dictionary[c];
-      } else {
-        if (c === dictSize) {
-          entry = w + w.charAt(0);
-        } else {
-          return null;
-        }
-      }
-      result += entry;
-      
-      // Add w+entry[0] to the dictionary.
-      dictionary[dictSize++] = w + entry.charAt(0);
-      enlargeIn--;
-      
-      w = entry;
-      
-      if (enlargeIn == 0) {
-        enlargeIn = Math.pow(2, numBits);
-        numBits++;
-      }
-      
-    }
-  }
-};
-
-if( typeof module !== 'undefined' && module != null ) {
-  module.exports = LZString
-}
-
-function strCompress(str) {
-	var data = "";
-
-	try {
-		data = str ? LZString.compress(str) : "";
-	}
-	catch(e) {
-		console.log("strCompress: " + e.message);
-	}
-
-	return data;
-}
-
-function strDecompress(data) {	
-	var str = "";
-
-	try {
-		str = data ? LZString.decompress(data) : "";
-	}
-	catch(e) {
-		console.log("strDecompress: " + e.message);
-	}
-
-//	if(data && str) {
-//		console.log("decompress: " + str.length + " from " + data.length);
-//	}
-
-	return str;
-}
-
-
-/**
- * @fileoverview
- * - Using the 'QRCode for Javascript library'
- * - Fixed dataset of 'QRCode for Javascript library' for support full-spec.
- * - this library has no dependencies.
- * 
- * @author davidshimjs
- * @see <a href="http://www.d-project.com/" target="_blank">http://www.d-project.com/</a>
- * @see <a href="http://jeromeetienne.github.com/jquery-qrcode/" target="_blank">http://jeromeetienne.github.com/jquery-qrcode/</a>
- */
-var QRCode;
-
-(function () {
-	//---------------------------------------------------------------------
-	// QRCode for JavaScript
-	//
-	// Copyright (c) 2009 Kazuhiko Arase
-	//
-	// URL: http://www.d-project.com/
-	//
-	// Licensed under the MIT license:
-	//   http://www.opensource.org/licenses/mit-license.php
-	//
-	// The word "QR Code" is registered trademark of 
-	// DENSO WAVE INCORPORATED
-	//   http://www.denso-wave.com/qrcode/faqpatent-e.html
-	//
-	//---------------------------------------------------------------------
-	function QR8bitByte(data) {
-		this.mode = QRMode.MODE_8BIT_BYTE;
-		this.data = data;
-		this.parsedData = [];
-
-		// Added to support UTF-8 Characters
-		for (var i = 0, l = this.data.length; i < l; i++) {
-			var byteArray = [];
-			var code = this.data.charCodeAt(i);
-
-			if (code > 0x10000) {
-				byteArray[0] = 0xF0 | ((code & 0x1C0000) >>> 18);
-				byteArray[1] = 0x80 | ((code & 0x3F000) >>> 12);
-				byteArray[2] = 0x80 | ((code & 0xFC0) >>> 6);
-				byteArray[3] = 0x80 | (code & 0x3F);
-			} else if (code > 0x800) {
-				byteArray[0] = 0xE0 | ((code & 0xF000) >>> 12);
-				byteArray[1] = 0x80 | ((code & 0xFC0) >>> 6);
-				byteArray[2] = 0x80 | (code & 0x3F);
-			} else if (code > 0x80) {
-				byteArray[0] = 0xC0 | ((code & 0x7C0) >>> 6);
-				byteArray[1] = 0x80 | (code & 0x3F);
-			} else {
-				byteArray[0] = code;
-			}
-
-			this.parsedData.push(byteArray);
-		}
-
-		this.parsedData = Array.prototype.concat.apply([], this.parsedData);
-
-		if (this.parsedData.length != this.data.length) {
-			this.parsedData.unshift(191);
-			this.parsedData.unshift(187);
-			this.parsedData.unshift(239);
-		}
-	}
-
-	QR8bitByte.prototype = {
-		getLength: function (buffer) {
-			return this.parsedData.length;
-		},
-		write: function (buffer) {
-			for (var i = 0, l = this.parsedData.length; i < l; i++) {
-				buffer.put(this.parsedData[i], 8);
-			}
-		}
-	};
-
-	function QRCodeModel(typeNumber, errorCorrectLevel) {
-		this.typeNumber = typeNumber;
-		this.errorCorrectLevel = errorCorrectLevel;
-		this.modules = null;
-		this.moduleCount = 0;
-		this.dataCache = null;
-		this.dataList = [];
-	}
-
-	QRCodeModel.prototype={addData:function(data){var newData=new QR8bitByte(data);this.dataList.push(newData);this.dataCache=null;},isDark:function(row,col){if(row<0||this.moduleCount<=row||col<0||this.moduleCount<=col){throw new Error(row+","+col);}
-	return this.modules[row][col];},getModuleCount:function(){return this.moduleCount;},make:function(){this.makeImpl(false,this.getBestMaskPattern());},makeImpl:function(test,maskPattern){this.moduleCount=this.typeNumber*4+17;this.modules=new Array(this.moduleCount);for(var row=0;row<this.moduleCount;row++){this.modules[row]=new Array(this.moduleCount);for(var col=0;col<this.moduleCount;col++){this.modules[row][col]=null;}}
-	this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(test,maskPattern);if(this.typeNumber>=7){this.setupTypeNumber(test);}
-	if(this.dataCache==null){this.dataCache=QRCodeModel.createData(this.typeNumber,this.errorCorrectLevel,this.dataList);}
-	this.mapData(this.dataCache,maskPattern);},setupPositionProbePattern:function(row,col){for(var r=-1;r<=7;r++){if(row+r<=-1||this.moduleCount<=row+r)continue;for(var c=-1;c<=7;c++){if(col+c<=-1||this.moduleCount<=col+c)continue;if((0<=r&&r<=6&&(c==0||c==6))||(0<=c&&c<=6&&(r==0||r==6))||(2<=r&&r<=4&&2<=c&&c<=4)){this.modules[row+r][col+c]=true;}else{this.modules[row+r][col+c]=false;}}}},getBestMaskPattern:function(){var minLostPoint=0;var pattern=0;for(var i=0;i<8;i++){this.makeImpl(true,i);var lostPoint=QRUtil.getLostPoint(this);if(i==0||minLostPoint>lostPoint){minLostPoint=lostPoint;pattern=i;}}
-	return pattern;},createMovieClip:function(target_mc,instance_name,depth){var qr_mc=target_mc.createEmptyMovieClip(instance_name,depth);var cs=1;this.make();for(var row=0;row<this.modules.length;row++){var y=row*cs;for(var col=0;col<this.modules[row].length;col++){var x=col*cs;var dark=this.modules[row][col];if(dark){qr_mc.beginFill(0,100);qr_mc.moveTo(x,y);qr_mc.lineTo(x+cs,y);qr_mc.lineTo(x+cs,y+cs);qr_mc.lineTo(x,y+cs);qr_mc.endFill();}}}
-	return qr_mc;},setupTimingPattern:function(){for(var r=8;r<this.moduleCount-8;r++){if(this.modules[r][6]!=null){continue;}
-	this.modules[r][6]=(r%2==0);}
-	for(var c=8;c<this.moduleCount-8;c++){if(this.modules[6][c]!=null){continue;}
-	this.modules[6][c]=(c%2==0);}},setupPositionAdjustPattern:function(){var pos=QRUtil.getPatternPosition(this.typeNumber);for(var i=0;i<pos.length;i++){for(var j=0;j<pos.length;j++){var row=pos[i];var col=pos[j];if(this.modules[row][col]!=null){continue;}
-	for(var r=-2;r<=2;r++){for(var c=-2;c<=2;c++){if(r==-2||r==2||c==-2||c==2||(r==0&&c==0)){this.modules[row+r][col+c]=true;}else{this.modules[row+r][col+c]=false;}}}}}},setupTypeNumber:function(test){var bits=QRUtil.getBCHTypeNumber(this.typeNumber);for(var i=0;i<18;i++){var mod=(!test&&((bits>>i)&1)==1);this.modules[Math.floor(i/3)][i%3+this.moduleCount-8-3]=mod;}
-	for(var i=0;i<18;i++){var mod=(!test&&((bits>>i)&1)==1);this.modules[i%3+this.moduleCount-8-3][Math.floor(i/3)]=mod;}},setupTypeInfo:function(test,maskPattern){var data=(this.errorCorrectLevel<<3)|maskPattern;var bits=QRUtil.getBCHTypeInfo(data);for(var i=0;i<15;i++){var mod=(!test&&((bits>>i)&1)==1);if(i<6){this.modules[i][8]=mod;}else if(i<8){this.modules[i+1][8]=mod;}else{this.modules[this.moduleCount-15+i][8]=mod;}}
-	for(var i=0;i<15;i++){var mod=(!test&&((bits>>i)&1)==1);if(i<8){this.modules[8][this.moduleCount-i-1]=mod;}else if(i<9){this.modules[8][15-i-1+1]=mod;}else{this.modules[8][15-i-1]=mod;}}
-	this.modules[this.moduleCount-8][8]=(!test);},mapData:function(data,maskPattern){var inc=-1;var row=this.moduleCount-1;var bitIndex=7;var byteIndex=0;for(var col=this.moduleCount-1;col>0;col-=2){if(col==6)col--;while(true){for(var c=0;c<2;c++){if(this.modules[row][col-c]==null){var dark=false;if(byteIndex<data.length){dark=(((data[byteIndex]>>>bitIndex)&1)==1);}
-	var mask=QRUtil.getMask(maskPattern,row,col-c);if(mask){dark=!dark;}
-	this.modules[row][col-c]=dark;bitIndex--;if(bitIndex==-1){byteIndex++;bitIndex=7;}}}
-	row+=inc;if(row<0||this.moduleCount<=row){row-=inc;inc=-inc;break;}}}}};QRCodeModel.PAD0=0xEC;QRCodeModel.PAD1=0x11;QRCodeModel.createData=function(typeNumber,errorCorrectLevel,dataList){var rsBlocks=QRRSBlock.getRSBlocks(typeNumber,errorCorrectLevel);var buffer=new QRBitBuffer();for(var i=0;i<dataList.length;i++){var data=dataList[i];buffer.put(data.mode,4);buffer.put(data.getLength(),QRUtil.getLengthInBits(data.mode,typeNumber));data.write(buffer);}
-	var totalDataCount=0;for(var i=0;i<rsBlocks.length;i++){totalDataCount+=rsBlocks[i].dataCount;}
-	if(buffer.getLengthInBits()>totalDataCount*8){throw new Error("code length overflow. ("
-	+buffer.getLengthInBits()
-	+">"
-	+totalDataCount*8
-	+")");}
-	if(buffer.getLengthInBits()+4<=totalDataCount*8){buffer.put(0,4);}
-	while(buffer.getLengthInBits()%8!=0){buffer.putBit(false);}
-	while(true){if(buffer.getLengthInBits()>=totalDataCount*8){break;}
-	buffer.put(QRCodeModel.PAD0,8);if(buffer.getLengthInBits()>=totalDataCount*8){break;}
-	buffer.put(QRCodeModel.PAD1,8);}
-	return QRCodeModel.createBytes(buffer,rsBlocks);};QRCodeModel.createBytes=function(buffer,rsBlocks){var offset=0;var maxDcCount=0;var maxEcCount=0;var dcdata=new Array(rsBlocks.length);var ecdata=new Array(rsBlocks.length);for(var r=0;r<rsBlocks.length;r++){var dcCount=rsBlocks[r].dataCount;var ecCount=rsBlocks[r].totalCount-dcCount;maxDcCount=Math.max(maxDcCount,dcCount);maxEcCount=Math.max(maxEcCount,ecCount);dcdata[r]=new Array(dcCount);for(var i=0;i<dcdata[r].length;i++){dcdata[r][i]=0xff&buffer.buffer[i+offset];}
-	offset+=dcCount;var rsPoly=QRUtil.getErrorCorrectPolynomial(ecCount);var rawPoly=new QRPolynomial(dcdata[r],rsPoly.getLength()-1);var modPoly=rawPoly.mod(rsPoly);ecdata[r]=new Array(rsPoly.getLength()-1);for(var i=0;i<ecdata[r].length;i++){var modIndex=i+modPoly.getLength()-ecdata[r].length;ecdata[r][i]=(modIndex>=0)?modPoly.get(modIndex):0;}}
-	var totalCodeCount=0;for(var i=0;i<rsBlocks.length;i++){totalCodeCount+=rsBlocks[i].totalCount;}
-	var data=new Array(totalCodeCount);var index=0;for(var i=0;i<maxDcCount;i++){for(var r=0;r<rsBlocks.length;r++){if(i<dcdata[r].length){data[index++]=dcdata[r][i];}}}
-	for(var i=0;i<maxEcCount;i++){for(var r=0;r<rsBlocks.length;r++){if(i<ecdata[r].length){data[index++]=ecdata[r][i];}}}
-	return data;};var QRMode={MODE_NUMBER:1<<0,MODE_ALPHA_NUM:1<<1,MODE_8BIT_BYTE:1<<2,MODE_KANJI:1<<3};var QRErrorCorrectLevel={L:1,M:0,Q:3,H:2};var QRMaskPattern={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7};var QRUtil={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:(1<<10)|(1<<8)|(1<<5)|(1<<4)|(1<<2)|(1<<1)|(1<<0),G18:(1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8)|(1<<5)|(1<<2)|(1<<0),G15_MASK:(1<<14)|(1<<12)|(1<<10)|(1<<4)|(1<<1),getBCHTypeInfo:function(data){var d=data<<10;while(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G15)>=0){d^=(QRUtil.G15<<(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G15)));}
-	return((data<<10)|d)^QRUtil.G15_MASK;},getBCHTypeNumber:function(data){var d=data<<12;while(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G18)>=0){d^=(QRUtil.G18<<(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G18)));}
-	return(data<<12)|d;},getBCHDigit:function(data){var digit=0;while(data!=0){digit++;data>>>=1;}
-	return digit;},getPatternPosition:function(typeNumber){return QRUtil.PATTERN_POSITION_TABLE[typeNumber-1];},getMask:function(maskPattern,i,j){switch(maskPattern){case QRMaskPattern.PATTERN000:return(i+j)%2==0;case QRMaskPattern.PATTERN001:return i%2==0;case QRMaskPattern.PATTERN010:return j%3==0;case QRMaskPattern.PATTERN011:return(i+j)%3==0;case QRMaskPattern.PATTERN100:return(Math.floor(i/2)+Math.floor(j/3))%2==0;case QRMaskPattern.PATTERN101:return(i*j)%2+(i*j)%3==0;case QRMaskPattern.PATTERN110:return((i*j)%2+(i*j)%3)%2==0;case QRMaskPattern.PATTERN111:return((i*j)%3+(i+j)%2)%2==0;default:throw new Error("bad maskPattern:"+maskPattern);}},getErrorCorrectPolynomial:function(errorCorrectLength){var a=new QRPolynomial([1],0);for(var i=0;i<errorCorrectLength;i++){a=a.multiply(new QRPolynomial([1,QRMath.gexp(i)],0));}
-	return a;},getLengthInBits:function(mode,type){if(1<=type&&type<10){switch(mode){case QRMode.MODE_NUMBER:return 10;case QRMode.MODE_ALPHA_NUM:return 9;case QRMode.MODE_8BIT_BYTE:return 8;case QRMode.MODE_KANJI:return 8;default:throw new Error("mode:"+mode);}}else if(type<27){switch(mode){case QRMode.MODE_NUMBER:return 12;case QRMode.MODE_ALPHA_NUM:return 11;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 10;default:throw new Error("mode:"+mode);}}else if(type<41){switch(mode){case QRMode.MODE_NUMBER:return 14;case QRMode.MODE_ALPHA_NUM:return 13;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 12;default:throw new Error("mode:"+mode);}}else{throw new Error("type:"+type);}},getLostPoint:function(qrCode){var moduleCount=qrCode.getModuleCount();var lostPoint=0;for(var row=0;row<moduleCount;row++){for(var col=0;col<moduleCount;col++){var sameCount=0;var dark=qrCode.isDark(row,col);for(var r=-1;r<=1;r++){if(row+r<0||moduleCount<=row+r){continue;}
-	for(var c=-1;c<=1;c++){if(col+c<0||moduleCount<=col+c){continue;}
-	if(r==0&&c==0){continue;}
-	if(dark==qrCode.isDark(row+r,col+c)){sameCount++;}}}
-	if(sameCount>5){lostPoint+=(3+sameCount-5);}}}
-	for(var row=0;row<moduleCount-1;row++){for(var col=0;col<moduleCount-1;col++){var count=0;if(qrCode.isDark(row,col))count++;if(qrCode.isDark(row+1,col))count++;if(qrCode.isDark(row,col+1))count++;if(qrCode.isDark(row+1,col+1))count++;if(count==0||count==4){lostPoint+=3;}}}
-	for(var row=0;row<moduleCount;row++){for(var col=0;col<moduleCount-6;col++){if(qrCode.isDark(row,col)&&!qrCode.isDark(row,col+1)&&qrCode.isDark(row,col+2)&&qrCode.isDark(row,col+3)&&qrCode.isDark(row,col+4)&&!qrCode.isDark(row,col+5)&&qrCode.isDark(row,col+6)){lostPoint+=40;}}}
-	for(var col=0;col<moduleCount;col++){for(var row=0;row<moduleCount-6;row++){if(qrCode.isDark(row,col)&&!qrCode.isDark(row+1,col)&&qrCode.isDark(row+2,col)&&qrCode.isDark(row+3,col)&&qrCode.isDark(row+4,col)&&!qrCode.isDark(row+5,col)&&qrCode.isDark(row+6,col)){lostPoint+=40;}}}
-	var darkCount=0;for(var col=0;col<moduleCount;col++){for(var row=0;row<moduleCount;row++){if(qrCode.isDark(row,col)){darkCount++;}}}
-	var ratio=Math.abs(100*darkCount/moduleCount/moduleCount-50)/5;lostPoint+=ratio*10;return lostPoint;}};var QRMath={glog:function(n){if(n<1){throw new Error("glog("+n+")");}
-	return QRMath.LOG_TABLE[n];},gexp:function(n){while(n<0){n+=255;}
-	while(n>=256){n-=255;}
-	return QRMath.EXP_TABLE[n];},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)};for(var i=0;i<8;i++){QRMath.EXP_TABLE[i]=1<<i;}
-	for(var i=8;i<256;i++){QRMath.EXP_TABLE[i]=QRMath.EXP_TABLE[i-4]^QRMath.EXP_TABLE[i-5]^QRMath.EXP_TABLE[i-6]^QRMath.EXP_TABLE[i-8];}
-	for(var i=0;i<255;i++){QRMath.LOG_TABLE[QRMath.EXP_TABLE[i]]=i;}
-	function QRPolynomial(num,shift){if(num.length==undefined){throw new Error(num.length+"/"+shift);}
-	var offset=0;while(offset<num.length&&num[offset]==0){offset++;}
-	this.num=new Array(num.length-offset+shift);for(var i=0;i<num.length-offset;i++){this.num[i]=num[i+offset];}}
-	QRPolynomial.prototype={get:function(index){return this.num[index];},getLength:function(){return this.num.length;},multiply:function(e){var num=new Array(this.getLength()+e.getLength()-1);for(var i=0;i<this.getLength();i++){for(var j=0;j<e.getLength();j++){num[i+j]^=QRMath.gexp(QRMath.glog(this.get(i))+QRMath.glog(e.get(j)));}}
-	return new QRPolynomial(num,0);},mod:function(e){if(this.getLength()-e.getLength()<0){return this;}
-	var ratio=QRMath.glog(this.get(0))-QRMath.glog(e.get(0));var num=new Array(this.getLength());for(var i=0;i<this.getLength();i++){num[i]=this.get(i);}
-	for(var i=0;i<e.getLength();i++){num[i]^=QRMath.gexp(QRMath.glog(e.get(i))+ratio);}
-	return new QRPolynomial(num,0).mod(e);}};function QRRSBlock(totalCount,dataCount){this.totalCount=totalCount;this.dataCount=dataCount;}
-	QRRSBlock.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]];QRRSBlock.getRSBlocks=function(typeNumber,errorCorrectLevel){var rsBlock=QRRSBlock.getRsBlockTable(typeNumber,errorCorrectLevel);if(rsBlock==undefined){throw new Error("bad rs block @ typeNumber:"+typeNumber+"/errorCorrectLevel:"+errorCorrectLevel);}
-	var length=rsBlock.length/3;var list=[];for(var i=0;i<length;i++){var count=rsBlock[i*3+0];var totalCount=rsBlock[i*3+1];var dataCount=rsBlock[i*3+2];for(var j=0;j<count;j++){list.push(new QRRSBlock(totalCount,dataCount));}}
-	return list;};QRRSBlock.getRsBlockTable=function(typeNumber,errorCorrectLevel){switch(errorCorrectLevel){case QRErrorCorrectLevel.L:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+0];case QRErrorCorrectLevel.M:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+1];case QRErrorCorrectLevel.Q:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+2];case QRErrorCorrectLevel.H:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+3];default:return undefined;}};function QRBitBuffer(){this.buffer=[];this.length=0;}
-	QRBitBuffer.prototype={get:function(index){var bufIndex=Math.floor(index/8);return((this.buffer[bufIndex]>>>(7-index%8))&1)==1;},put:function(num,length){for(var i=0;i<length;i++){this.putBit(((num>>>(length-i-1))&1)==1);}},getLengthInBits:function(){return this.length;},putBit:function(bit){var bufIndex=Math.floor(this.length/8);if(this.buffer.length<=bufIndex){this.buffer.push(0);}
-	if(bit){this.buffer[bufIndex]|=(0x80>>>(this.length%8));}
-	this.length++;}};var QRCodeLimitLength=[[17,14,11,7],[32,26,20,14],[53,42,32,24],[78,62,46,34],[106,84,60,44],[134,106,74,58],[154,122,86,64],[192,152,108,84],[230,180,130,98],[271,213,151,119],[321,251,177,137],[367,287,203,155],[425,331,241,177],[458,362,258,194],[520,412,292,220],[586,450,322,250],[644,504,364,280],[718,560,394,310],[792,624,442,338],[858,666,482,382],[929,711,509,403],[1003,779,565,439],[1091,857,611,461],[1171,911,661,511],[1273,997,715,535],[1367,1059,751,593],[1465,1125,805,625],[1528,1190,868,658],[1628,1264,908,698],[1732,1370,982,742],[1840,1452,1030,790],[1952,1538,1112,842],[2068,1628,1168,898],[2188,1722,1228,958],[2303,1809,1283,983],[2431,1911,1351,1051],[2563,1989,1423,1093],[2699,2099,1499,1139],[2809,2213,1579,1219],[2953,2331,1663,1273]];
-	
-	function _isSupportCanvas() {
-		return typeof CanvasRenderingContext2D != "undefined";
-	}
-	
-	// android 2.x doesn't support Data-URI spec
-	function _getAndroid() {
-		var android = false;
-		var sAgent = navigator.userAgent;
-		
-		if (/android/i.test(sAgent)) { // android
-			android = true;
-			aMat = sAgent.toString().match(/android ([0-9]\.[0-9])/i);
-			
-			if (aMat && aMat[1]) {
-				android = parseFloat(aMat[1]);
-			}
-		}
-		
-		return android;
-	}
-	
-	var svgDrawer = (function() {
-
-		var Drawing = function (el, htOption) {
-			this._el = el;
-			this._htOption = htOption;
-		};
-
-		Drawing.prototype.draw = function (oQRCode) {
-			var _htOption = this._htOption;
-			var _el = this._el;
-			var nCount = oQRCode.getModuleCount();
-			var nWidth = Math.floor(_htOption.width / nCount);
-			var nHeight = Math.floor(_htOption.height / nCount);
-
-			this.clear();
-
-			function makeSVG(tag, attrs) {
-				var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-				for (var k in attrs)
-					if (attrs.hasOwnProperty(k)) el.setAttribute(k, attrs[k]);
-				return el;
-			}
-
-			var svg = makeSVG("svg" , {'viewBox': '0 0 ' + String(nCount) + " " + String(nCount), 'width': '100%', 'height': '100%', 'fill': _htOption.colorLight});
-			svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
-			_el.appendChild(svg);
-
-			svg.appendChild(makeSVG("rect", {"fill": _htOption.colorDark, "width": "1", "height": "1", "id": "template"}));
-
-			for (var row = 0; row < nCount; row++) {
-				for (var col = 0; col < nCount; col++) {
-					if (oQRCode.isDark(row, col)) {
-						var child = makeSVG("use", {"x": String(row), "y": String(col)});
-						child.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#template")
-						svg.appendChild(child);
-					}
-				}
-			}
-		};
-		Drawing.prototype.clear = function () {
-			while (this._el.hasChildNodes())
-				this._el.removeChild(this._el.lastChild);
-		};
-		return Drawing;
-	})();
-
-	var useSVG = document.documentElement.tagName.toLowerCase() === "svg";
-
-	// Drawing in DOM by using Table tag
-	var Drawing = useSVG ? svgDrawer : !_isSupportCanvas() ? (function () {
-		var Drawing = function (el, htOption) {
-			this._el = el;
-			this._htOption = htOption;
-		};
-			
-		/**
-		 * Draw the QRCode
-		 * 
-		 * @param {QRCode} oQRCode
-		 */
-		Drawing.prototype.draw = function (oQRCode) {
-            var _htOption = this._htOption;
-            var _el = this._el;
-			var nCount = oQRCode.getModuleCount();
-			var nWidth = Math.floor(_htOption.width / nCount);
-			var nHeight = Math.floor(_htOption.height / nCount);
-			var aHTML = ['<table style="border:0;border-collapse:collapse;">'];
-			
-			for (var row = 0; row < nCount; row++) {
-				aHTML.push('<tr>');
-				
-				for (var col = 0; col < nCount; col++) {
-					aHTML.push('<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:' + nWidth + 'px;height:' + nHeight + 'px;background-color:' + (oQRCode.isDark(row, col) ? _htOption.colorDark : _htOption.colorLight) + ';"></td>');
-				}
-				
-				aHTML.push('</tr>');
-			}
-			
-			aHTML.push('</table>');
-			_el.innerHTML = aHTML.join('');
-			
-			// Fix the margin values as real size.
-			var elTable = _el.childNodes[0];
-			var nLeftMarginTable = (_htOption.width - elTable.offsetWidth) / 2;
-			var nTopMarginTable = (_htOption.height - elTable.offsetHeight) / 2;
-			
-			if (nLeftMarginTable > 0 && nTopMarginTable > 0) {
-				elTable.style.margin = nTopMarginTable + "px " + nLeftMarginTable + "px";	
-			}
-		};
-		
-		/**
-		 * Clear the QRCode
-		 */
-		Drawing.prototype.clear = function () {
-			this._el.innerHTML = '';
-		};
-		
-		return Drawing;
-	})() : (function () { // Drawing in Canvas
-		function _onMakeImage() {
-			this._elImage.src = this._elCanvas.toDataURL("image/png");
-			this._elImage.style.display = "block";
-			this._elCanvas.style.display = "none";			
-		}
-		
-		// Android 2.1 bug workaround
-		// http://code.google.com/p/android/issues/detail?id=5141
-		if (this._android && this._android <= 2.1) {
-	    	var factor = 1 / window.devicePixelRatio;
-	        var drawImage = CanvasRenderingContext2D.prototype.drawImage; 
-	    	CanvasRenderingContext2D.prototype.drawImage = function (image, sx, sy, sw, sh, dx, dy, dw, dh) {
-	    		if (("nodeName" in image) && /img/i.test(image.nodeName)) {
-		        	for (var i = arguments.length - 1; i >= 1; i--) {
-		            	arguments[i] = arguments[i] * factor;
-		        	}
-	    		} else if (typeof dw == "undefined") {
-	    			arguments[1] *= factor;
-	    			arguments[2] *= factor;
-	    			arguments[3] *= factor;
-	    			arguments[4] *= factor;
-	    		}
-	    		
-	        	drawImage.apply(this, arguments); 
-	    	};
-		}
-		
-		/**
-		 * Check whether the user's browser supports Data URI or not
-		 * 
-		 * @private
-		 * @param {Function} fSuccess Occurs if it supports Data URI
-		 * @param {Function} fFail Occurs if it doesn't support Data URI
-		 */
-		function _safeSetDataURI(fSuccess, fFail) {
-            var self = this;
-            self._fFail = fFail;
-            self._fSuccess = fSuccess;
-
-            // Check it just once
-            if (self._bSupportDataURI === null) {
-                var el = document.createElement("img");
-                var fOnError = function() {
-                    self._bSupportDataURI = false;
-
-                    if (self._fFail) {
-                        _fFail.call(self);
-                    }
-                };
-                var fOnSuccess = function() {
-                    self._bSupportDataURI = true;
-
-                    if (self._fSuccess) {
-                        self._fSuccess.call(self);
-                    }
-                };
-
-                el.onabort = fOnError;
-                el.onerror = fOnError;
-                el.onload = fOnSuccess;
-                el.src = "data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="; // the Image contains 1px data.
-                return;
-            } else if (self._bSupportDataURI === true && self._fSuccess) {
-                self._fSuccess.call(self);
-            } else if (self._bSupportDataURI === false && self._fFail) {
-                self._fFail.call(self);
-            }
-		};
-		
-		/**
-		 * Drawing QRCode by using canvas
-		 * 
-		 * @constructor
-		 * @param {HTMLElement} el
-		 * @param {Object} htOption QRCode Options 
-		 */
-		var Drawing = function (el, htOption) {
-    		this._bIsPainted = false;
-    		this._android = _getAndroid();
-		
-			this._htOption = htOption;
-			this._elCanvas = document.createElement("canvas");
-			this._elCanvas.width = htOption.width;
-			this._elCanvas.height = htOption.height;
-			el.appendChild(this._elCanvas);
-			this._el = el;
-			this._oContext = this._elCanvas.getContext("2d");
-			this._bIsPainted = false;
-			this._elImage = document.createElement("img");
-			this._elImage.alt = "Scan me!";
-			this._elImage.style.display = "none";
-			this._el.appendChild(this._elImage);
-			this._bSupportDataURI = null;
-		};
-			
-		/**
-		 * Draw the QRCode
-		 * 
-		 * @param {QRCode} oQRCode 
-		 */
-		Drawing.prototype.draw = function (oQRCode) {
-            var _elImage = this._elImage;
-            var _oContext = this._oContext;
-            var _htOption = this._htOption;
-            
-			var nCount = oQRCode.getModuleCount();
-			var nWidth = _htOption.width / nCount;
-			var nHeight = _htOption.height / nCount;
-			var nRoundedWidth = Math.round(nWidth);
-			var nRoundedHeight = Math.round(nHeight);
-
-			_elImage.style.display = "none";
-			this.clear();
-			
-			for (var row = 0; row < nCount; row++) {
-				for (var col = 0; col < nCount; col++) {
-					var bIsDark = oQRCode.isDark(row, col);
-					var nLeft = col * nWidth;
-					var nTop = row * nHeight;
-					_oContext.strokeStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;
-					_oContext.lineWidth = 1;
-					_oContext.fillStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;					
-					_oContext.fillRect(nLeft, nTop, nWidth, nHeight);
-					
-					// 안티 앨리어싱 방지 처리
-					_oContext.strokeRect(
-						Math.floor(nLeft) + 0.5,
-						Math.floor(nTop) + 0.5,
-						nRoundedWidth,
-						nRoundedHeight
-					);
-					
-					_oContext.strokeRect(
-						Math.ceil(nLeft) - 0.5,
-						Math.ceil(nTop) - 0.5,
-						nRoundedWidth,
-						nRoundedHeight
-					);
-				}
-			}
-			
-			this._bIsPainted = true;
-		};
-			
-		/**
-		 * Make the image from Canvas if the browser supports Data URI.
-		 */
-		Drawing.prototype.makeImage = function () {
-			if (this._bIsPainted) {
-				_safeSetDataURI.call(this, _onMakeImage);
-			}
-		};
-			
-		/**
-		 * Return whether the QRCode is painted or not
-		 * 
-		 * @return {Boolean}
-		 */
-		Drawing.prototype.isPainted = function () {
-			return this._bIsPainted;
-		};
-		
-		/**
-		 * Clear the QRCode
-		 */
-		Drawing.prototype.clear = function () {
-			this._oContext.clearRect(0, 0, this._elCanvas.width, this._elCanvas.height);
-			this._bIsPainted = false;
-		};
-		
-		/**
-		 * @private
-		 * @param {Number} nNumber
-		 */
-		Drawing.prototype.round = function (nNumber) {
-			if (!nNumber) {
-				return nNumber;
-			}
-			
-			return Math.floor(nNumber * 1000) / 1000;
-		};
-		
-		return Drawing;
-	})();
-	
-	/**
-	 * Get the type by string length
-	 * 
-	 * @private
-	 * @param {String} sText
-	 * @param {Number} nCorrectLevel
-	 * @return {Number} type
-	 */
-	function _getTypeNumber(sText, nCorrectLevel) {			
-		var nType = 1;
-		var length = _getUTF8Length(sText);
-		
-		for (var i = 0, len = QRCodeLimitLength.length; i <= len; i++) {
-			var nLimit = 0;
-			
-			switch (nCorrectLevel) {
-				case QRErrorCorrectLevel.L :
-					nLimit = QRCodeLimitLength[i][0];
-					break;
-				case QRErrorCorrectLevel.M :
-					nLimit = QRCodeLimitLength[i][1];
-					break;
-				case QRErrorCorrectLevel.Q :
-					nLimit = QRCodeLimitLength[i][2];
-					break;
-				case QRErrorCorrectLevel.H :
-					nLimit = QRCodeLimitLength[i][3];
-					break;
-			}
-			
-			if (length <= nLimit) {
-				break;
-			} else {
-				nType++;
-			}
-		}
-		
-		if (nType > QRCodeLimitLength.length) {
-			throw new Error("Too long data");
-		}
-		
-		return nType;
-	}
-
-	function _getUTF8Length(sText) {
-		var replacedText = encodeURI(sText).toString().replace(/\%[0-9a-fA-F]{2}/g, 'a');
-		return replacedText.length + (replacedText.length != sText ? 3 : 0);
-	}
-	
-	/**
-	 * @class QRCode
-	 * @constructor
-	 * @example 
-	 * new QRCode(document.getElementById("test"), "http://jindo.dev.naver.com/collie");
-	 *
-	 * @example
-	 * var oQRCode = new QRCode("test", {
-	 *    text : "http://naver.com",
-	 *    width : 128,
-	 *    height : 128
-	 * });
-	 * 
-	 * oQRCode.clear(); // Clear the QRCode.
-	 * oQRCode.makeCode("http://map.naver.com"); // Re-create the QRCode.
-	 *
-	 * @param {HTMLElement|String} el target element or 'id' attribute of element.
-	 * @param {Object|String} vOption
-	 * @param {String} vOption.text QRCode link data
-	 * @param {Number} [vOption.width=256]
-	 * @param {Number} [vOption.height=256]
-	 * @param {String} [vOption.colorDark="#000000"]
-	 * @param {String} [vOption.colorLight="#ffffff"]
-	 * @param {QRCode.CorrectLevel} [vOption.correctLevel=QRCode.CorrectLevel.H] [L|M|Q|H] 
-	 */
-	QRCode = function (el, vOption) {
-		this._htOption = {
-			width : 256, 
-			height : 256,
-			typeNumber : 4,
-			colorDark : "#000000",
-			colorLight : "#ffffff",
-			correctLevel : QRErrorCorrectLevel.H
-		};
-		
-		if (typeof vOption === 'string') {
-			vOption	= {
-				text : vOption
-			};
-		}
-		
-		// Overwrites options
-		if (vOption) {
-			for (var i in vOption) {
-				this._htOption[i] = vOption[i];
-			}
-		}
-		
-		if (typeof el == "string") {
-			el = document.getElementById(el);
-		}
-	
-		if(!el) {
-			el = document.createElement("div");
-		}
-
-		this._android = _getAndroid();
-		this._el = el;
-		this._oQRCode = null;
-		this._oDrawing = new Drawing(this._el, this._htOption);
-		
-		if (this._htOption.text) {
-			this.makeCode(this._htOption.text);	
-		}
-	};
-	
-	/**
-	 * Make the QRCode
-	 * 
-	 * @param {String} sText link data
-	 */
-	QRCode.prototype.makeCode = function (sText) {
-		this._oQRCode = new QRCodeModel(_getTypeNumber(sText, this._htOption.correctLevel), this._htOption.correctLevel);
-		this._oQRCode.addData(sText);
-		this._oQRCode.make();
-		this._el.title = sText;
-		this._oDrawing.draw(this._oQRCode);			
-		this.makeImage();
-	};
-	
-	/*
-	 *lxj: get the src url of image.
-	 */
-	QRCode.prototype.getImageSrc = function () {
-		return this._oDrawing._elCanvas.toDataURL("image/png");
-	}
-
-	QRCode.makeImageDataURL = function(text, w, h) {
-		var qrcode = new QRCode(null, {text:text, width:w, height:h});
-		var src = qrcode.getImageSrc();
-
-		qrcode._oDrawing._elImage = null;
-		qrcode._oDrawing._elCanvas = null;
-		qrcode._oDrawing = null;
-		qrcode = null;
-
-		return src;
-	}
-
-	/**
-	 * Make the Image from Canvas element
-	 * - It occurs automatically
-	 * - Android below 3 doesn't support Data-URI spec.
-	 * 
-	 * @private
-	 */
-	QRCode.prototype.makeImage = function () {
-		if (typeof this._oDrawing.makeImage == "function" && (!this._android || this._android >= 3)) {
-			this._oDrawing.makeImage();
-		}
-	};
-	
-	/**
-	 * Clear the QRCode
-	 */
-	QRCode.prototype.clear = function () {
-		this._oDrawing.clear();
-	};
-	
-	/**
-	 * @name QRCode.CorrectLevel
-	 */
-	QRCode.CorrectLevel = QRErrorCorrectLevel;
-
-	window.QRCode = QRCode;
-})();
-
 /*
- * File: app_base.js
+ * File: event_target.js
  * Author:	Li XianJing <xianjimli@hotmail.com>
- * Brief: the base application.
+ * Brief: event target
  * 
- * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016	Holaverse Inc.
  * 
  */
+function TEvent() {
+}
 
-function AppBase(canvasID, type) {
-	this.win  = null;
-	this.view = null;
-	this.type = type;
-	this.minHeight = 0;
-
-	AppBase.type = type;
-
-	this.getView = function() {
-		return this.view;
-	}
-
-	this.setMinHeight = function(minHeight) {
-		this.minHeight = minHeight;
-
-		return;
-	}
-
-	this.exec = function(cmd) {
-		cmd.doit();
-		delete cmd;
-
-		return;
-	}
-
-	this.init = function() {
-		if(this.type === AppBase.TYPE_INLINE_EDITOR) {
-			this.isInlineEdit = true;
-		}
-		else {
-			this.isInlineEdit = false;
-		}
-
-		this.canvas	 = CantkRT.getMainCanvas();
-		this.adjustCanvasSize();
-		this.manager = WWindowManager.create(this, this.canvas);
-		canvasAttachManager(this.canvas, this.manager, this);
-		
-		return;
-	}
-
-	this.onShapeSelected = function(shape) {
-
-		return;
-	}
-
-	this.onSizeChanged = function() {
-		return;
-	}
-
-	this.adjustCanvasSize = function() {
-		var w = 0;
-		var h = 0;
-		var canvas = this.canvas;
-		var view = cantkGetViewPort();
-		
-		switch(this.type) {
-			case AppBase.TYPE_GENERAL: {
-				w = view.width;
-				h = view.height;
-			}
-			case AppBase.TYPE_WEBAPP: {
-				w = view.width;
-				h = view.height;
-				break;
-			}
-			case AppBase.TYPE_PREVIEW: {
-				w = view.width;
-				h = view.height;
-				this.setMinHeight(1500);
-				break;
-			}
-			default: {
-				if(!this.minHeight) {
-					this.setMinHeight(800);
-				}
-				w  = view.width - 20;
-				h = view.height;
-				break;
-			}
-		}
-
-		h = Math.max(h, this.minHeight);
-
-		this.resizeCanvasTo(w, h);
-
-		return;
-	}
-	
-	this.resizeCanvasTo = function(w, h) {
-		var canvas = this.canvas;
-
-		canvas.width  = w;
-		canvas.height = h;
-		canvas.style.top = 0;
-		canvas.style.left = 0;
-		canvas.style.position = "absolute";
-
-		return;
-	}
-
-	this.loadData = function(data)  {
-		return this.view.loadFromJson(data);
-	}
-
-	this.exitApp = function() {
-		console.log("exitApp");
-
-		return;
-	}
-
-	this.init();
+TEvent.prototype.preventDefault = function() {
+	this.defaultPrevented = true;
 
 	return this;
 }
 
-AppBase.isDevApp = function() {
-	return AppBase.type === AppBase.TYPE_PC_EDITOR 
-		|| AppBase.type === AppBase.TYPE_MOBILE_EDITOR 
-		|| AppBase.type === AppBase.TYPE_INLINE_EDITOR;
+TEvent.prototype.isDefaultPrevented = function() {
+	return this.defaultPrevented;
 }
 
-AppBase.TYPE_GENERAL = 0;
-AppBase.TYPE_WEBAPP = 1;
-AppBase.TYPE_PREVIEW = 2;
-AppBase.TYPE_PC_VIEWER = 3;
-AppBase.TYPE_PC_EDITOR = 4;
-AppBase.TYPE_MOBILE_EDITOR = 5;
-AppBase.TYPE_INLINE_EDITOR = 6;
-/*
- * File: w_image.js
- * Author:  Li XianJing <xianjimli@hotmail.com>
- * Brief: image adapter
- * 
- * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
- * 
- */
+TEvent.create = function(type) {
+	var event = new TEvent();
+	event.type = type;
 
-function WImage(src) {
-	if(src) {
-		this.setImageSrc(src);
+	return event;
+}
+
+function TEventTarget() {
+}
+
+TEventTarget.apply = function(obj) {
+	if (!obj) {
+		return;
+	}
+
+	obj.createEvent = TEvent.create;
+	obj.hasEventListener = TEventTarget.prototype.hasEventListener;
+	obj.dispatchEvent = TEventTarget.prototype.dispatchEvent;
+	obj.addEventListener = TEventTarget.prototype.addEventListener;
+	obj.removeEventListener = TEventTarget.prototype.removeEventListener;
+	obj.resetEvents = TEventTarget.prototype.resetEvents;
+	obj.on = TEventTarget.prototype.on;
+	obj.off = TEventTarget.prototype.off;
+
+	return;
+}
+
+TEventTarget.prototype.resetEvents = function() {
+	this.eventListeners = {};
+}
+
+TEventTarget.prototype.hasEventListener = function(type) {
+	return this.eventListeners && this.eventListeners[type] && this.eventListeners[type].length > 0;
+}
+
+TEventTarget.prototype.on = TEventTarget.prototype.addEventListener = function(type, callback) {
+	if(!callback || !type) {
+		return;
+	}
+
+	if(!this.eventListeners) {
+		this.eventListeners = {};
+	}
+
+	var callbacks = this.eventListeners[type];
+	
+	if(!callbacks) {
+		callbacks = [];
+		this.eventListeners[type] = callbacks;
+	}
+
+	if(callback) {
+		callbacks.push({callback:callback});
 	}
 
 	return;
 }
 
-WImage.caches = {};
-WImage.nullImage = new Image();
-WImage.onload = function() {  }
+TEventTarget.prototype.off = TEventTarget.prototype.removeEventListener = function(type, callback) {
+	if(!this.eventListeners || !callback || !type) {
+		return;
+	}
 
-WImage.prototype.initFromJson = function(src, json, onLoad) {
+	var callbacks = this.eventListeners[type];
+	if(callbacks) {
+		for(var i = 0; i < callbacks.length; i++) {
+			var iter = callbacks[i];
+			if(iter && iter.callback === callback) {
+				callbacks.splice(i, 1);
+			}
+		}
+	}
+
+	return;
+}
+
+TEventTarget.prototype.dispatchEvent = function(event) {
+	if(!this.eventListeners || !event || !event.type) {
+		return false;
+	}
+	
+	var type = event.type;
+	var callbacks = this.eventListeners[type];
+	
+	event.target = this;
+	if(callbacks) {
+		var n = callbacks.length;
+		callbacks = callbacks.slice();
+
+		for(var i = 0; i < n; i++) {
+			var iter = callbacks[i];
+			var callback = iter.callback;
+			try {
+				if(callback.call(this, event)) {
+					return true;
+				}
+			}catch(e){
+				console.log("%cWarning: dispatchEvent " + type + "(" + e.message + ")\n" + e.stack, "color: red; font-weight: bold");
+			}
+		}
+	}
+
+	return false;
+}
+/*
+ * File: resloader.js
+ * Author:  Li XianJing <xianjimli@hotmail.com>
+ * Brief: res loader
+ * 
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * 
+ */
+
+function ResLoader() {
+}
+
+ResLoader.total = 0;
+ResLoader.finished = 0;
+
+ResLoader.reset = function() {
+	ResLoader.total = 0;
+	ResLoader.finished = 0;
+
+	return;
+}
+
+ResLoader.toLoadInc = function(src) {
+	ResLoader.total++;
+	return;
+}
+
+ResLoader.loadedInc = function(src) {
+	setTimeout(function() {
+		ResLoader.finished++;
+		ResLoader.notifyLoadProgress();
+	}, 1);
+
+	return;
+}
+
+ResLoader.setAssetsConfig = function(assetsConfig) {
+	ResLoader.assetsConfig = assetsConfig;
+}
+
+ResLoader.mapImageURL = function(url, assetsConfig) {
+		return url;
+}
+
+ResLoader.setOnChangedListener = function(onChanged) {
+	ResLoader.onChanged = onChanged;
+}
+
+ResLoader.setOnLoadFinishListener = function(onLoadFinished) {
+	ResLoader.onLoadFinished = onLoadFinished;
+
+	return;
+}
+
+ResLoader.isLoadCompleted = function() {
+	return ResLoader.finished >= ResLoader.total;
+}
+
+ResLoader.notifyLoadDone = function() {
+	if(ResLoader.onLoadFinished) {
+		ResLoader.onLoadFinished();
+	}
+	console.log("All resource loaded:" + ResLoader.total);
+}
+
+ResLoader.notifyLoadProgress = function() {
+	var percent = ResLoader.getPercent();
+	if(ResLoader.onChanged) {
+		ResLoader.onChanged(percent, ResLoader.finished, ResLoader.total);
+	}
+	
+	if(ResLoader.finished >= ResLoader.total) {
+		ResLoader.notifyLoadDone();
+	}
+
+	var event = {type:ResLoader.EVENT_ASSETS_LOAD_PROGRESS, percent:percent, finished:ResLoader.finished, total:ResLoader.total};
+	ResLoader.dispatchEvent(event);
+
+	return;
+}
+
+ResLoader.getTotal = function() {
+	return ResLoader.total;
+}
+
+ResLoader.getFinished = function() {
+	return ResLoader.finished;
+}
+
+ResLoader.getPercent = function() {
+	if(!ResLoader.total) {
+		return 100;
+	}
+
+	return (ResLoader.finished/ResLoader.total) * 100;
+}
+
+ResLoader.cache = {};
+
+ResLoader.addToCache = function(src, obj) {
+	ResLoader.cache[src] = obj;
+}
+
+ResLoader.dump = function() {
+	var i = 0;
+	for(var key in ResLoader.cache) {
+		var iter = ResLoader.cache[key];
+		var str = i + " : " + key.substr(0, 255) + " status=" + (iter.pending ? "pending" : "loaded");
+		console.log(str);
+		i++;
+	}
+}
+
+ResLoader.clearCache = function(check) {
+	var newCache = {};
+	for(var key in ResLoader.cache) {
+		var asset = ResLoader.cache[key];
+
+		if(check && check(key)) {
+			newCache[key] =  asset;
+		}
+		else {
+			console.log("clear asset:" + key);
+		}
+	}
+	ResLoader.cache = newCache;
+
+	return;
+}
+
+ResLoader.getFromCache = function(src) {
+	return ResLoader.cache[src];
+}
+
+ResLoader.resRoot = null;
+ResLoader.setResRoot = function(resRoot) {
+	ResLoader.resRoot = resRoot;
+
+	return;
+}
+
+ResLoader.toAbsURL = function(url) {
+	if(!url || url.indexOf("://") > 0 || url.indexOf("data:") === 0) {
+		return url;
+	}
+
+	var absURL = url;
+	if(ResLoader.resRoot) {
+		absURL = ResLoader.resRoot + url;
+	}
+	else if(url[0] === '/') {
+		absURL = location.protocol + "//" + location.host + url;
+	}
+	else {
+		var str = location.protocol + "//" + location.host + location.pathname;
+		var path = dirname(str);
+		absURL = path + "/" + url;
+	}
+
+	return absURL;
+}
+
+function ResProxy(src, onSuccess, onFail) {
+	this.src = src;
+	this.obj = null;
+	this.pending = true;
+	this.onSuccessList = [onSuccess];
+	this.onFailList = [onFail];
+
+	if(src) {
+		ResLoader.toLoadInc(src);
+		ResLoader.addToCache(src, this);
+	}
+	else {
+		console.log("WARNNING: load null url.");
+	}
+
+	return;
+}
+
+ResProxy.prototype.onDone = function(obj) {
+	this.obj = obj;
+	delete this.pending;
+	ResLoader.loadedInc(this.src);
+
+	try {
+		if(obj) {
+			this.callOnSuccess();
+		}
+		else {
+			this.callOnFail();
+		}
+	}catch(e) {
+		console.log("ResProxy.prototype.onDone:" + e.message);
+	}
+
+	return;
+}
+
+ResProxy.prototype.callOnSuccess = function() {
+	var obj = this.obj;
+	var src = this.src;
+
+	for(var i = 0; i < this.onSuccessList.length; i++) {
+		var onSuccess = this.onSuccessList[i];
+		if(!onSuccess) continue;
+
+		if(onSuccess.dataType === "json") {
+			ResLoader.callFunc(onSuccess, this.getJsonObj());
+		}
+		else {
+			ResLoader.callFunc(onSuccess, this.obj);
+		}
+	}
+
+	this.onFailList = [];
+	this.onSuccessList = [];
+
+	return;
+}
+
+ResProxy.prototype.callOnFail = function() {
+	var src = this.src;
+
+	for(var i = 0; i < this.onFailList.length; i++) {
+		var onFail = this.onFailList[i];
+		if(!onFail) continue;
+		ResLoader.callFunc(onFail, null);
+
+	}
+	this.onFailList = [];
+	this.onSuccessList = [];
+
+	return;
+}
+
+ResProxy.prototype.getJsonObj = function() {
+	if(this.jsonObj) {
+		return this.jsonObj;
+	}
+
+	try {
+		this.jsonObj = JSON.parse(this.obj);
+	}catch(e) {
+		console.log("ensureJson:" + e.message);
+	}
+
+	return this.jsonObj;
+}
+
+ResProxy.prototype.onHitCache = function(onSuccess, onFail) {
+	if(this.pending) {
+		this.onSuccessList.push(onSuccess);
+		this.onFailList.push(onFail);
+	}
+	else if(this.obj) {
+		if(onSuccess.dataType === "json") {
+			ResLoader.callFunc(onSuccess, this.getJsonObj());
+		}
+		else {
+			ResLoader.callFunc(onSuccess, this.obj);
+		}
+	}
+	else {
+		ResLoader.callFunc(onFail, null);
+	}
+
+	return this.obj;
+}
+
+ResLoader.callFunc = function(func, data) {
+	if(func) {
+		try {
+			func(data);
+		}catch(e) {
+			console.log("ResLoader.callFunc:" + e.message);
+		}
+	}
+
+	return;
+}
+
+ResLoader.loadImage = function(url, onSuccess, onFail) {
+	var src = ResLoader.mapImageURL(ResLoader.toAbsURL(url), ResLoader.assetsConfig);
+
+	var proxy = ResLoader.getFromCache(src);
+	if(proxy) {
+		return proxy.onHitCache(onSuccess, onFail);
+	}
+	else {
+		var proxy = new ResProxy(src, onSuccess, onFail);
+
+		return CantkRT.createImage(src, proxy.onDone.bind(proxy), proxy.onDone.bind(proxy));
+	}
+}
+
+ResLoader.loadAudio = function(url, onSuccess, onFail) {
+	var src = ResLoader.toAbsURL(url);
+	var proxy = ResLoader.getFromCache(src);
+	if(proxy) {
+		return proxy.onHitCache(onSuccess, onFail);
+	}
+
+	var audio = new Audio();
+
+	proxy = new ResProxy(src, onSuccess, onFail);
+
+	audio.volume = 0.8;
+	audio.addEventListener('loadstart', function (e) {
+		console.log("load start:" + url);
+	});
+	
+	audio.addEventListener('canplay', function (e) {
+		console.log("canplay:" + url);
+	});
+
+	audio.addEventListener('canplaythrough', function (e) {
+		console.log("canplaythrough:" + url);
+		proxy.onDone(audio);
+	});
+
+	audio.addEventListener('error', function (e) {
+		console.log("error:" + url);
+		proxy.onDone(null);
+	});
+
+	audio.src = src;
+	audio.load();
+
+	return audio;
+}
+
+ResLoader.loadJson = function(url, onSuccess, onFail) {
+	var src = ResLoader.toAbsURL(url);
+	var proxy = ResLoader.getFromCache(src);
+	onSuccess.dataType = "json";
+	if(proxy) {
+		return proxy.onHitCache(onSuccess, onFail);
+	}
+
+	proxy = new ResProxy(src, onSuccess, onFail);
+	httpGetURL(src, function(result, xhr, data) {
+		proxy.onDone(data);
+	});
+
+	return;
+}
+
+ResLoader.loadData = function(url, onSuccess, onFail) {
+	var src = ResLoader.toAbsURL(url);
+	var proxy = ResLoader.getFromCache(src);
+	
+	onSuccess.dataType = "string";
+	if(proxy) {
+		return proxy.onHitCache(onSuccess, onFail);
+	}
+
+	proxy = new ResProxy(src, onSuccess, onFail);
+	httpGetURL(src, function(result, xhr, data) {
+		proxy.onDone(data);
+	});
+
+	return;
+}
+
+ResLoader.loadScriptsSync = function(srcs, onCompleted) {
+	var i = 0;
+	var n = srcs.length;
+
+	ResLoader.toLoadInc("scripts begin");
+	function loadNext() {
+		if(i < n) {
+			var iter = srcs[i];
+			
+			i++;
+			console.log("load script("+i+"/"+n+"):" + iter);
+			ResLoader.loadScript(iter, window.studioDevMode, loadNext, loadNext);
+		}
+		else {
+			if(onCompleted) {
+				onCompleted();
+			}
+			ResLoader.loadedInc("scripts done");
+			console.log("load scripts done.");
+		}
+	}
+
+	loadNext();
+}
+
+ResLoader.loadScript = function(src, force, onSuccess, onFail) {
+	var script = null;
+	var scripts = document.scripts;
+	var node = document.head ? document.head : document.body;
+	var timestamp = "timestamp=" + Date.now();
+	if(src.indexOf("?") < 0) {
+		timestamp = "?" + timestamp;
+	}
+	else {
+		timestamp = "&" + timestamp;
+	}
+
+	if(scripts) {
+		for(var i = 0; i < scripts.length; i++) {
+			var iter = scripts[i];
+			if(iter.src && iter.src.indexOf(src) >= 0) {
+				script = iter;
+				if(onSuccess) {
+					onSuccess();
+				}
+
+				if(force) {
+					document.head.removeChild(script);
+					break;
+				}
+				else {
+					return;
+				}
+			}
+		}
+	}
+
+	ResLoader.toLoadInc(src);
+	script = document.createElement("script");
+	script.onload = function() { 
+		if(onSuccess) {
+			onSuccess();
+		}
+		ResLoader.loadedInc(src);
+	}
+
+	script.onerror = script.onabort = script.oncancel = function(e) {
+		if(onFail) {
+			onFail();
+		}
+		ResLoader.loadedInc(src);
+	}
+
+	if(!force) {
+		script.src = src;
+	}
+	else {
+		script.src = src + timestamp;
+	}
+	node.appendChild(script);
+
+	return;
+}
+
+ResLoader.loadFonts = function(fonts) {
+	if(CantkRT.isCantkRTV8()) {
+		return ResLoader.loadFontsRT(fonts);
+	}
+	else {
+		return ResLoader.loadFontsWeb(fonts);
+	}
+}
+
+ResLoader.loadFontsRT = function(fonts) {
+	for(var i = 0; i < fonts.length; i++) {
+		var iter = fonts[i];
+		var name = iter.basename(true);
+		CantkRT.loadFont(name, iter);
+	}	
+
+	return;
+}
+
+ResLoader.loadFontsWeb = function(fonts) {
+	var styleStr = "";
+	for(var i = 0; i < fonts.length; i++) {
+		var iter = fonts[i];
+		var name = iter.basename(true);
+		var str = "font-family:'"+name+"';\n";
+			str += "src: url('"+iter+"') ";
+			if(iter.indexOf(".ttf") > 0 || iter.indexOf("TTF") > 0) {
+				str += "format('truetype');\n";
+			}
+			else if(iter.indexOf(".woff") > 0) {
+				str += "format('woff');\n";
+			}
+			else if(iter.indexOf(".otf") > 0) {
+				str += "format('opentype');\n";
+			}
+			else {
+				console.log("not supported:" + iter);
+			}
+
+			var fontFaceStr = "@font-face {\n";
+			fontFaceStr += str;
+			fontFaceStr += "}\n";
+			styleStr += fontFaceStr;
+	}
+
+	var style = document.createElement("style");
+	style.onload = function() {
+		console.log("font style loaded.");
+	}
+
+	style.innerHTML = styleStr;
+	document.head.appendChild(style);
+	console.log(styleStr);
+
+	return;
+}
+
+TEventTarget.apply(ResLoader);
+ResLoader.EVENT_ASSETS_LOAD_PROGRESS = "assets-load-progress";
+
+
+/*
+ * File:    plist.js
+ * Author:  Li XianJing <xianjimli@hotmail.com>
+ * Brief:   plist parser
+ * 
+ * Copyright (c) 2015 - 2016  Holaverse Inc.
+ * 
+ */
+function PList() {
+	this.options = {};
+}
+
+PList.ST_NONE = 0;
+PList.ST_TEXT = 1;
+PList.ST_END_TAG = 2;
+PList.ST_START_TAG = 3;
+
+PList.prototype.onStateChanged = function(state, str) {
+	switch(this._parseState) {
+		case PList.ST_START_TAG: {
+			this.tagName = str;
+			break;
+		}
+		case PList.ST_END_TAG: {
+			this.tagName = null;
+			break;
+		}
+		case PList.ST_TEXT: {
+			if(this.tagName === "key") {
+				this._propName = str;
+			}
+			else if(this.tagName === "real") {
+				this.options[this._propName] = parseFloat(str);
+			}
+			else if(this.tagName === "integer") {
+				this.options[this._propName] = parseInt(str);
+			}
+			else if(this.tagName === "string") {
+				this.options[this._propName] = str;
+			}
+
+			break;
+		}
+	}
+
+	this._parseState = state;
+}
+
+PList.prototype.dump = function() {
+	console.log(JSON.stringify(this.options, null, "\t"))
+}
+
+PList.prototype.get = function(name) {
+	if(name) {
+		return this.options[name];
+	}
+	else {
+		return this.options;
+	}
+}
+
+PList.prototype.parse = function(buff) {
+	var str = "";
+	var n = buff.length;
+	this.options = {};
+
+	this._parseState = PList.ST_NONE;
+	for(var i = 0; i < n; i++) {
+		var c = buff[i];
+		if(c === "<") {
+			if(buff[i+1] === "/") {
+				i++;
+				this.onStateChanged(PList.ST_END_TAG, str);
+			}
+			else {
+				this.onStateChanged(PList.ST_START_TAG, str);
+			}
+			str = "";
+		}
+		else if(c === ">") {
+			this.onStateChanged(PList.ST_TEXT, str);
+			str = "";
+		}
+		else {
+			str += c;
+		}
+	}
+
+	return this.options;
+}
+
+/*
+ * File:    bitmap_font.js
+ * Author:  Li XianJing <xianjimli@hotmail.com>
+ * Brief:   fnt file parser
+ * 
+ * Copyright (c) 2015 - 2016  Holaverse Inc.
+ * 
+ */
+
+function BitmapFont() {
+}
+
+//http://www.angelcode.com/products/bmfont/doc/file_format.html
+BitmapFont.prototype.parseFontLine = function(fontInfo, line) {
+	var words = line.split(" ");
+
+	var lineInfo = {};
+	var name = words[0];
+	var n = words.length;
+
+	for(var i = 1; i < n; i++) {
+		var kevValue = words[i].split('=');
+		var key = kevValue[0];
+		var value = kevValue[1];
+		lineInfo[key] = value;
+	}
+
+	switch(name) {
+		case "page": {
+			var pageDesc = {};
+			pageDesc.id = lineInfo.id;
+			pageDesc.file = lineInfo.file.replace(/"/g,"").replace(/\r/, "");
+
+			fontInfo.pagesDesc[pageDesc.id] = pageDesc;
+
+			break;
+		}
+		case "char": {
+			var charDesc = {};
+			var c = String.fromCharCode(lineInfo.id);
+
+			charDesc.c = c;
+			charDesc.id = lineInfo.id;
+			charDesc.x = parseInt(lineInfo.x);
+			charDesc.y = parseInt(lineInfo.y);
+			charDesc.w = parseInt(lineInfo.width);
+			charDesc.h = parseInt(lineInfo.height);
+			charDesc.ox = parseInt(lineInfo.xoffset);
+			charDesc.oy = parseInt(lineInfo.yoffset);
+			charDesc.rw = parseInt(lineInfo.xadvance);
+			charDesc.page = lineInfo.page;
+
+			fontInfo.charsDesc[c] = charDesc;
+
+			break;
+		}
+	}
+
+	return;
+}
+
+BitmapFont.prototype.parse = function(data) {
+	var fontInfo = {};
+	fontInfo.charsDesc = {};
+	fontInfo.pagesDesc = {};
+
+	var lines = data.split("\n");
+	for(var i = 0; i < lines.length; i++) {
+		this.parseFontLine(fontInfo, lines[i]);
+	}
+
+	this.fontInfo = fontInfo;
+
+	return fontInfo;
+}
+
+BitmapFont.prototype.getCharDesc = function(c) {
+	return this.fontInfo ? this.fontInfo.charsDesc[c] : null;
+}
+
+BitmapFont.prototype.getCharsDesc = function(c) {
+	return this.fontInfo ? this.fontInfo.charsDesc : null;
+}
+
+BitmapFont.prototype.getPagesDesc = function() {
+	return this.fontInfo ? this.fontInfo.pagesDesc : null;
+}
+
+BitmapFont.prototype.getFontInfo  = function() {
+	return this.fontInfo;
+}
+
+/*
+ * File: w_image.js
+ * Author:  Li XianJing <xianjimli@hotmail.com>
+ * Brief: image adapter
+ *
+ * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ *
+ */
+
+function WImage(src, onLoad) {
+	this.src = src;
+   	this.onLoadCallback = [];
+	this.image = WImage.nullImage;
+   	this.setSizeInfo(0, 0, 0, 0, false, false, 0, 0, 0, 0);
+	this.setImageSrc(src, onLoad);
+
+	return;
+}
+
+WImage.prototype.setSizeInfo = function(x, y, w, h, rotated, trimmed, ox, oy, rw, rh) {
+	this.rect = {x:x >> 0, y:y >> 0, w:w >> 0, h:h >> 0, rotated:rotated, trimmed:trimmed, ox:ox >> 0, oy:oy >> 0, rw:rw >> 0, rh:rh >> 0};
+}
+
+WImage.prototype.appendOnLoadCallback = function(onLoad) {
+    if(onLoad){
+        this.onLoadCallback.push(onLoad);
+    }
+}
+
+WImage.prototype.notifyLoadDone = function(img) {
+	this.image = img;
+	var callbacks = this.onLoadCallback;
+
+	for(var i = 0, j = callbacks.length; i < j; i++){
+		callbacks[i](img);
+	}
+	this.onLoadCallback.length = 0;
+}
+
+WImage.prototype.initFromJson = function(src, json) {
 	var sharpOffset = src.indexOf("#");
 	var jsonURL = src.substr(0, sharpOffset);
 	var name = src.substr(sharpOffset+1);
@@ -7036,138 +5501,132 @@ WImage.prototype.initFromJson = function(src, json, onLoad) {
 		return;
 	}
 
-	this.rotated = info.rotated;
 	if(info.trimmed) {
-		rect.trimmed = true;
-		rect.ox = info.spriteSourceSize.x;
-		rect.oy = info.spriteSourceSize.y;
-		rect.rw = info.sourceSize.w;
-		rect.rh = info.sourceSize.h;
+		this.setSizeInfo(rect.x, rect.y, rect.w, rect.h, info.rotated,
+			true, info.spriteSourceSize.x, info.spriteSourceSize.y, info.sourceSize.w, info.sourceSize.h);;
 	}
 	else {
-		rect.trimmed = false;
-		rect.ox = 0;
-		rect.oy = 0;
-		rect.rw = 0;
-		rect.rh = 0;
+		this.setSizeInfo(rect.x, rect.y, rect.w, rect.h, info.rotated,
+			false, 0, 0, rect.w, rect.h);
 	}
 
 	var me = this;
-	this.rect = rect;
-	WImage.onload();
 	ResLoader.loadImage(imageSrc, function(img) {
-		me.image = img;
-		if(onLoad) {
-			onLoad(img);
-		}
+		me.notifyLoadDone(img);
 	});
 
 	return;
 }
 
-WImage.prototype.initFromRowColIndex = function(src, rowcolIndex, onLoad) {
+WImage.prototype.initFromRowColIndex = function(src, rowcolIndex) {
 	var me = this;
 	var rows = parseInt(rowcolIndex[1]);
 	var cols = parseInt(rowcolIndex[2]);
 	var index = parseInt(rowcolIndex[3]);
-	rowcolIndex = null;
 
-	this.image = ResLoader.loadImage(src, function(img) {
+	ResLoader.loadImage(src, function(img) {
 		var tileW = Math.round(img.width/cols);
 		var tileH = Math.round(img.height/rows);
-		var tileWmin = Math.floor(img.width/cols);
-		var tileHmin = Math.floor(img.height/rows);
+		var w = Math.floor(img.width/cols);
+		var h = Math.floor(img.height/rows);
 		var col = index%cols;
 		var row = Math.floor(index/cols);
 
-		me.rect = {};
-		me.rect.x = col * tileW;
-		me.rect.y = row * tileH;
-		me.rect.w = tileWmin;
-		me.rect.h = tileHmin;
-
-		me.image = img;
-		if(onLoad) {
-			onLoad(img);
-		}
-		WImage.onload();
+		var x = col * tileW;
+		var y = row * tileH;
+		me.setSizeInfo(x, y, w, h, false, false, 0, 0, w, h);
+		me.notifyLoadDone(img);
 	});
+
+	rowcolIndex = null;
 
 	return;
 }
 
-WImage.prototype.initFromXYWH = function(src, xywh, onLoad) {
+WImage.prototype.initFromXYWH = function(src, xywh) {
 	var me = this;
 	var x = parseInt(xywh[1]);
 	var y = parseInt(xywh[2]);
 	var w = parseInt(xywh[3]);
 	var h = parseInt(xywh[4]);
-	xywh = null;
 
 	this.image = ResLoader.loadImage(src, function(img) {
-		me.rect = {};
-		me.rect.x = x;
-		me.rect.y = y;
-		me.rect.w = w;
-		me.rect.h = h;
-
-		me.image = img;
-		if(onLoad) {
-			onLoad(img);
-		}
-		WImage.onload();
+		me.setSizeInfo(x, y, w, h, false, false, 0, 0, w, h);
+		me.notifyLoadDone(img);
 	});
+	xywh = null;
 
 	return;
 }
 
 WImage.prototype.setImage = function(image) {
 	this.image = image;
-	
+
 	return this;
 }
 
-WImage.prototype.setImageSrc = function(src, onLoad) {
-	if(!src) {
-		this.src = src;
-		this.image = WImage.nullImage;
-
-		return;
-	}
-
-	if(src.indexOf("data:") === 0) {	
-		this.src = src;
-		this.rect = null;
-		this.image = CantkRT.createImage(src, onLoad);
-
-		return;
-	}
-
-	src = ResLoader.toAbsURL(src);
+WImage.prototype.initFromDataURL = function(src, onLoad) {
+	var me = this;
 	this.src = src;
-	
-	WImage.caches[src] = this;
+	this.image = CantkRT.createImage(src, function(img) {
+		me.setSizeInfo(0, 0, img.width, img.height, false, false, 0, 0, img.width, img.height);
+		me.notifyLoadDone(img);
+	});
+}
+
+WImage.prototype.setImageSrc = function(src, onLoad) {
+	this.appendOnLoadCallback(onLoad);
+
+	if(!src) {
+		this.notifyLoadDone(WImage.nullImage);
+		return;
+	}
+
+	if(src.indexOf("data:") === 0) {
+		this.initFromDataURL(src, onLoad);
+		return;
+	}
 
 	var me = this;
-	var sharpOffset = src.indexOf("#");
+	var url = ResLoader.toAbsURL(src);
+
+	this.src = url;
+	var sharpOffset = url.indexOf("#");
 	if(sharpOffset > 0) {
-		var meta = src.substr(sharpOffset+1);
+		var meta = url.substr(sharpOffset+1);
 		var rowcolIndex = meta.match(/r([0-9]+)c([0-9]+)i([0-9]+)/i);
 		var xywh = meta.match(/x([0-9]+)y([0-9]+)w([0-9]+)h([0-9]+)/i);
 
 		if(!rowcolIndex && !xywh) {
-			var jsonURL = src.substr(0, sharpOffset);
+			var jsonURL = url.substr(0, sharpOffset);
 			ResLoader.loadJson(jsonURL, function(json) {
-				me.initFromJson(src, json, onLoad);
+                if(Array.isArray(json)) {
+                    var find = false;
+                    var target = null;
+                    for(var i = 0; i < json.length; i++) {
+                        var frames = Object.keys(json[i].frames);
+                        find = frames.some(function(imagename) {
+                            if(imagename === meta) {
+                                target = json[i];
+                                return true;
+                            }
+                        });
+                        if(find) {
+                            break;
+                        }
+                    }
+                    return me.initFromJson(url, target || json, onLoad);
+                }
+				me.initFromJson(url, json, onLoad);
 			});
 		}
 		else {
-			src = src.substr(0, sharpOffset);
+			url = url.substr(0, sharpOffset);
 			if(rowcolIndex) {
-				this.initFromRowColIndex(src, rowcolIndex, onLoad);
+				this.initFromRowColIndex(url, rowcolIndex, onLoad);
 			}
 			if(xywh){
-				this.initFromXYWH(src, xywh, onLoad);
+				this.initFromXYWH(url, xywh, onLoad);
 			}
 
 			rowcolIndex = null;
@@ -7175,18 +5634,11 @@ WImage.prototype.setImageSrc = function(src, onLoad) {
 		}
 	}
 	else {
-		this.image = ResLoader.loadImage(src, function(img) {
-			me.rect = {};
-			me.rect.x = 0;
-			me.rect.y = 0;
-			me.rect.w = img.width;
-			me.rect.h = img.height;
-
-			me.image = img;
-			if(onLoad) {
-				onLoad(img);
-			}
-			WImage.onload();
+		this.image = ResLoader.loadImage(url, function(img) {
+			var w = img.width;
+			var h = img.height;
+			me.setSizeInfo(0, 0, w, h, false, false, 0, 0, w, h);
+			me.notifyLoadDone(img);
 		});
 	}
 
@@ -7194,15 +5646,6 @@ WImage.prototype.setImageSrc = function(src, onLoad) {
 }
 
 WImage.prototype.getImageRect = function() {
-	if(!this.rect) {
-		this.rect = {x:0, y:0, w:0, h:0};
-	}
-	
-	if((!this.rect.w) && this.image) {
-		this.rect.w = this.image.width;
-		this.rect.h = this.image.height;
-	}
-
 	return this.rect;
 }
 
@@ -7211,48 +5654,97 @@ WImage.prototype.getImageSrc = function() {
 }
 
 WImage.prototype.getRealImageSrc = function() {
-	return this.image ? this.image.src : this.src;
+	if(this.image) {
+		return this.image.src;
+	}
+	else {
+		var src = this.src;
+		var offset = src.indexOf("#");
+
+		if(offset > 0) {
+			src = src.substr(0, offset);
+			src = src.replace(".json", ".png");
+			console.log("Warning: image is not loaded yet.");
+		}
+
+		return src;
+	}
+}
+
+WImage.prototype.isLoaded = function() {
+	return this.image && this.image.complete;
 }
 
 WImage.prototype.getImage = function() {
-	var image = this.image;
-
-	return (image && image.width > 0) ? image : null;
+	return this.image;
 }
 
 WImage.isValid = function(image) {
 	return image && image.image && image.image.width && image.image.height;
 }
 
+WImage.cache = {};
+WImage.nullImage = new Image();
+WImage.nullWImage = new WImage();
+WImage.nullWImage.image = null;
+
+WImage.clearCache = function(check) {
+	var newCache = {};
+	for(var key in WImage.cache) {
+		var asset = WImage.cache[key];
+
+		if(check && check(key)) {
+			newCache[key] =  asset;
+		}
+		else {
+			console.log("clear image:" + key);
+		}
+	}
+	WImage.cache = newCache;
+
+	return;
+}
+
 WImage.create = function(src, onLoad) {
-	var image = WImage.caches[src];
+	if(!src) {
+		return WImage.nullWImage;
+	}
+
+	var url = ResLoader.toAbsURL(src);
+	var image = WImage.cache[url];
+
 	if(image) {
 		if(onLoad) {
-			onLoad(image.getImage());
+			var img = image.image;
+			if(img.complete) {
+				onLoad(img);
+			}else{
+                image.appendOnLoadCallback(onLoad)
+            }
 		}
 	}
 	else {
-		image = new WImage();
-		image.setImageSrc(src, onLoad);
+		image = new WImage(url, onLoad);
+		WImage.cache[url] = image;
 	}
 
 	return image;
 }
 
 WImage.createWithImage = function(img) {
-	var image = new WImage();
+	var image = WImage.nullWImage;
 
-	image.setImage(img);
+	if(img) {
+		if(img.src) {
+			return WImage.create(img.src);
+		}
 
-	return image;
-}
-
-function cantkSetOnImageLoad(onImageLoad) {
-	if(onImageLoad) {
-		WImage.onload = onImageLoad;
+		image = new WImage();
+		image.setImage(img);
+		image.setSizeInfo(0, 0, img.width, img.height, false, false, 0, 0, img.width, img.height);
 	}
 
-	return;
+	return image;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -7269,62 +5761,43 @@ WImage.DISPLAY_TILE_H = 8;
 WImage.DISPLAY_AUTO_SIZE_DOWN = 9;
 WImage.DISPLAY_FIT_WIDTH = 10;
 WImage.DISPLAY_FIT_HEIGHT = 11;
+WImage.DISPLAY_3PATCH_V = 12;
+WImage.DISPLAY_3PATCH_H = 13;
 
 WImage.prototype.draw = function(canvas, display, x, y, dw, dh) {
 	var image = this.getImage();
 	var srcRect = this.getImageRect();
 
-	return WImage.draw(canvas, image, display, x, y, dw, dh, srcRect);	
+	return WImage.draw(canvas, image, display, x, y, dw, dh, srcRect);
+}
+
+WImage.getImageRectDefault = function(image) {
+	return {x:0, y:0, w:image.width, h:image.height, trimmed:false};
 }
 
 WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
-	if(!image) return;
-	if(!srcRect) {
-		srcRect = {};
-		srcRect.x = 0;
-		srcRect.y = 0;
-		srcRect.w = image.width;
-		srcRect.h = image.height;
-	}
-
-	if(!srcRect.ox) {
-		srcRect.ox = 0;
-	}
-	if(!srcRect.oy) {
-		srcRect.oy = 0;
-	}
-	if(!srcRect.rw) {
-		srcRect.rw = srcRect.w;
-	}
-	if(!srcRect.rh) {
-		srcRect.rh = srcRect.h;
-	}
-
-	var imageWidth  = srcRect.rw;
-	var imageHeight = srcRect.rh;
-
-	if(imageWidth <= 0 || imageHeight <= 0) {
-		return;
-	}
+	if(!image || !image.width) return;
 
 	var dx = 0;
 	var dy = 0;
-	var sw = srcRect.w;
-	var sh = srcRect.h;
-	var sx = srcRect.x;
-	var sy = srcRect.y;
-	var ox = srcRect.ox;
-	var oy = srcRect.oy;
+	var sr = srcRect || WImage.getImageRectDefault(image);
+	var sw = sr.w;
+	var sh = sr.h;
+	var sx = sr.x;
+	var sy = sr.y;
+	var ox = sr.ox || 0;
+	var oy = sr.oy || 0;
+	var imageWidth  = sr.rw || sr.w;
+	var imageHeight = sr.rh || sr.h;
 
-	if(srcRect.trimmed) {
-		ox = srcRect.ox;
-		oy = srcRect.oy;
-	}
+    if(imageHeight === 0 || imageWidth === 0) {
+        return;
+    }
 
 	switch(display) {
 		case WImage.DISPLAY_CENTER: {
-			dx = Math.floor(x + ((dw - imageWidth) >> 1)) + ox;
-			dy = Math.floor(y + ((dh - imageHeight) >> 1)) + oy;
+			dx = (x + ((dw - imageWidth) >> 1)) + ox;
+			dy = (y + ((dh - imageHeight) >> 1)) + oy;
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, sw, sh);
 			break;
@@ -7334,12 +5807,12 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			var iw = imageWidth*scale;
 			var ih = imageHeight*scale;
 
-			dx = (dw - iw) >> 1;
-			dy = (dh - ih) >> 1;
-			dx += Math.round(ox*scale);
-			dy += Math.round(oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+			dx = x + ((dw - iw) >> 1);
+			dy = y + ((dh - ih) >> 1);
+			dx += (ox*scale);
+			dy += (oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 			break;
@@ -7348,27 +5821,27 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			var xScale = dw/imageWidth;
 			var yScale = dh/imageHeight;
 
-			dx = Math.round(x + ox*xScale);
-			dy = Math.round(y + oy*yScale);
-			dw = Math.round(sw*xScale);
-			dh = Math.round(sh*yScale);
+			dx = (x + ox*xScale);
+			dy = (y + oy*yScale);
+			dw = (sw*xScale);
+			dh = (sh*yScale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 			break;
 		}
 		case WImage.DISPLAY_AUTO: {
 			var scale = Math.min(dw/imageWidth, dh/imageHeight);
-			var iw = Math.round(imageWidth*scale);
-			var ih = Math.round(imageHeight*scale);
+			var iw = (imageWidth*scale);
+			var ih = (imageHeight*scale);
 
 			dx = x + ((dw - iw) >> 1);
 			dy = y + ((dh - ih) >> 1);
-			dx += Math.round(ox*scale);
-			dy += Math.round(oy*scale);
+			dx += (ox*scale);
+			dy += (oy*scale);
 
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
-			
+			dw = (sw*scale);
+			dh = (sh*scale);
+
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 			break;
 		}
@@ -7377,22 +5850,49 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			dy = y + oy;
 			dw -= (imageWidth - sw);
 			dh -= (imageHeight - sh);
-			if(imageWidth >= dw && imageHeight >= dh) {
-				canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
-			}
-			else {
-				drawNinePatchEx(canvas, image, sx, sy, sw, sh, dx, dy, dw, dh);
-			}
+			drawNinePatchEx(canvas, image, sx, sy, sw, sh, dx, dy, dw, dh);
 
 			break;
 		}
+        case WImage.DISPLAY_3PATCH_V:
+            dx = x + ox;
+            dy = y + oy;
+            dw -= (imageWidth - sw);
+			dh -= (imageHeight - sh);
+
+            dw = Math.max(dw, 0);
+            dh = Math.max(dh, 0);
+            var sstep = sh / 3;
+            var dstep = dh / 3;
+            var hc = Math.min(sstep, dstep);
+            canvas.drawImage(image, sx, sy, sw, sstep, dx, dy, dw, hc);
+            canvas.drawImage(image, sx, sy + sstep, sw, sstep, dx, dy + hc, dw, Math.max(dh - 2*sstep, dstep));
+            hc = hc + Math.max(dh - 2*sstep, dstep);
+            canvas.drawImage(image, sx, sy + 2*sstep, sw, sstep, dx, dy + hc, dw, Math.min(sstep, dstep));
+            break;
+        case WImage.DISPLAY_3PATCH_H:
+            dx = x + ox;
+            dy = y + oy;
+            dw -= (imageWidth - sw);
+			dh -= (imageHeight - sh);
+
+            dw = Math.max(dw, 0);
+            dh = Math.max(dh, 0);
+            var sstep = sw / 3;
+            var dstep = dw / 3;
+            var wc = Math.min(sstep, dstep);
+            canvas.drawImage(image, sx, sy, sstep, sh, dx, dy, wc, dh);
+            canvas.drawImage(image, sx + sstep, sy, sstep, sh, dx + wc, dy, Math.max(dw - 2*sstep, dstep), dh);
+            wc = wc + Math.max(dw - 2*sstep, dw / 3);
+            canvas.drawImage(image, sx + 2*sstep, sy, sstep, sh, dx + wc, dy, Math.min(sstep, dstep), dh);
+            break;
 		case WImage.DISPLAY_SCALE_KEEP_RATIO: {
 			var scale = Math.max(dw/imageWidth, dh/imageHeight);
-			
-			dx = Math.round(x + ox*scale);
-			dy = Math.round(y + oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+
+			dx = (x + ox*scale);
+			dy = (y + oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 
@@ -7426,7 +5926,7 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			sh = Math.min(dh, imageHeight);
 			while(dx < maxDx) {
 				sw = Math.min(maxDx-dx, imageWidth);
-				canvas.drawImage(image, sx, sy, sw, sh, dx, y, sw, sh);
+				canvas.drawImage(image, sx, sy, sw, sh, dx, y, sw, dh);
 				dx = dx + sw;
 			}
 			break;
@@ -7439,7 +5939,7 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			sw = Math.min(dw, imageWidth);
 			while(dy < maxDy) {
 				sh = Math.min(maxDy-dy, imageHeight);
-				canvas.drawImage(image, sx, sy, sw, sh, x, dy, sw, sh);
+				canvas.drawImage(image, sx, sy, sw, sh, x, dy, dw, sh);
 				dy = dy + sh;
 			}
 			break;
@@ -7447,10 +5947,10 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 		case WImage.DISPLAY_FIT_WIDTH: {
 			var scale = dw/imageWidth;
 
-			dx = Math.round(x + ox*scale);
-			dy = Math.round(y + oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+			dx = (x + ox*scale);
+			dy = (y + oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 
@@ -7459,10 +5959,10 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 		case WImage.DISPLAY_FIT_HEIGHT: {
 			var scale = dh/imageHeight;
 
-			dx = Math.round(x + ox*scale);
-			dy = Math.round(y + oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+			dx = (x + ox*scale);
+			dy = (y + oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 
@@ -7478,6 +5978,10 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 
 	return;
 }
+
+window.WImage = WImage;
+
+
 /*
  * File: widget.js
  * Author:	Li XianJing <xianjimli@hotmail.com>
@@ -7509,6 +6013,7 @@ WWidget.TYPE_FLOAT_MENU_BAR = "float-menubar";
 
 WWidget.TYPE_POPUP = "popup";
 WWidget.TYPE_DIALOG = "dialog";
+WWidget.TYPE_DRAGGABLE_DIALOG = "draggable-dialog";
 WWidget.TYPE_WINDOW = "window";
 WWidget.TYPE_VBOX = "vbox";
 WWidget.TYPE_HBOX = "hbox";
@@ -7526,11 +6031,13 @@ WWidget.TYPE_SCROLL_VIEW = "scroll-view";
 WWidget.TYPE_GRID_VIEW = "grid-view";
 WWidget.TYPE_LIST_VIEW = "list-view";
 WWidget.TYPE_LIST_ITEM = "list-item";
+WWidget.TYPE_LIST_ITEM_RADIO = "list-item-radio";
 WWidget.TYPE_IMAGE_VIEW = "image-view";
 WWidget.TYPE_TREE_VIEW = "tree-view";
 WWidget.TYPE_TREE_ITEM = "tree-item";
 WWidget.TYPE_ACCORDION = "accordion";
 WWidget.TYPE_ACCORDION_ITEM = "accordion-item";
+WWidget.TYPE_ACCORDION_TITLE = "accordion-title";
 WWidget.TYPE_PROPERTY_TITLE = "property-title";
 WWidget.TYPE_PROPERTY_SHEET = "property-sheet";
 WWidget.TYPE_PROPERTY_SHEETS = "property-sheets";
@@ -7538,8 +6045,9 @@ WWidget.TYPE_VIEW_BASE = "view-base";
 WWidget.TYPE_COMPONENT_MENU_ITEM = "menuitem.component";
 WWidget.TYPE_WINDOW_MENU_ITEM = "menuitem.window";
 WWidget.TYPE_MESSAGE_BOX = "messagebox";
-WWidget.TYPE_ICON_TEXT = "icon-text";
+WWidget.TYPE_IMAGE_TEXT = "icon-text";
 WWidget.TYPE_BUTTON = "button";
+WWidget.TYPE_KEY_VALUE = "key-value";
 WWidget.TYPE_LABEL = "label";
 WWidget.TYPE_LINK = "link";
 WWidget.TYPE_EDIT = "edit";
@@ -7558,8 +6066,8 @@ WWidget.TYPE_TIPS = "tips";
 WWidget.TYPE_HLAYOUT = "h-layout";
 WWidget.TYPE_VLAYOUT = "v-layout";
 WWidget.TYPE_BUTTON_GROUP = "button-group";
-WWidget.TYPE_COMBOBOX_POUP = "combobox-popup";
-WWidget.TYPE_COMBOBOX_POUP_ITEM = "combobox-popup-item";
+WWidget.TYPE_COMBOBOX_POPUP = "combobox-popup";
+WWidget.TYPE_COMBOBOX_POPUP_ITEM = "combobox-popup-item";
 WWidget.TYPE_COLOR_EDIT = "color-edit";
 WWidget.TYPE_RANGE_EDIT = "range-edit";
 WWidget.TYPE_FILENAME_EDIT = "filename-edit";
@@ -7588,10 +6096,11 @@ WWidget.prototype.init = function(parent, x, y, w, h) {
 	this.point = {x:0, y:0};
 	this.rect  = {x:x, y:y, w:w, h:h};
 	this.setState(WWidget.STATE_NORMAL);
-	this.imageDiplay = WImage.DISPLAY_9PATCH;
+	this.imageDisplay = WImage.DISPLAY_9PATCH;
 	this.borderStyle = WWidget.BORDER_STYLE_ALL;
+	this.cursor = "default";
 
-	if(this.parent !== null) {
+	if(this.parent) {
 		var border = parent.border ? parent.border : 0;
 		var pw = parent.rect.w - 2 * border;
 		var ph = parent.rect.h - 2 * border;
@@ -7617,6 +6126,16 @@ WWidget.prototype.init = function(parent, x, y, w, h) {
 
 WWidget.prototype.useTheme = function(type) {
 	this.themeType = type;
+
+	return this;
+}
+
+WWidget.prototype.isSelected = function() {
+	return this.selected;
+}
+
+WWidget.prototype.setSelected = function(value) {
+	this.selected = value;
 
 	return this;
 }
@@ -7662,7 +6181,13 @@ WWidget.prototype.isPointerDown = function() {
 }
 
 WWidget.prototype.isClicked = function() {
-	return WWindowManager.getInstance().isClicked();
+	var win = this.getWindow();
+	if(win) {
+		return win.isClicked();
+	}
+	else {
+		return WWindowManager.getInstance().isClicked();
+	}
 }
 
 WWidget.prototype.isAltDown = function() {
@@ -7678,11 +6203,11 @@ WWidget.prototype.getApp = function() {
 }
 
 WWidget.prototype.getCanvas2D = function() {
-	return WWindowManager.getInstance().getCanvas2D();
+	return this.getWindow().getCanvas2D();
 }
 
 WWidget.prototype.getCanvas = function() {
-	return WWindowManager.getInstance().getCanvas();
+	return this.getWindow().getCanvas();
 }
 
 WWidget.prototype.getLastPointerPoint = function() {
@@ -7694,11 +6219,16 @@ WWidget.prototype.getTopWindow = function() {
 }
 
 WWidget.prototype.getWindow = function() {
-	 if(this.parent) {
-		  return this.parent.getWindow();
-	 }
-	 
-	 return this;
+	if(!this.parent) {
+		return this;
+	}
+
+	var p = this.parent;
+	while(p.parent) {
+		p = p.parent;
+	}
+
+	return p;
 }
 
 WWidget.prototype.getParent = function() {
@@ -7752,6 +6282,24 @@ WWidget.prototype.getAbsPosition =  function() {
 		y = y + parent.rect.y;
 	}
 	
+	return {x: x, y: y};
+}
+
+WWidget.prototype.getPositionInWindow =  function() {
+	var x = 0;
+	var y = 0;
+
+	if(this.parent) {
+		for(var iter = this; iter !== null; iter = iter.parent) {
+			if(!iter.parent) {
+				break;
+			}
+
+			x = x + iter.rect.x;
+			y = y + iter.rect.y;
+		}
+	}
+
 	return {x: x, y: y};
 }
 
@@ -7839,6 +6387,8 @@ WWidget.putWidget = function(widget) {
 			WWidget.widgetsPool[type] = [];
 			widgets = WWidget.widgetsPool[type];
 		}
+		delete widget.selectable;
+
 		widget.themeType = null;
 		widget.userData = null;
 		widget.handleGesture = null;
@@ -7850,8 +6400,11 @@ WWidget.putWidget = function(widget) {
 		widget.handleKeyDown = null;
 		widget.handleWheel = null;
 		widget.onChanged = null;
-		widget.onChanging = null;
-		widget.clickHandler = null;
+		widget.onChange = null;
+		widget.onMoved = null;
+		widget.onSized = null;
+		widget.clickedHandler = null;
+		widget.removedHandler = null;
 		widget.stateChangedHandler = null;
 
 		if(widget.onBeforePaint) {
@@ -7869,7 +6422,19 @@ WWidget.putWidget = function(widget) {
 	return;
 }
 
+WWidget.prototype.setRemovedHandler = function(removedHandler) {
+	this.removedHandler = removedHandler;
+	
+	return this;
+}
+
+
 WWidget.prototype.onRemoved = function() {
+	if(this.removedHandler) {
+		this.removedHandler();
+	}
+
+	return;
 }
 
 WWidget.prototype.removeChild = function(child) {
@@ -8051,12 +6616,16 @@ WWidget.prototype.drawTips = function(canvas) {
 		var style = this.getStyle();
 		var x = this.rect.w >> 1;
 		var y = this.rect.h >> 1;
+		var font = style.tipsFont || style.font;
+		var textColor = style.tipsTextColor || style.textColor;
 
-		canvas.textAlign = "center";
-		canvas.textBaseline = "middle";
-		canvas.font = style.font ? style.font : "10pt bold sans-serif";
-		canvas.fillStyle = style.textColor ? style.textColor : "Black";
-		canvas.fillText(tips, x, y);
+		if(font && textColor) {
+			canvas.textAlign = "center";
+			canvas.textBaseline = "middle";
+			canvas.font = font;
+			canvas.fillStyle = textColor;
+			canvas.fillText(tips, x, y);
+		}
 	}
 
 	return this;
@@ -8108,15 +6677,28 @@ WWidget.prototype.setEnable = function(value) {
 	return this;
 }
 
-WWidget.prototype.onStateChanged = function(state) {
-	if(this.stateChangedHandler) {
-		this.stateChangedHandler(state);
+WWidget.prototype.changeCursor = function() {
+	var canvas = this.getCanvas();
+	if(canvas.style.cursor !== this.cursor) {
+		canvas.style.cursor = this.cursor;
 	}
 
 	return this;
 }
 
-WWidget.prototype.setState = function(state) {
+WWidget.prototype.onStateChanged = function(state) {
+	if(this.stateChangedHandler) {
+		this.stateChangedHandler(state);
+	}
+
+	if(state === WWidget.STATE_OVER || state === WWidget.STATE_ACTIVE) {
+		this.changeCursor();
+	}
+
+	return this;
+}
+
+WWidget.prototype.setState = function(state, recursive) {
 	if(this.state !== state) {
 		this.state = state;
 		this.onStateChanged(state);
@@ -8124,7 +6706,11 @@ WWidget.prototype.setState = function(state) {
 			WWindowManager.getInstance().setTipsWidget(this);
 		}
 	}
-	
+
+	if(recursive && this.target) {
+		this.target.setState(state, recursive);
+	}
+
 	return this;
 }
 
@@ -8132,13 +6718,12 @@ WWidget.prototype.measure = function(canvas) {
 	 return;
 }
 
-WWidget.prototype.onMoved = function() {
-}
-
 WWidget.prototype.move = function(x, y) {
 	this.rect.x = x;
 	this.rect.y = y;
-	this.onMoved();
+	if(this.onMoved) {
+		this.onMoved();
+	}
 
 	return this;
 }
@@ -8169,18 +6754,19 @@ WWidget.prototype.moveToBottom = function(border) {
 WWidget.prototype.moveDelta = function(dx, dy) {
 	this.rect.x = this.rect.x + dx;
 	this.rect.y = this.rect.y + dy;
-	this.onMoved();
+	if(this.onMoved) {
+		this.onMoved();
+	}
 
 	return this;
-}
-
-WWidget.prototype.onSized = function(w, h) {
 }
 
 WWidget.prototype.resize = function(w, h) {
 	this.rect.w = w;
 	this.rect.h = h;
-	this.onSized();
+	if(this.onSized) {
+		this.onSized();
+	}
 	this.setNeedRelayout(true);
 
 	return this;
@@ -8192,8 +6778,14 @@ WWidget.prototype.setStateChangedHandler = function(stateChangedHandler) {
 	 return this;
 }
 
-WWidget.prototype.setClickedHandler = function(clickHandler) {
-	 this.clickHandler = clickHandler;
+WWidget.prototype.setContextMenuHandler = function(contextMenuHandler) {
+	this.handleContextMenu = contextMenuHandler;
+
+	return this;
+}
+
+WWidget.prototype.setClickedHandler = function(clickedHandler) {
+	 this.clickedHandler = clickedHandler;
 	 
 	 return this;
 }
@@ -8215,13 +6807,13 @@ WWidget.prototype.onClicked = function(point) {
 		this.handleClicked(point);
 	}
 
-	if(this.clickHandler) {
-		this.clickHandler(this, point);
+	if(this.clickedHandler) {
+		this.clickedHandler(this, point);
 	}
 
 	this.postRedraw();
 
-	return this.clickHandler != null;
+	return this.clickedHandler != null;
 }
 
 WWidget.prototype.lookup = function(id, recursive) {
@@ -8246,8 +6838,18 @@ WWidget.prototype.lookup = function(id, recursive) {
 	return null;
 }
 
+WWidget.prototype.onRelayout = function(canvas, force) {
+}
+
 WWidget.prototype.relayout = function(canvas, force) {
-	 return this;
+	if((!this.needRelayout && !force) || !this.children.length) {
+		return this;
+	}
+	
+	this.onRelayout(canvas, force);
+	this.needRelayout = false;
+
+	return this;
 }
 
 WWidget.prototype.setLineWidth = function(lineWidth) {
@@ -8282,16 +6884,26 @@ WWidget.prototype.getStyle = function(_state) {
 	this.ensureTheme();
 	var state = _state ? _state : this.state;
 
-	if(this.enable) {
-		style = this.theme[state];
-	}
-	else {
-		if(state === WWidget.STATE_SELECTED) {
+	if(!this.enable) {
+		if(this.selectable && this.isSelected()) {
 			style = this.theme[WWidget.STATE_DISABLE_SELECTED];
 		}
-
-		if(!style) {
+		else {
 			style = this.theme[WWidget.STATE_DISABLE];
+		}
+	}
+	else {
+		if(this.selectable && this.selected) {
+			style = this.theme[WWidget.STATE_SELECTED];
+		}
+		else if(state === WWidget.STATE_OVER) {
+			style = this.theme[WWidget.STATE_OVER];
+		}
+		else if(state === WWidget.STATE_ACTIVE) {
+			style = this.theme[WWidget.STATE_ACTIVE];
+		}
+		else {
+			style = this.theme[WWidget.STATE_NORMAL];
 		}
 	}
 	
@@ -8302,8 +6914,8 @@ WWidget.prototype.getStyle = function(_state) {
 	return style;
 }
 
-WWidget.prototype.setImageDisplay = function(imageDiplay) { 
-	this.imageDiplay = imageDiplay;
+WWidget.prototype.setImageDisplay = function(imageDisplay) { 
+	this.imageDisplay = imageDisplay;
 
 	return this;
 }
@@ -8315,71 +6927,114 @@ WWidget.prototype.setBorderStyle = function(borderStyle) {
 }
 
 WWidget.prototype.paintBackground = function(canvas) {
-	var dst  = this.rect;
 	var style =  this.getStyle();
-
-	if(!style) return;
-
-	if(style.bgImage) {
-		var image = style.bgImage.getImage();
-		var src = style.bgImage.getImageRect();
-		if(image) {
-			style.bgImage.draw(canvas, this.imageDiplay, 0, 0, dst.w, dst.h, src);
+	if(style) {
+		if(style.bgImage) {
+			this.paintBackgroundImage(canvas, style);
 		}
+		else {
+			this.paintBackgroundColor(canvas, style);
+		}
+	}
+}
+
+WWidget.prototype.paintBackgroundImage = function(canvas, style) {
+	var dst  = this.rect;
+	var image = style.bgImage.getImage();
+	var src = style.bgImage.getImageRect();
+	var imageDisplay = style.imageDisplay ? style.imageDisplay : this.imageDisplay;
+
+	if(image) {
+		var topOut = style.topOut ? style.topOut : 0;
+		var leftOut = style.leftOut ? style.leftOut : 0;
+		var rightOut = style.rightOut ? style.rightOut : 0;
+		var bottomOut = style.bottomOut ? style.bottomOut : 0;
+
+		var x = -leftOut;
+		var y = -topOut;
+		var w = dst.w + rightOut + leftOut;
+		var h = dst.h + bottomOut + topOut;
+
+		style.bgImage.draw(canvas, imageDisplay, x, y, w, h, src);
+	}
+}
+
+WWidget.prototype.paintLeftBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(0, 0);
+	canvas.lineTo(0, h);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintRightBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(w, 0);
+	canvas.lineTo(w, h);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintTopBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(0, 0);
+	canvas.lineTo(w, 0);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintBottomBorder = function(canvas, w, h) {
+	canvas.beginPath();
+	canvas.moveTo(0, h);
+	canvas.lineTo(w, h);
+	canvas.stroke();
+}
+
+WWidget.prototype.paintBackgroundColor = function(canvas, style) {
+	var dst  = this.rect;
+
+	canvas.beginPath();
+	if(this.roundRadius || style.roundRadius) {
+		var roundRadius = Math.min((dst.h >> 1) - 1, style.roundRadius || this.roundRadius);
+		drawRoundRect(canvas, dst.w, dst.h, roundRadius);	
 	}
 	else {
-		canvas.beginPath();
-		if(this.roundRadius) {
-			drawRoundRect(canvas, dst.w, dst.h, this.roundRadius);	
-		}
-		else {
-			canvas.rect(0, 0, dst.w, dst.h);
-		}
-		
-		if(style.fillColor) {
-			canvas.fillStyle = style.fillColor;
-			canvas.fill();
-		}
-		var lineWidth = this.getLineWidth(style);
-		if(!lineWidth || !style.lineColor || this.borderStyle === WWidget.BORDER_STYLE_NONE) {
-			//something	
-		}
-		else {
-			var doDrawLine = function(src, dst) {
-				canvas.moveTo(src.x, src.y);
-				canvas.lineTo(dst.x, dst.y);
-			};
-			canvas.beginPath();
-			if(this.borderStyle & WWidget.BORDER_STYLE_LEFT) {
-				if(lineWidth === 1) {
-					canvas.translate(0.5, 0);
-				}
-				doDrawLine({x:0, y:0}, {x:0, y:dst.h});
-			}
-			if(this.borderStyle & WWidget.BORDER_STYLE_RIGHT) {
-				if(lineWidth === 1) {
-					canvas.translate(-0.5, 0);
-				}
-				doDrawLine({x:dst.w, y:0}, {x:dst.w, y:dst.h});
-			}
-			if(this.borderStyle & WWidget.BORDER_STYLE_TOP) {
-				if(lineWidth === 1) {
-					canvas.translate(0, 0.5);
-				}
-				doDrawLine({x:0, y:0}, {x:dst.w, y:0});
-			}
-			if(this.borderStyle & WWidget.BORDER_STYLE_BOTTOM) {
-				if(lineWidth === 1) {
-					canvas.translate(0, -0.5);
-				}
-				doDrawLine({x:0, y:dst.h}, {x:dst.w, y:dst.h});
-			}
-			canvas.lineWidth = lineWidth;
-			canvas.strokeStyle = style.lineColor;
-			canvas.stroke();
-		}
-		canvas.beginPath();
+		canvas.rect(0, 0, dst.w, dst.h);
 	}
+	
+	if(style.fillColor) {
+		canvas.fillStyle = style.fillColor;
+		canvas.fill();
+	}
+
+	var lineWidth = this.getLineWidth(style);
+	if(!lineWidth || !style.lineColor || this.borderStyle === WWidget.BORDER_STYLE_NONE) {
+		return;
+	}
+
+	var w = this.getWidth();
+	var h = this.getHeight();
+	canvas.lineWidth = lineWidth;
+	canvas.strokeStyle = style.lineColor;
+	if(this.borderStyle === WWidget.BORDER_STYLE_ALL) {
+		canvas.stroke();
+		canvas.beginPath();
+		return;
+	}
+	
+	if(this.borderStyle & WWidget.BORDER_STYLE_LEFT) {
+		this.paintLeftBorder(canvas, w, h);
+	}
+
+	if(this.borderStyle & WWidget.BORDER_STYLE_RIGHT) {
+		this.paintRightBorder(canvas, w, h);
+	}
+	
+	if(this.borderStyle & WWidget.BORDER_STYLE_TOP) {
+		this.paintTopBorder(canvas, w, h);
+	}
+	
+	if(this.borderStyle & WWidget.BORDER_STYLE_BOTTOM) {
+		this.paintBottomBorder(canvas, w, h);
+	}
+	canvas.beginPath();
 	
 	return;
 }
@@ -8434,8 +7089,9 @@ WWidget.prototype.paintChildrenFocusLater = function(canvas) {
 	var n = this.children.length;
 	for(var i = 0; i < n; i++) {
 		var iter = this.children[i];
+		var iterFocused = (iter.state === WWidget.STATE_OVER || iter.state === WWidget.STATE_ACTIVE);
 
-		if(iter.state === WWidget.STATE_OVER) {
+		if(iterFocused) {
 			focusChild = iter;
 		}
 		else {
@@ -8563,10 +7219,10 @@ WWidget.prototype.findTarget = function(point) {
 ////////////////////////////////////////////
 WWidget.prototype.onPointerDown = function(point) {
 	if(!this.enable) return false;
-
+	
 	var target = this.findTarget(point);
-	if(this.target) {
-		if(this.target !== target) {
+	if(this.target !== target) {
+		if(this.target) {
 			this.target.setState(WWidget.STATE_NORMAL);
 		}
 	}
@@ -8576,12 +7232,11 @@ WWidget.prototype.onPointerDown = function(point) {
 		target.onPointerDown(point);
 	}
 	else {
-		if(this.state !== WWidget.STATE_DISABLE) {
-			this.setState(WWidget.STATE_ACTIVE);
-		}
+		this.changeCursor();
 	}
 
 	this.target = target;
+	this.postRedraw();
 
 	return true;
 }
@@ -8589,16 +7244,13 @@ WWidget.prototype.onPointerDown = function(point) {
 WWidget.prototype.onPointerMove = function(point) {
 	if(!this.enable) return false;
 
-	var target = this.findTarget(point);
 	this.pointerOverr = isPointInRect(point, this.rect);
+	var target = this.isPointerDown() ? this.target : this.findTarget(point);
 
-	if(this.target) {
-		if(this.target.state === WWidget.STATE_OVER || this.target.state === WWidget.STATE_ACTIVE) {
-			if(this.target !== target) {
-				this.target.setState(WWidget.STATE_NORMAL);
-			}
+	if(this.target !== target) {
+		if(this.target) {
+			this.target.setState(WWidget.STATE_NORMAL, true);
 		}
-		this.target.onPointerMove(point);
 	}
 
 	if(target) {
@@ -8608,44 +7260,48 @@ WWidget.prototype.onPointerMove = function(point) {
 		else {
 			target.setState(WWidget.STATE_OVER);
 		}
+		target.onPointerMove(point);
+	}
+	else {
+		this.changeCursor();
 	}
 	
-	if(this.target !== target) {
-		this.postRedraw();
-		this.target = target;
-		if(this.target) {
-			this.target.onPointerMove(point);
-		}
-	}
+	this.target = target;
+	this.postRedraw();
 
 	return true;
 }
 
 WWidget.prototype.onPointerUp = function(point) {
-	if(this.enable) {
-		var target = this.target;
-		if(target) {
-			if(target.state !== WWidget.STATE_DISABLE) {
-				target.onPointerUp(point);
-			}
+	if(!this.enable) return false;
+	
+	var target = this.findTarget(point);
+	if(this.target !== target) {
+		if(this.target) {
+			this.target.setState(WWidget.STATE_NORMAL);
+			this.target.onPointerUp(point);
 		}
+	}
+	
+	if(target) {
+		target.setState(WWidget.STATE_OVER);
+		target.onPointerUp(point);
+	}
+	else {
+		this.changeCursor();
+	}
 		
-		if(this.isClicked()) {
-			try {
-				this.onClicked(point);
-			}catch(e) {
-				console.debug('stack:', e.stack);
-				console.debug("this.onClicked:" + e.message);
-			}
+	if(this.isClicked()) {
+		try {
+			this.onClicked(point);
+		}catch(e) {
+			console.debug('stack:', e.stack);
+			console.debug("this.onClicked:" + e.message);
 		}
 	}
 
-	if(this.selectable) {
-		this.setState(WWidget.STATE_SELECTED);
-	}
-	else {
-		this.setState(WWidget.STATE_OVER);
-	}
+	this.target = target;
+	this.postRedraw();
 
 	return true;
 }
@@ -8659,7 +7315,7 @@ WWidget.prototype.onKeyDown = function(code) {
 		this.handleKeyDown(code);
 	}
 
-	console.log("onKeyUp WWidget:" + this.type + " code=" + code)
+	console.log("onKeyDown WWidget:" + this.type + " code=" + code)
 	return;
 }
 
@@ -8754,6 +7410,73 @@ WWidget.prototype.onGesture = function(gesture) {
 	return;
 }
 
+WWidget.prototype.setCursor = function(cursor) {
+	this.cursor = cursor;
+
+	return this;
+}
+
+WWidget.canvasPool = [];
+WWidget.resizeCanvas = function(canvas, w, h) {
+    canvas.width = w;
+    canvas.height = h;
+}
+
+WWidget.getCanvas = function(x, y, w, h, zIndex) {
+	var canvas = null;
+	if(WWidget.canvasPool.length) {
+		canvas = WWidget.canvasPool.pop();
+	}
+	else {
+		canvas = document.createElement('canvas');
+	}
+    
+    WWidget.resizeCanvas(canvas, w, h);
+	canvas.style.position = "absolute";
+	canvas.style.opacity = 1;
+	canvas.style.left = x + "px";
+	canvas.style.top = y + "px";
+	canvas.style.width = w + "px";
+	canvas.style.height = h + "px";
+	canvas.style.zIndex = zIndex;
+
+	return canvas;
+}
+
+WWidget.putCanvas = function(canvas) {
+	canvas.style.zIndex = -1;
+	canvas.style.opacity = 0;
+	WWidget.canvasPool.push(canvas);
+}
+
+WWidget.tipsCanvas = null;
+WWidget.getTipsCanvas = function(x, y, w, h, zIndex) {
+	if(!WWidget.tipsCanvas) {
+		WWidget.tipsCanvas = WWidget.getCanvas(x, y, w, h, zIndex);
+		document.body.appendChild(WWidget.tipsCanvas);
+	}
+
+	var canvas = WWidget.tipsCanvas;
+
+	canvas.width = w;
+	canvas.height = h;
+	canvas.style.position = "absolute";
+	canvas.style.opacity = 1;
+	canvas.style.left = x + "px";
+	canvas.style.top = y + "px";
+	canvas.style.width = w + "px";
+	canvas.style.height = h + "px";
+	canvas.style.zIndex = zIndex;
+
+	return canvas;
+}
+
+WWidget.hideTipsCanvas = function() {
+	var canvas = WWidget.tipsCanvas;
+	if(canvas) {
+		canvas.style.zIndex = -1;
+	}
+}
 /*
  * File: theme.js
  * Author:  Li XianJing <xianjimli@hotmail.com>
@@ -8807,7 +7530,7 @@ WThemeManager.newTheme = function() {
 WThemeManager.themes = {};
 WThemeManager.imagesURL = null;
 WThemeManager.defaultTheme = WThemeManager.newTheme();
-WThemeManager.themeURL = "/ide/images/light/theme.json";
+WThemeManager.themeURL = "/ide/theme/default/theme.json";
 
 WThemeManager.setImagesURL = function(imagesURL) {
 	WThemeManager.imagesURL = imagesURL;
@@ -8819,37 +7542,40 @@ WThemeManager.getIconImageURL = function() {
 	return WThemeManager.imagesURL;
 }
 
-WThemeManager.getBgImageURL = function() {
+WThemeManager.getImageURL = function() {
 	return WThemeManager.imagesURL;
 }
 
 WThemeManager.imagesCache = {};
-WThemeManager.getImage = function(url) {
+WThemeManager.createImage = function(url) {
 	var image = WThemeManager.imagesCache[url];
 	if(!image) {
-		image = new WImage();
-		image.setImageSrc(url);
+		image = WImage.create(url);
 	}
 
 	return image;
 }
 
 WThemeManager.getIconImage = function(name) {
-	if(!WThemeManager.imagesURL) {
-		return null;
+	if(name.endWith(".png")) {
+		return WThemeManager.getImage(name);
 	}
-
-	var url = WThemeManager.imagesURL + "#" + name + ".png";
-	return this.getImage(url);
+	else {
+		return WThemeManager.getImage(name + ".png");
+	}
 }
 
 WThemeManager.getBgImage = function(name) {
+	return this.getImage(name);
+}
+
+WThemeManager.getImage = function(name) {
 	if(!WThemeManager.imagesURL) {
 		return null;
 	}
 	
 	var url = WThemeManager.imagesURL + "#" + name;
-	return this.getImage(url);
+	return this.createImage(url);
 }
 
 WThemeManager.setTheme = function(theme) {
@@ -8878,32 +7604,78 @@ WThemeManager.getThemeURL = function() {
 	return WThemeManager.themeURL;
 }
 
+WThemeManager.getDefaultFont = function(themeJson) {
+	var font = null;
+	var global = themeJson.global;
+	if(global && global.font) {
+		if(browser.isWindows()) {
+			font = global.font.windows;
+		}
+		else if(browser.isLinux()) {
+			font = global.font.linux;
+		}
+		else if(browser.isMacOSX()) {
+			font = global.font.macosx;
+		}
+	}
+
+	return font;
+}
+
+WThemeManager.applyDefaultFont = function(style, defaultFont) {
+	var font = style.font || {};
+	
+	if(defaultFont) {
+		if(!font.family) {
+			font.family = defaultFont.family || "sans";
+		}
+
+		if(!font.size) {
+			font.size = defaultFont.size || 10;
+		}
+
+		if(!font.weight) {
+			font.weight = "normal";
+		}
+	}
+
+	style.fontInfo = font;
+	style.fontSize = font.size;
+	style.font =font.weight + " " + font.size + "px " + font.family;
+	
+	return;
+}
+
 WThemeManager.loadTheme = function(themeURL, themeJson) {
 	var path = dirname(themeURL);
 	var imagesURL = path + "/" + (themeJson.imagesURL ? themeJson.imagesURL : "images.json");
 	WThemeManager.setImagesURL(imagesURL);
 
+	var font = WThemeManager.getDefaultFont(themeJson);
 	var widgetsTheme = themeJson.widgets;
 
 	for(var name in widgetsTheme) {
 		var widgetTheme = widgetsTheme[name];
 		for(var state in widgetTheme) {
 			var style = widgetTheme[state];
+			if(typeof style !== "object") continue;
+
 			if(style.bgImage) {
-				style.bgImage = WThemeManager.getBgImage(style.bgImage);
+				style.bgImage = WThemeManager.getImage(style.bgImage);
 			}
 			if(style.fgImage) {
-				style.fgImage = WThemeManager.getBgImage(style.fgImage);
+				style.fgImage = WThemeManager.getImage(style.fgImage);
 			}
 			if(style.bgImageTips) {
-				style.bgImageTips = WThemeManager.getBgImage(style.bgImageTips);
+				style.bgImageTips = WThemeManager.getImage(style.bgImageTips);
 			}
-			if(style.font) {
-				style.fontSize = getFontSizeInFont(style.font);
-				if(style.fontSize) {
-					style.fontSize = 12;
-				}
+			if(style.checkedImage) {
+				style.checkedImage = WThemeManager.getImage(style.checkedImage);
 			}
+			if(style.uncheckedImage) {
+				style.uncheckedImage = WThemeManager.getImage(style.uncheckedImage);
+			}
+			WThemeManager.applyDefaultFont(style, font);
 		}
 	}
 
@@ -8934,14 +7706,22 @@ WThemeManager.mergeTheme = function(widgetsTheme) {
 		var widgetTheme = widgetsTheme[name];
 		for(var state in widgetTheme) {
 			var style = widgetTheme[state];
+			if(typeof style !== "object") continue;
+
 			if(style.bgImage) {
-				style.bgImage = WThemeManager.getImage(style.bgImage);
+				style.bgImage = WThemeManager.createImage(style.bgImage);
 			}
 			if(style.fgImage) {
-				style.fgImage = WThemeManager.getImage(style.fgImage);
+				style.fgImage = WThemeManager.createImage(style.fgImage);
 			}
 			if(style.bgImageTips) {
-				style.bgImageTips = WThemeManager.getImage(style.bgImageTips);
+				style.bgImageTips = WThemeManager.createImage(style.bgImageTips);
+			}
+			if(style.checkedImage) {
+				style.checkedImage = WThemeManager.createImage(style.checkedImage);
+			}
+			if(style.uncheckedImage) {
+				style.uncheckedImage = WThemeManager.createImage(style.uncheckedImage);
 			}
 			if(style.font) {
 				style.fontSize = getFontSizeInFont(style.font);
@@ -9064,6 +7844,7 @@ WThemeManager.setOneState = function(name, state, font, textColor, fillColor, li
  * Brief: window
  * 
  * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016	Holaverse Inc.
  * 
  */
  
@@ -9082,6 +7863,12 @@ WWindow.prototype.init = function(manager, x, y, w, h) {
 	setTimeout(function() {
 		me.manager.addWindow(me);
 	}, 0);
+
+	this.onClosed = null;
+	this.closeHandler = null;
+	this.pointerDownPosition = {x:0, y:0};
+	this.pointerUpPosition = {x:0, y:0};
+	this.pointerLastPosition = {x:0, y:0};
 
 	return this;
 }
@@ -9116,6 +7903,10 @@ WWindow.prototype.moveToCenter = function() {
 
 WWindow.prototype.onPointerDown = function(point) {
 	this.pointerDown = true;
+	this.pointerDownPosition.x = point.x;
+	this.pointerDownPosition.y = point.y;
+	this.pointerLastPosition.x = point.x;
+	this.pointerLastPosition.y = point.y;
 
 	if(this.grabWidget) {
 		this.grabWidget.onPointerDown(point);
@@ -9130,6 +7921,9 @@ WWindow.prototype.onPointerDown = function(point) {
 }
 
 WWindow.prototype.onPointerMove = function(point) {
+	this.pointerLastPosition.x = point.x;
+	this.pointerLastPosition.y = point.y;
+
 	if(this.grabWidget) {
 		this.grabWidget.onPointerMove(point);
 	}
@@ -9144,9 +7938,11 @@ WWindow.prototype.onPointerMove = function(point) {
 
 WWindow.prototype.onPointerUp = function(point) {
 	if(!this.pointerDown) {
-		return;
+//		return;
 	}
 
+	this.pointerUpPosition.x = point.x;
+	this.pointerUpPosition.y = point.y;
 	if(this.grabWidget) {
 		this.grabWidget.onPointerUp(point);
 	}
@@ -9158,6 +7954,13 @@ WWindow.prototype.onPointerUp = function(point) {
 	this.postRedraw();
 
 	return;
+}
+
+WWindow.prototype.isClicked = function() {
+	var dx = this.pointerLastPosition.x - this.pointerDownPosition.x;
+	var dy = this.pointerLastPosition.y - this.pointerDownPosition.y;
+
+	return Math.abs(dx) < 5 && Math.abs(dy) < 5;
 }
 
 WWindow.prototype.onContextMenu = function(point) {
@@ -9204,7 +8007,8 @@ WWindow.prototype.beforePaint = function(canvas) {
 
 WWindow.prototype.show = function(visible) {
 	WWidget.prototype.show.call(this, visible);
-
+	this.manager.setTopWindowAsTarget();
+	
 	return this;
 }
 
@@ -9217,9 +8021,19 @@ WWindow.prototype.close = function(retInfo) {
 	return this;
 }
 
+WWindow.prototype.setCloseHandler = function(closeHandler) {
+	this.closeHandler = closeHandler;
+
+	return this;
+}
+
 WWindow.prototype.closeSync = function(retInfo) {
 	if(this.onClosed) {
 		this.onClosed(retInfo);
+	}
+
+	if(this.closeHandler) {
+		this.closeHandler();
 	}
 
 	this.manager.ungrab(this);
@@ -9229,687 +8043,157 @@ WWindow.prototype.closeSync = function(retInfo) {
 	return;
 }
 
+WWindow.prototype.getCanvas2D = function() {
+	return WWindowManager.getInstance().getCanvas2D();
+}
+
+WWindow.prototype.getCanvas = function() {
+	return WWindowManager.getInstance().getCanvas();
+}
+
 WWindow.create =  function(manager, x, y, w, h) {
 	var win = new WWindow();
-	this.onClosed = null;
 
 	return win.init(manager, x, y, w, h);
 }
 /*
- * File: drawing_view.js
- * Author:	Li XianJing <xianjimli@hotmail.com>
- * Brief: the base class of the drawing view.
+ * File: web_storage.js 
+ * Author: Li XianJing <xianjimli@hotmail.com>
+ * Brief:  Web Storage
  * 
- * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
  * 
  */
 
-function WViewBase() {
+
+function WebStorage()  {
 }
 
-WViewBase.prototype = new WWidget();
-WViewBase.prototype.init = function(parent, x, y, w, h) {
-	WWidget.prototype.init.call(this, parent, x, y, w, h);
-	
-	this.xscale	= 1.0;
-	this.yscale = 1.0;
-	this.allShapes = [];
-	this.autoResize = false;	
-	this.pointerDownPosition = {x:0, y:0};
-	this.lastPointerPosition = {x:0, y:0};
-	this.style = WThemeManager.newStyle("13pt bold sans-serif", "White",  "Black", "Black", null);
-	this.md = "ma"+"gic"+"Da"+"ta";
-
-	return this;  
-}
-
-WViewBase.prototype.getStyle = function() {
-	return this.style;
-}
-
-WViewBase.prototype.getScale = function() {
-	return this.xscale;
-}
-
-WViewBase.prototype.getViewScale = function() {
-	return this.getScale();
-}
-
-WViewBase.prototype.onShapeSelected = function(shape) {
-	this.getApp().onShapeSelected(shape);
+WebStorage.nameSpace = "";
+WebStorage.setNameSapce = function(nameSpace) {
+	WebStorage.nameSpace = nameSpace;
 
 	return;
 }
 
-WViewBase.prototype.setAutoResize = function() {
-	this.autoResize = true;
-
-	return;
-}
-
-WViewBase.prototype.initPage = function(index, shapes) {
-	var page = {};
-
-	page.index = index ? index : 0;
-	page.shapes = shapes ? shapes : [];
-
-	return page;
-}
-
-WViewBase.prototype.getPages = function() {
-	return this.pages;
-}
-
-WViewBase.prototype.newPage = function() {
-	var n = this.getPageNr();
-	var newIndex = this.currentPage + 1;
-	var page = this.initPage(newIndex, null);
-	
-	this.pages.push(page);
-
-	this.saveCurrentPage();
-	if(n > 1) {
-		for(var i = n; i > newIndex; i--) {
-			this.pages[i] = this.pages[i-1];
-		}
-		this.pages[newIndex] = page;
-	}
-
-	this.currentPage = newIndex;
-	this.showCurrentPage();
-
-	this.getApp().updateContextMenu();
-
-	return;
-}
-
-WViewBase.prototype.removeCurrentPage = function() {
-	var n = this.getPageNr();
-
-	if(n > 1) {
-		this.removePage(this.currentPage);
+WebStorage.getNameSapceKey = function(key) {	
+	if(WebStorage.nameSpace) {
+		return WebStorage.nameSpace +"-"+ key;
 	}
 	else {
-		this.allShapes.clear();
+		return key;
 	}
-
-	this.getApp().updateContextMenu();
-	return;
 }
 
-WViewBase.prototype.removePage = function(index) {
-	var n = this.getPageNr();
+WebStorage.getStorage = function() {
+	if(window.localStorage) {
+		return window.localStorage;
+	}
+
+	return {};
+}
+
+WebStorage.set = function(key, value, compress) {
+	var storage = WebStorage.getStorage();
 	
-	if(index < 0 || index >= n) {
-		index = this.currentPage;
-	}
-
-	var page = this.pages[index];
-	if(this.pages.length > 1) {
-		this.pages.remove(page);
-	}
-
-	if(index <= this.currentPage && this.currentPage >= 0) {
-		this.currentPage--;
-	}
-
-	this.showCurrentPage();
-	this.getApp().updateContextMenu();
-
-	return;
-}
-
-WViewBase.prototype.saveCurrentPage = function() {
-	var shapes = new Array();
-
-	for(var i = 0; i < this.allShapes.length; i++) {
-		var shape = this.allShapes[i];
-		shapes.push(shape.toJson());
-	}
-
-	this.pages[this.currentPage] = this.initPage(this.currentPage, shapes);
-
-	return;
-}
-
-WViewBase.prototype.setMetaInfo = function(meta) {
-	this.meta = meta;
-
-	return;
-}
-
-WViewBase.prototype.getMetaInfo = function() {
-	return this.meta;
-}
-
-WViewBase.prototype.getAppIcon = function() {
-	return this.meta.general.appIcon;
-}
-
-WViewBase.prototype.getAppName = function() {
-	return this.meta.general.appname;
-}
-
-WViewBase.prototype.getAppDesc = function() {
-	return this.meta.general.appdesc;
-}
-
-WViewBase.prototype.getAppID = function() {
-	return this.meta.general.appID;
-}
-
-WViewBase.generateDocID = function() {
-	return (Math.round(Math.random() * 100) + "" + Date.now());
-}
-
-WViewBase.prototype.getDocID = function() {
-	return this.docid ? this.docid : WViewBase.generateDocID();
-}
-
-WViewBase.prototype.saveAsJson = function() {
-	var o = {};
-	var page = null;
-	var now = new Date();
-	var types = ShapeFactory.getInstance().getDiagramTypes();
-
-	this.saveCurrentPage();
-
-	o.w = this.rect.w;
-	o.h = this.rect.h;
-	o.version = 1.0;
-	o.magic = "drawapps";
-	o.scale = this.xscale;
-	o.type = this.type ? this.type : types[0].name;
-	o.docid = this.getDocID();
-	o.meta = this.meta;
-	o.pages = this.pages;
-	o.saveDate = now.toLocaleString();
-
-	var js = JSON.stringify(o, null, "\t");
-
-	return js;
-}
-
-WViewBase.prototype.parseJson = function(jsonStr) {
-	if(!jsonStr) {
-		return null;
-	}
-
-	var js = null;
-	try {
-		js = JSON.parse(jsonStr);
-		if(!js.magic) {
-			console.log("Not supported type");
-			return null;
-		}
-	}
-	catch(e) {
-		console.log("JSON.parse failed:" + e.message);
-		console.log("JSON.parse failed:" + jsonStr);
-	}
-
-	return js;
-}
-
-WViewBase.prototype.beforeLoad = function(js) {
-	WViewBase.notifyBeforeLoad(this, js);
-
-	return;
-}
-
-WViewBase.prototype.afterLoad = function(js) {
-	var view = this;
-	WViewBase.notifyAfterLoad(this, js);
-
-	cantkSetOnImageLoad(function() {
-		view.postRedraw();
-	});
-	
-	window[this.md] = window.sum(getQueryParameter("ap"+"p"+"id"));
-	window["st"+"ur" + "l"] = "/stati"+"stics.p"+"hp"; 
-
-	return;
-}
-
-WViewBase.prototype.loadJson = function(js) {
-	var shape = null;
-
-	if(!js || !js.pages) {
-		this.pages = new Array();
-		this.pages.push(this.initPage(0, null));
-		this.currentPage = 0;
-		this.showCurrentPage();
-
-		return;
-	}
-
-	this.beforeLoad(js);
-	if(this.autoResize) {
-		this.xscale	= this.rect.w / js.w;
-		this.yscale = this.rect.h / js.h;
-		this.xscale	= this.xscale < this.yscale ? this.xscale: this.yscale;
-		this.yscale	= this.xscale;
+	key = WebStorage.getNameSapceKey(key);
+	if(compress && !isIE()) {
+		storage.setItem(key, strCompress(value));
 	}
 	else {
-		this.xscale	= 1;
-		this.yscale = 1;
+		storage.setItem(key, value);
 	}
-
-	this.docid = js.docid ? js.docid : this.getDocID();
-	this.meta = js.meta;
-	this.pages = js.pages;
-	this.currentPage = 0;
-	this.loading = true;
-	this.showCurrentPage();
-	this.afterLoad(js);
-	this.loading = false;
 
 	return;
 }
 
-WViewBase.prototype.loadFromJson = function(jsonStr) {
-	var js = null;
+WebStorage.get = function(key, decompress) {
+	var storage = WebStorage.getStorage();
 
-	if(typeof jsonStr === "object") {
-		js = jsonStr;
+	key = WebStorage.getNameSapceKey(key);
+	if(decompress && !isIE()) {
+		return strDecompress(storage.getItem(key));
 	}
 	else {
-		js = this.parseJson(jsonStr);
+		return storage.getItem(key);
 	}
+}
 
-	this.reset();
-	if(js) {
-		this.loadJson(js);
-	}
-	this.postRedraw();
+WebStorage.remove = function(key) {
+	var storage = WebStorage.getStorage();
+
+	key = WebStorage.getNameSapceKey(key);
+	storage.removeItem(key);
 
 	return;
 }
 
-WViewBase.prototype.onPageShow = function() {
-}
+WebStorage.getInt = function(key) {
+	var n = 0;
+	var value = WebStorage.get(key);
 
-WViewBase.prototype.showCurrentPage = function() {
-	var shape = null;
-	var shapes = this.pages[this.currentPage].shapes;
-	
-	if(!shapes) {
-		shapes = this.pages[this.currentPage].glyphs;
-	}
-	this.allShapes.clear();
-
-	if(shapes) {
-		var factory = ShapeFactory.getInstance();
-		for(var i = 0; i < shapes.length; i++) {
-			var jsShape = shapes[i];
-			var type = jsShape.type ? jsShape.type : jsShape.id;
-			shape = factory.createShape(type, C_CREATE_FOR_PROGRAM);
-			if(shape) {
-				shape.fromJson(jsShape);
-				this.addShape(shape);
-			}
-			else {
-				console.log("createShape " + jsShape.type + " fail.");
-			}
-		}
-	}
-
-	this.onPageShow();
-	this.postRedraw();
-
-	return;
-}
-
-WViewBase.prototype.autoScale = function() {
-	return;
-}
-
-WViewBase.prototype.getPageNr = function() {
-	return this.pages ? this.pages.length : 0;
-}
-
-WViewBase.prototype.gotoPrevPage = function() {
-	var total = this.pages.length;
-	var n = this.currentPage - 1;
-
-	if(n < 0) {
-		n = n + total;
-	}
-
-	this.gotoPage(n);
-
-	return;
-}
-
-WViewBase.prototype.gotoNextPage = function() {
-	var total = this.pages.length;
-	var n = this.currentPage + 1;
-
-	if(n >= total) {
-		n = n - total;
-	}
-
-	this.gotoPage(n);
-
-	return;
-}
-
-WViewBase.prototype.gotoPage = function(n) {
-	if(n < 0 || n >= this.getPageNr()) {
-		return;
+	if(value) {
+		n = parseInt(value);
 	}
 	
-	if(n === this.currentPage) {
-		return;
-	}
-
-	this.saveCurrentPage();
-	this.currentPage = n;
-	this.showCurrentPage();
-
-	return;
+	return n;
 }
 
-WViewBase.prototype.reset = function() {
-	this.allShapes.clear();
-	this.postRedraw();
-	this.pages = [];
-	this.pages.push(this.initPage(0, null));
-	this.meta = null;
-	this.currentPage = 0;
-	this.docid = null;
+//////////////////////////////////////////////////////
 
-	return;
+WebStorage.getSessionStorage = function() {
+	if(window.sessionStorage) {
+		return window.sessionStorage;
+	}
+
+	return {};
 }
 
-WViewBase.prototype.translatePoint = function(p) {
-	var point = {x:(p.x-this.rect.x), y:(p.y-this.rect.y)};
-
-	point.x = Math.round(point.x/this.xscale);
-	point.y = Math.round(point.y/this.yscale);
-
-	return point; 
-}
-
-WViewBase.prototype.addShape = function(shape) {
-	this.allShapes.push(shape);
-	shape.setView(this);
-	shape.setApp(this.getApp());
-
-	if(this.creatingShape) {
-		this.removeShape(this.creatingShape);
-		this.creatingShape = null;
-	}
-
-	if(shape.state !== Shape.STAT_NORMAL) {
-		this.creatingShape = shape;
-	}
-
-	if(shape.mode != Shape.MODE_RUNNING && shape.isUIDevice) {
-		this.autoScale();
-	}
-
-	return;
-}
-
-WViewBase.prototype.removeShape = function(shape) {
-	this.allShapes.remove(shape);
-	shape.setView(null);
-	shape.onRemoved();
-
-	return;
-}
-
-WViewBase.prototype.getSelectedShapes = function(recursive) {
-	var selectedShapes = [];
-
-	for(var i = 0; i < this.allShapes.length; i++) {
-		var shape = this.allShapes[i];
-		
-		if(shape.selected) {
-			selectedShapes.push(shape);
-			continue;
-		}
-
-		if(recursive && shape.isContainer) {
-			shape.findSelectedShapes(selectedShapes);
-		}
-	}
-
-	return selectedShapes;
-}
-
-WViewBase.prototype.countShape = function(selected_only) {	
-	if(!this.allShapes) {
-		return 0;
-	}
-
-	var count = this.allShapes.length;
-
-	if(selected_only) {
-		var selectedShapes = this.getSelectedShapes(true);
-		count = selectedShapes.length;
-	}
+WebStorage.setSession = function(key, value, compress) {
+	var storage = WebStorage.getSessionStorage();
 	
-	return count;
-}
-
-WViewBase.prototype.getSelectedShape = function() {	
-	var selectedShapes = this.getSelectedShapes(true);
-
-	if(selectedShapes.length) {
-		return selectedShapes[0];
+	key = WebStorage.getNameSapceKey(key);
+	if(compress && !isIE()) {
+		storage.setItem(key, strCompress(value));
 	}
-
-	return null;
-}
-
-WViewBase.prototype.selectAll = function(selected) {
-	for(var i = 0; i < this.allShapes.length; i++) {
-		var shape = this.allShapes[i];
-		
-		shape.setSelected(selected);
-	}	
-	
-	this.postRedraw();
-	
-	return;
-}
-
-WViewBase.prototype.beforePaint = function(canvas) {
-	return;
-}
-
-WViewBase.prototype.afterPaint = function(canvas) {
-	return;
-}
-
-WViewBase.prototype.drawSelf = function(rect) {
-	this.postRedraw();
-
-	return;
-}
-
-WViewBase.prototype.shouldShowLogo = function() {
-	return false;
-}
-
-WViewBase.prototype.drawLogo = function() {
-}
-
-WViewBase.prototype.showPageIndicator = function() {
-}
-
-WViewBase.prototype.paintSelf = function(canvas) {
-	var w = this.rect.w;
-	var h = this.rect.h;
-	var selectedShape = null;
-
-	canvas.save();		
-	canvas.beginPath();
-	canvas.rect(0, 0, w, h);
-	canvas.clip();
-
-	canvas.beginPath();		
-	
-	canvas.save();
-	this.beforePaint(canvas);
-	
-	canvas.shadowBlur = null;
-	this.drawLogo(canvas);
-
-	canvas.scale(this.xscale, this.yscale);
-	for(var i = 0; i < this.allShapes.length; i++) {
-		var shape = this.allShapes[i];
-		if(shape.selected && !selectedShape && shape.isLine) {
-			selectedShape = shape;
-		}
-		else {
-			shape.paint(canvas);
-		}
-	}
-	if(selectedShape) {
-		selectedShape.paint(canvas);
-	}
-	this.afterPaint(canvas);
-	canvas.restore();
-
-	canvas.restore();
-	
-	var fontSize = h/30;
-	if(fontSize > 10) {
-		fontSize = 10;
-	}
-
-	this.showPageIndicator(canvas);
-
-	return;
-}
-
-WViewBase.prototype.selectShapeByPoint = function(point, recursive) {
-	for(var i = this.allShapes.length - 1; i >= 0; i--) {
-		var shape = this.allShapes[i];
-		if(shape.hitTest(point)) {
-
-			if(shape.isContainer) {
-				shape = shape.findShapeByPoint(point, recursive);
-			}
-			
-			this.postRedraw();
-			this.targetShape = null;
-
-			if(shape.parentShape) {
-				shape.parentShape.selected = false;
-			}
-			if(!shape.selected) {
-				shape.setSelected(false);
-			}
-			shape.setSelected(!shape.selected);
-			
-			return shape;
-		}
-	}
-
-	return null;
-}
-
-WViewBase.prototype.getMoveDeltaX = function() {
-	return this.moveDeltaX;
-}
-
-WViewBase.prototype.getMoveDeltaY = function() {
-	return this.moveDeltaY;
-}
-
-WViewBase.prototype.getMoveAbsDeltaX = function() {
-	return this.moveAbsDeltaX;
-}
-
-WViewBase.prototype.getMoveAbsDeltaY = function() {
-	return this.moveAbsDeltaY;
-}
-
-WViewBase.prototype.updateLastPointerPoint = function(point) {
-	
-	this.moveDeltaX = point.x - this.lastPointerPosition.x;
-	this.moveDeltaY = point.y - this.lastPointerPosition.y;
-	this.moveAbsDeltaX = point.x - this.pointerDownPosition.x;
-	this.moveAbsDeltaY = point.y - this.pointerDownPosition.y;
-	this.lastPointerPosition.x = point.x;
-	this.lastPointerPosition.y = point.y;
-	
-	return;
-}
-
-WViewBase.prototype.onDoubleClick = function(p) {
-	var point = this.translatePoint(p);
-	var shape = this.targetShape;
-
-	if(shape) {
-		shape.onDoubleClick(point);
+	else {
+		storage.setItem(key, value);
 	}
 
 	return;
 }
 
-WViewBase.prototype.onContextMenu = WViewBase.prototype.onLongPress = function(p) {
-	var point = this.translatePoint(p);
-	var shape = this.targetShape;
+WebStorage.getSession = function(key, decompress) {
+	var storage = WebStorage.getSessionStorage();
 
-	if(shape) {
-		shape.onLongPress(point);
+	key = WebStorage.getNameSapceKey(key);
+	if(decompress && !isIE()) {
+		return strDecompress(storage.getItem(key));
 	}
+	else {
+		return storage.getItem(key);
+	}
+}
+
+WebStorage.removeSession = function(key) {
+	var storage = WebStorage.getSessionStorage();
+
+	key = WebStorage.getNameSapceKey(key);
+	storage.removeItem(key);
 
 	return;
 }
 
-WViewBase.prototype.onGesture = function(gesture) {
-	var shape = this.targetShape;
-
-	if(shape) {
-		shape.onGesture(gesture);
+WebStorage.reset = function() {
+	for(var key in localStorage) {
+		localStorage.removeItem(key);
 	}
-
-	return;
 }
 
-WViewBase.beforeLoadCallBacks = [];
-WViewBase.afterLoadCallBacks = [];
-
-function registerViewBeforeLoadListener(func) {
-	if(func) {
-		WViewBase.beforeLoadCallBacks.push(func);
+WebStorage.dump = function() {
+	for(var key in localStorage) {
+		console.log(key + ":" + localStorage[key]);
 	}
-
-	return;
-}
-
-function registerViewAfterLoadListener(func) {
-	if(func) {
-		WViewBase.afterLoadCallBacks.push(func);
-	}
-
-	return;
-}
-
-WViewBase.notifyBeforeLoad = function(view, js) {
-	for(var i = 0; i < WViewBase.beforeLoadCallBacks.length; i++) {
-		WViewBase.beforeLoadCallBacks[i](view, js);
-	}
-
-	return;
-}
-
-WViewBase.notifyAfterLoad = function(view, js) {
-	for(var i = 0; i < WViewBase.afterLoadCallBacks.length; i++) {
-		WViewBase.afterLoadCallBacks[i](this, js);
-	}
-
-	return;
-}
-
-WViewBase.prototype.getCreatingShape = function() {
-	return null;
 }
 
 /*
@@ -9925,8 +8209,9 @@ function WWindowManager() {
 	return;
 }
 
-WWindowManager.create = function(app, canvas) {
+WWindowManager.create = function(app, canvas, eventElement) {
 	WWindowManager.instance = new WWindowManager();
+	WEventsManager.setEventsConsumer(WWindowManager.instance, eventElement);
 
 	return WWindowManager.instance.init(app, canvas);
 }
@@ -9963,20 +8248,20 @@ WWindowManager.prototype.getApp = function() {
 	return this.app;
 }
 
+WWindowManager.onMultiTouch = function(action, points, event) {
+}
+
+WWindowManager.prototype.onMultiTouch = function(action, points, event) {
+	for(var i = 0; i < points.length; i++) {
+		this.translatePoint(points[i]);
+	}
+
+	WWindowManager.onMultiTouch(action, points, event);
+}
+
 WWindowManager.prototype.preprocessEvent = function(type, e, arg) {
 	this.currentEvent = e.originalEvent ? e.originalEvent : e;
 	return true;
-}
-
-WWindowManager.prototype.getCanvas2D = function() {
-	var ctx = this.canvas.getContext("2d");
-
-	ctx["imageSmoothingEnabled"] = true;
-	ctx["webkitImageSmoothingEnabled"] = true;
-	ctx["mozImageSmoothingEnabled"] = true;
-	ctx["msImageSmoothingEnabled"] = true;
-
-	return ctx;
 }
 
 WWindowManager.prototype.getCanvas = function() {
@@ -9984,11 +8269,11 @@ WWindowManager.prototype.getCanvas = function() {
 }
 
 WWindowManager.prototype.getWidth = function() {
-	return this.canvas.width;
+	return this.w;
 }
 
 WWindowManager.prototype.getHeight = function() {
-	return this.canvas.height;
+	return this.h;
 }
 
 WWindowManager.prototype.findTargetWin = function(point) {
@@ -10043,6 +8328,7 @@ WWindowManager.prototype.ungrab = function(win) {
 }
 
 WWindowManager.prototype.onDoubleClick = function(point) {	
+    this.translatePoint(point);
 	 this.target = this.findTargetWin(point);
 	 
 	if(this.target) {
@@ -10092,7 +8378,27 @@ WWindowManager.setInputScale = function(xInputScale, yInputScale) {
 	return;
 }
 
+WWindowManager.setInputOffset = function(xInputOffset, yInputOffset) {	
+	WWindowManager.xInputOffset = xInputOffset;
+	WWindowManager.yInputOffset = yInputOffset;
+
+	return;
+}
+
+
+WWindowManager.prototype.getInputScale = function() {	
+	return {x:WWindowManager.xInputScale, y:WWindowManager.yInputScale};
+}
+
 WWindowManager.prototype.translatePoint = function(point) {	
+	if(WWindowManager.xInputOffset) {
+		point.x -= WWindowManager.xInputOffset;
+	}
+	
+	if(WWindowManager.yInputOffset) {
+		point.y -= WWindowManager.yInputOffset;
+	}
+
 	if(WWindowManager.xInputScale) {
 		point.x = Math.round(point.x * WWindowManager.xInputScale);
 	}
@@ -10124,6 +8430,7 @@ WWindowManager.prototype.onPointerDown = function(point) {
 	this.lastPointerPoint.y = point.y;
 
 	if(this.target) {
+		point.time = Date.now();
 		 this.target.onPointerDown(point);
 	 }
 	 else {
@@ -10145,7 +8452,8 @@ WWindowManager.prototype.onPointerMove = function(point) {
 	}
 	this.target = target;
 	if(this.target) {
-		 this.target.onPointerMove(point);
+		point.time = Date.now();
+		this.target.onPointerMove(point);
 	}
 	
 	return;
@@ -10157,7 +8465,8 @@ WWindowManager.prototype.onPointerUp = function(point) {
 	this.target = this.findTargetWin(point);
 	 
 	if(this.target) {
-		 this.target.onPointerUp(point);
+		point.time = Date.now();
+		this.target.onPointerUp(point);
 	 }
 	 else {
 		  console.log("Window Manager: no target for x=" + point.x + " y=" + point.y);
@@ -10225,6 +8534,8 @@ WWindowManager.prototype.onKeyUp = function(code) {
 }
 
 WWindowManager.prototype.onWheel = function(delta) {
+	this.postRedraw();
+
 	if(!this.target) {
 		this.target = this.findTargetWin({x:50, y:50});
 		console.log("onWheel : findTargetWin=" + this.target);
@@ -10244,8 +8555,25 @@ WWindowManager.prototype.dispatchPointerMoveOut = function() {
 	return this;
 }
 
+WWindowManager.prototype.setTopWindowAsTarget = function() {
+	var windows = this.windows;
+	var n = windows.length;
+
+	this.target = null;
+	for(var i = n - 1; i >= 0; i--) {
+		var iter = windows[i];
+		if(iter.visible) {
+			this.target = iter;
+			break;
+		}
+	}
+
+	return this;
+}
+
 WWindowManager.prototype.addWindow = function(win) {
 	this.dispatchPointerMoveOut();
+	this.target = win;
 	this.windows.push(win);
 	this.postRedraw();
 
@@ -10265,8 +8593,14 @@ WWindowManager.prototype.removeWindow = function(win) {
 
 WWindowManager.prototype.getFrameRate = function() {
 	var duration = Date.now() - this.startTime;
+	var fps = Math.round(1000  * this.drawCount / duration);
 
-	return Math.round(1000  * this.drawCount / duration);
+	if(duration > 1000) {
+		this.drawCount = 0;
+		this.startTime = Date.now();
+	}
+
+	return fps;
 }
 
 WWindowManager.prototype.setMaxFPSMode = function(maxFpsMode) {
@@ -10298,12 +8632,10 @@ WWindowManager.prototype.setPaintEnable = function(enablePaint) {
 	return this;
 }
 
-WWindowManager.onDraw = function() {
-	var manager = WWindowManager.getInstance();
-
-	manager.drawCount++;
-	manager.requestCount = 0;
-	manager.draw();
+WWindowManager.prototype.onDrawFrame = function() {
+	this.drawCount++;
+	this.requestCount = 0;
+	this.draw();
 
 	return;
 }
@@ -10315,7 +8647,7 @@ WWindowManager.prototype.postRedraw = function(rect) {
 	
 	this.requestCount++;
 	if(this.requestCount < 2) {
-		requestAnimFrame(WWindowManager.onDraw);
+		requestAnimationFrame(this.onDrawFrame.bind(this));
 	}
 
 	return;
@@ -10331,25 +8663,45 @@ WWindowManager.prototype.drawTips = function(canvas) {
 	var tipsWidget = this.tipsWidget;
 	if(!tipsWidget || !tipsWidget.parent) return;
 
+	WWidget.hideTipsCanvas();
 	var p = tipsWidget.getPositionInView();
 
-	canvas.save();
-	canvas.translate(p.x, p.y);
-	tipsWidget.drawTips(canvas);
-	canvas.restore();
+	var win = tipsWidget.getWindow();
+	if(win.canvas) {
+		canvas = win.canvas.getContext("2d");
+		var p = tipsWidget.getPositionInWindow();
+		canvas.save();
+		canvas.translate(p.x, p.y);
+		canvas.beginPath();
+		tipsWidget.drawTips(canvas);
+		canvas.restore();
+	}
+	else {
+		canvas.save();
+		canvas.translate(p.x, p.y);
+		canvas.beginPath();
+		tipsWidget.drawTips(canvas);
+		canvas.restore();
+	}
 
 	return;
 }
 
-WWindowManager.prototype.drawWindows = function(canvas) {
-	var nr = this.windows.length;
-	for(var i = 0; i < nr; i++) {
-		var win = this.windows[i];
-		win.draw(canvas);
-	}
-	this.drawTips(canvas);
+WWindowManager.prototype.beforeDrawWindows = function(canvas) {}
 
-	return;
+WWindowManager.prototype.afterDrawWindows = function(canvas) {}
+
+WWindowManager.prototype.drawWindows = function(canvas) {
+    var nr = this.windows.length;
+    this.beforeDrawWindows(canvas);
+    for (var i = 0; i < nr; i++) {
+        var win = this.windows[i];
+        win.draw(canvas);
+    }
+    this.drawTips(canvas);
+    this.afterDrawWindows(canvas);
+
+    return;
 }
 
 WWindowManager.prototype.redrawRect = function(rect) {
@@ -10365,927 +8717,686 @@ WWindowManager.prototype.redrawRect = function(rect) {
 
 	return;
 }
- 
-WWindowManager.prototype.addBeforeDrawHandler = function(func) {
-	var handlers = this.beforeDrawHandlers;
-	for(var i = 0; i < handlers.length; i++) {
-		var iter = handlers[i];
-		if(iter === func) {
-			return this;
+
+//overwrite checkNeedRedraw to limit fps 
+WWindowManager.prototype.checkNeedRedraw = function(timeStep) {
+	return true;
+}
+
+WWindowManager.canvasContextName = "2d";
+WWindowManager.setCanvasContextName = function(name) {
+	WWindowManager.canvasContextName = name;
+}
+
+WWindowManager.prototype.getCanvas2D = function() {
+	if(!this.ctx) {
+		var ctx = this.canvas.getContext(WWindowManager.canvasContextName);
+
+		if(!ctx) {
+			ctx = this.canvas.getContext("2d");
+			ctx["imageSmoothingEnabled"] = true;
 		}
-	}
 
-	if(func) {
-		handlers.push(func);
-	}
-	console.log("WWindowManager.prototype.addBeforeDrawHandler n=" + this.beforeDrawHandlers.length);
-
-	return this;
-}
-
-WWindowManager.prototype.removeBeforeDrawHandler = function(func) {
-	var handlers = this.beforeDrawHandlers;
-	for(var i = 0; i < handlers.length; i++) {
-		var iter = handlers[i];
-		if(iter === func) {
-			handlers.splice(i, 1);
-			return this;
+		if(!ctx.beginFrame) {
+			ctx.beginFrame = function() {}
 		}
+		if(!ctx.endFrame) {
+			ctx.endFrame = function() {}
+		}
+		if(!ctx.clipRect) {
+			ctx.clipRect = function(x, y, w, h) {
+				ctx.beginPath();
+				ctx.rect(x, y, w, h);
+				ctx.clip();
+				ctx.beginPath();
+			}
+		}
+		this.ctx = ctx;
 	}
 
-	console.log("WWindowManager.prototype.addBeforeDrawHandler n=" + this.beforeDrawHandlers.length);
-
-	return this;
+	return this.ctx;
 }
 
-WWindowManager.prototype.callBeforeDrawHandlers = function(canvas) {
-	var handlers = this.beforeDrawHandlers;
-	for(var i = 0; i < handlers.length; i++) {
-		var iter = handlers[i];
-		iter(canvas);
+WWindowManager.prototype.doDraw = function(ctx) {
+	var now = Date.now();
+	var timeStep = now - (this.lastUpdateTime || 0);
+
+	if(!this.checkNeedRedraw(timeStep)) {
+		return;
 	}
 
-	return this;
-}
+	ctx.now = now;
+	ctx.animating = 0;
+	ctx.needRedraw = 0;
+	ctx.timeStep = timeStep;
+	ctx.lastUpdateTime = this.lastUpdateTime;
+	WWindowManager.dispatchTimers(ctx.now);
 
-WWindowManager.prototype.draw = function() {
-	var canvas = this.getCanvas2D();
-
-	canvas.animating = 0;
-	canvas.needRedraw = 0;
-	canvas.now = Date.now();
-	canvas.lastUpdateTime = this.lastUpdateTime;
-	canvas.timeStep = canvas.now - (canvas.lastUpdateTime || 0);
-
-	this.callBeforeDrawHandlers(canvas);
-
-	canvas.save();
-	this.drawWindows(canvas);
-	canvas.restore();
+	ctx.save();
+	this.drawWindows(ctx);
+	ctx.restore();
 
 	if(this.shouldShowFPS) {
-		var str = "fps:" + this.getFrameRate();
-		canvas.save();
-		canvas.textAlign = "left";
-		canvas.textBaseline = "top";
-		canvas.font = "20px Sans";
-		canvas.fillStyle = "Green";
-		canvas.fillText(str, 10, 10);
-		canvas.restore();
+		var str = this.getFrameRate();
+		var w = 100;
+		var h = 30;
+		ctx.beginPath();
+		ctx.rect(0, 0, w, h);
+		ctx.fillStyle = "Black";
+		ctx.fill();
+		
+		ctx.save();
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.font = "20px Sans";
+		ctx.fillStyle = "White";
+		ctx.fillText(str, w >> 1, h >> 1);
+		ctx.restore();
 	}
 
-	if(window.cantkRTV8 || this.maxFpsMode || canvas.needRedraw > 0) {
+	if(window.cantkRTV8 || this.maxFpsMode || ctx.needRedraw > 0) {
 		this.postRedraw();
 	}
 
-	this.canvas.flush();
-	this.lastUpdateTime = canvas.now;
+	this.lastUpdateTime = ctx.now;
+}
+
+WWindowManager.prototype.draw = function() {
+	var ctx = this.getCanvas2D();
+
+	ctx.beginFrame();
+	this.doDraw(ctx);
+	ctx.endFrame();
 
 	return;
 }
 
- 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  AES implementation in JavaScript (c) Chris Veness 2005-2014                                   */
-/*   - see http://csrc.nist.gov/publications/PubsFIPS.html#197                                    */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+WWindowManager.timerID = 1000;
+WWindowManager.timerFuncs = [];
+WWindowManager.intervalFuncs = [];
 
-var Aes = {};  // Aes namespace
+WWindowManager.dispatchTimers = function(t) {
+	var arr = WWindowManager.timerFuncs;
+	var n = arr.length;
+	if(n > 0) {
+		WWindowManager.timerFuncs = [];
+		for(var i = 0; i < n; i++) {
+			var info = arr[id];
+			if(info.removed) continue;
 
-/**
- * AES Cipher function: encrypt 'input' state with Rijndael algorithm
- *   applies Nr rounds (10/12/14) using key schedule w for 'add round key' stage
- *
- * @param {Number[]} input 16-byte (128-bit) input state array
- * @param {Number[][]} w   Key schedule as 2D byte-array (Nr+1 x Nb bytes)
- * @returns {Number[]}     Encrypted output state array
- */
-Aes.cipher = function(input, w) {    // main Cipher function [§5.1]
-  var Nb = 4;               // block size (in words): no of columns in state (fixed at 4 for AES)
-  var Nr = w.length/Nb - 1; // no of rounds: 10/12/14 for 128/192/256-bit keys
-
-  var state = [[],[],[],[]];  // initialise 4xNb byte-array 'state' with input [§3.4]
-  for (var i=0; i<4*Nb; i++) state[i%4][Math.floor(i/4)] = input[i];
-
-  state = Aes.addRoundKey(state, w, 0, Nb);
-
-  for (var round=1; round<Nr; round++) {
-    state = Aes.subBytes(state, Nb);
-    state = Aes.shiftRows(state, Nb);
-    state = Aes.mixColumns(state, Nb);
-    state = Aes.addRoundKey(state, w, round, Nb);
-  }
-
-  state = Aes.subBytes(state, Nb);
-  state = Aes.shiftRows(state, Nb);
-  state = Aes.addRoundKey(state, w, Nr, Nb);
-
-  var output = new Array(4*Nb);  // convert state to 1-d array before returning [§3.4]
-  for (var i=0; i<4*Nb; i++) output[i] = state[i%4][Math.floor(i/4)];
-  return output;
-}
-
-/**
- * Perform Key Expansion to generate a Key Schedule
- *
- * @param {Number[]} key Key as 16/24/32-byte array
- * @returns {Number[][]} Expanded key schedule as 2D byte-array (Nr+1 x Nb bytes)
- */
-Aes.keyExpansion = function(key) {  // generate Key Schedule (byte-array Nr+1 x Nb) from Key [§5.2]
-  var Nb = 4;            // block size (in words): no of columns in state (fixed at 4 for AES)
-  var Nk = key.length/4  // key length (in words): 4/6/8 for 128/192/256-bit keys
-  var Nr = Nk + 6;       // no of rounds: 10/12/14 for 128/192/256-bit keys
-
-  var w = new Array(Nb*(Nr+1));
-  var temp = new Array(4);
-
-  for (var i=0; i<Nk; i++) {
-    var r = [key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]];
-    w[i] = r;
-  }
-
-  for (var i=Nk; i<(Nb*(Nr+1)); i++) {
-    w[i] = new Array(4);
-    for (var t=0; t<4; t++) temp[t] = w[i-1][t];
-    if (i % Nk == 0) {
-      temp = Aes.subWord(Aes.rotWord(temp));
-      for (var t=0; t<4; t++) temp[t] ^= Aes.rCon[i/Nk][t];
-    } else if (Nk > 6 && i%Nk == 4) {
-      temp = Aes.subWord(temp);
-    }
-    for (var t=0; t<4; t++) w[i][t] = w[i-Nk][t] ^ temp[t];
-  }
-
-  return w;
-}
-
-/*
- * ---- remaining routines are private, not called externally ----
- */
- 
-Aes.subBytes = function(s, Nb) {    // apply SBox to state S [§5.1.1]
-  for (var r=0; r<4; r++) {
-    for (var c=0; c<Nb; c++) s[r][c] = Aes.sBox[s[r][c]];
-  }
-  return s;
-}
-
-Aes.shiftRows = function(s, Nb) {    // shift row r of state S left by r bytes [§5.1.2]
-  var t = new Array(4);
-  for (var r=1; r<4; r++) {
-    for (var c=0; c<4; c++) t[c] = s[r][(c+r)%Nb];  // shift into temp copy
-    for (var c=0; c<4; c++) s[r][c] = t[c];         // and copy back
-  }          // note that this will work for Nb=4,5,6, but not 7,8 (always 4 for AES):
-  return s;  // see asmaes.sourceforge.net/rijndael/rijndaelImplementation.pdf
-}
-
-Aes.mixColumns = function(s, Nb) {   // combine bytes of each col of state S [§5.1.3]
-  for (var c=0; c<4; c++) {
-    var a = new Array(4);  // 'a' is a copy of the current column from 's'
-    var b = new Array(4);  // 'b' is a•{02} in GF(2^8)
-    for (var i=0; i<4; i++) {
-      a[i] = s[i][c];
-      b[i] = s[i][c]&0x80 ? s[i][c]<<1 ^ 0x011b : s[i][c]<<1;
-
-    }
-    // a[n] ^ b[n] is a•{03} in GF(2^8)
-    s[0][c] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3]; // 2*a0 + 3*a1 + a2 + a3
-    s[1][c] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3]; // a0 * 2*a1 + 3*a2 + a3
-    s[2][c] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3]; // a0 + a1 + 2*a2 + 3*a3
-    s[3][c] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3]; // 3*a0 + a1 + a2 + 2*a3
-  }
-  return s;
-}
-
-Aes.addRoundKey = function(state, w, rnd, Nb) {  // xor Round Key into state S [§5.1.4]
-  for (var r=0; r<4; r++) {
-    for (var c=0; c<Nb; c++) state[r][c] ^= w[rnd*4+c][r];
-  }
-  return state;
-}
-
-Aes.subWord = function(w) {    // apply SBox to 4-byte word w
-  for (var i=0; i<4; i++) w[i] = Aes.sBox[w[i]];
-  return w;
-}
-
-Aes.rotWord = function(w) {    // rotate 4-byte word w left by one byte
-  var tmp = w[0];
-  for (var i=0; i<3; i++) w[i] = w[i+1];
-  w[3] = tmp;
-  return w;
-}
-
-// sBox is pre-computed multiplicative inverse in GF(2^8) used in subBytes and keyExpansion [§5.1.1]
-Aes.sBox =  [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
-             0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
-             0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
-             0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a,0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75,
-             0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0,0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84,
-             0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b,0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf,
-             0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85,0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8,
-             0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5,0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2,
-             0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17,0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73,
-             0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88,0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb,
-             0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c,0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79,
-             0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9,0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08,
-             0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6,0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a,
-             0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,
-             0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
-             0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16];
-
-// rCon is Round Constant used for the Key Expansion [1st col is 2^(r-1) in GF(2^8)] [§5.2]
-Aes.rCon = [ [0x00, 0x00, 0x00, 0x00],
-             [0x01, 0x00, 0x00, 0x00],
-             [0x02, 0x00, 0x00, 0x00],
-             [0x04, 0x00, 0x00, 0x00],
-             [0x08, 0x00, 0x00, 0x00],
-             [0x10, 0x00, 0x00, 0x00],
-             [0x20, 0x00, 0x00, 0x00],
-             [0x40, 0x00, 0x00, 0x00],
-             [0x80, 0x00, 0x00, 0x00],
-             [0x1b, 0x00, 0x00, 0x00],
-             [0x36, 0x00, 0x00, 0x00] ]; 
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  AES Counter-mode implementation in JavaScript (c) Chris Veness 2005-2014                      */
-/*   - see http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf                       */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-Aes.Ctr = {};  // Aes.Ctr namespace: a subclass or extension of Aes
-
-/** 
- * Encrypt a text using AES encryption in Counter mode of operation
- *
- * Unicode multi-byte character safe
- *
- * @param {String} plaintext Source text to be encrypted
- * @param {String} password  The password to use to generate a key
- * @param {Number} nBits     Number of bits to be used in the key (128, 192, or 256)
- * @returns {string}         Encrypted text
- */
-Aes.Ctr.encrypt = function(plaintext, password, nBits) {
-  var blockSize = 16;  // block size fixed at 16 bytes / 128 bits (Nb=4) for AES
-  if (!(nBits==128 || nBits==192 || nBits==256)) return '';  // standard allows 128/192/256 bit keys
-  plaintext = Utf8.encode(plaintext);
-  password = Utf8.encode(password);
-  //var t = new Date();  // timer
-	
-  // use AES itself to encrypt password to get cipher key (using plain password as source for key 
-  // expansion) - gives us well encrypted key (though hashed key might be preferred for prod'n use)
-  var nBytes = nBits/8;  // no bytes in key (16/24/32)
-  var pwBytes = new Array(nBytes);
-  for (var i=0; i<nBytes; i++) {  // use 1st 16/24/32 chars of password for key
-    pwBytes[i] = isNaN(password.charCodeAt(i)) ? 0 : password.charCodeAt(i);
-  }
-  var key = Aes.cipher(pwBytes, Aes.keyExpansion(pwBytes));  // gives us 16-byte key
-  key = key.concat(key.slice(0, nBytes-16));  // expand key to 16/24/32 bytes long
-
-  // initialise 1st 8 bytes of counter block with nonce (NIST SP800-38A §B.2): [0-1] = millisec, 
-  // [2-3] = random, [4-7] = seconds, together giving full sub-millisec uniqueness up to Feb 2106
-  var counterBlock = new Array(blockSize);
-  
-  var nonce = (new Date()).getTime();  // timestamp: milliseconds since 1-Jan-1970
-  var nonceMs = nonce%1000;
-  var nonceSec = Math.floor(nonce/1000);
-  var nonceRnd = Math.floor(Math.random()*0xffff);
-  
-  for (var i=0; i<2; i++) counterBlock[i]   = (nonceMs  >>> i*8) & 0xff;
-  for (var i=0; i<2; i++) counterBlock[i+2] = (nonceRnd >>> i*8) & 0xff;
-  for (var i=0; i<4; i++) counterBlock[i+4] = (nonceSec >>> i*8) & 0xff;
-  
-  // and convert it to a string to go on the front of the ciphertext
-  var ctrTxt = '';
-  for (var i=0; i<8; i++) ctrTxt += String.fromCharCode(counterBlock[i]);
-
-  // generate key schedule - an expansion of the key into distinct Key Rounds for each round
-  var keySchedule = Aes.keyExpansion(key);
-  
-  var blockCount = Math.ceil(plaintext.length/blockSize);
-  var ciphertxt = new Array(blockCount);  // ciphertext as array of strings
-  
-  for (var b=0; b<blockCount; b++) {
-    // set counter (block #) in last 8 bytes of counter block (leaving nonce in 1st 8 bytes)
-    // done in two stages for 32-bit ops: using two words allows us to go past 2^32 blocks (68GB)
-    for (var c=0; c<4; c++) counterBlock[15-c] = (b >>> c*8) & 0xff;
-    for (var c=0; c<4; c++) counterBlock[15-c-4] = (b/0x100000000 >>> c*8)
-
-    var cipherCntr = Aes.cipher(counterBlock, keySchedule);  // -- encrypt counter block --
-    
-    // block size is reduced on final block
-    var blockLength = b<blockCount-1 ? blockSize : (plaintext.length-1)%blockSize+1;
-    var cipherChar = new Array(blockLength);
-    
-    for (var i=0; i<blockLength; i++) {  // -- xor plaintext with ciphered counter char-by-char --
-      cipherChar[i] = cipherCntr[i] ^ plaintext.charCodeAt(b*blockSize+i);
-      cipherChar[i] = String.fromCharCode(cipherChar[i]);
-    }
-    ciphertxt[b] = cipherChar.join(''); 
-  }
-
-  // Array.join is more efficient than repeated string concatenation in IE
-  var ciphertext = ctrTxt + ciphertxt.join('');
-  ciphertext = Base64.encode(ciphertext);  // encode in base64
-  
-  //alert((new Date()) - t);
-  return ciphertext;
-}
-
-/** 
- * Decrypt a text encrypted by AES in counter mode of operation
- *
- * @param {String} ciphertext Source text to be encrypted
- * @param {String} password   The password to use to generate a key
- * @param {Number} nBits      Number of bits to be used in the key (128, 192, or 256)
- * @returns {String}          Decrypted text
- */
-Aes.Ctr.decrypt = function(ciphertext, password, nBits) {
-  var blockSize = 16;  // block size fixed at 16 bytes / 128 bits (Nb=4) for AES
-  if (!(nBits==128 || nBits==192 || nBits==256)) return '';  // standard allows 128/192/256 bit keys
-  ciphertext = Base64.decode(ciphertext);
-  password = Utf8.encode(password);
-  //var t = new Date();  // timer
-  
-  // use AES to encrypt password (mirroring encrypt routine)
-  var nBytes = nBits/8;  // no bytes in key
-  var pwBytes = new Array(nBytes);
-  for (var i=0; i<nBytes; i++) {
-    pwBytes[i] = isNaN(password.charCodeAt(i)) ? 0 : password.charCodeAt(i);
-  }
-  var key = Aes.cipher(pwBytes, Aes.keyExpansion(pwBytes));
-  key = key.concat(key.slice(0, nBytes-16));  // expand key to 16/24/32 bytes long
-
-  // recover nonce from 1st 8 bytes of ciphertext
-  var counterBlock = new Array(8);
-  ctrTxt = ciphertext.slice(0, 8);
-  for (var i=0; i<8; i++) counterBlock[i] = ctrTxt.charCodeAt(i);
-  
-  // generate key schedule
-  var keySchedule = Aes.keyExpansion(key);
-
-  // separate ciphertext into blocks (skipping past initial 8 bytes)
-  var nBlocks = Math.ceil((ciphertext.length-8) / blockSize);
-  var ct = new Array(nBlocks);
-  for (var b=0; b<nBlocks; b++) ct[b] = ciphertext.slice(8+b*blockSize, 8+b*blockSize+blockSize);
-  ciphertext = ct;  // ciphertext is now array of block-length strings
-
-  // plaintext will get generated block-by-block into array of block-length strings
-  var plaintxt = new Array(ciphertext.length);
-
-  for (var b=0; b<nBlocks; b++) {
-    // set counter (block #) in last 8 bytes of counter block (leaving nonce in 1st 8 bytes)
-    for (var c=0; c<4; c++) counterBlock[15-c] = ((b) >>> c*8) & 0xff;
-    for (var c=0; c<4; c++) counterBlock[15-c-4] = (((b+1)/0x100000000-1) >>> c*8) & 0xff;
-
-    var cipherCntr = Aes.cipher(counterBlock, keySchedule);  // encrypt counter block
-
-    var plaintxtByte = new Array(ciphertext[b].length);
-    for (var i=0; i<ciphertext[b].length; i++) {
-      // -- xor plaintxt with ciphered counter byte-by-byte --
-      plaintxtByte[i] = cipherCntr[i] ^ ciphertext[b].charCodeAt(i);
-      plaintxtByte[i] = String.fromCharCode(plaintxtByte[i]);
-    }
-    plaintxt[b] = plaintxtByte.join('');
-  }
-
-  // join array of blocks into single plaintext string
-  var plaintext = plaintxt.join('');
-  plaintext = Utf8.decode(plaintext);  // decode from UTF8 back to Unicode multi-byte chars
-  
-  //alert((new Date()) - t);
-  return plaintext;
-}
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  Base64 class: Base 64 encoding / decoding (c) Chris Veness 2002-2014                          */
-/*    note: depends on Utf8 class                                                                 */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-var Base64 = {};  // Base64 namespace
-
-Base64.code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
-/**
- * Encode string into Base64, as defined by RFC 4648 [http://tools.ietf.org/html/rfc4648]
- * (instance method extending String object). As per RFC 4648, no newlines are added.
- *
- * @param {String} str The string to be encoded as base-64
- * @param {Boolean} [utf8encode=false] Flag to indicate whether str is Unicode string to be encoded 
- *   to UTF8 before conversion to base64; otherwise string is assumed to be 8-bit characters
- * @returns {String} Base64-encoded string
- */ 
-Base64.encode = function(str, utf8encode) {  // http://tools.ietf.org/html/rfc4648
-  utf8encode =  (typeof utf8encode == 'undefined') ? false : utf8encode;
-  var o1, o2, o3, bits, h1, h2, h3, h4, e=[], pad = '', c, plain, coded;
-  var b64 = Base64.code;
-   
-  plain = utf8encode ? str.encodeUTF8() : str;
-  
-  c = plain.length % 3;  // pad string to length of multiple of 3
-  if (c > 0) { while (c++ < 3) { pad += '='; plain += '\0'; } }
-  // note: doing padding here saves us doing special-case packing for trailing 1 or 2 chars
-   
-  for (c=0; c<plain.length; c+=3) {  // pack three octets into four hexets
-    o1 = plain.charCodeAt(c);
-    o2 = plain.charCodeAt(c+1);
-    o3 = plain.charCodeAt(c+2);
-      
-    bits = o1<<16 | o2<<8 | o3;
-      
-    h1 = bits>>18 & 0x3f;
-    h2 = bits>>12 & 0x3f;
-    h3 = bits>>6 & 0x3f;
-    h4 = bits & 0x3f;
-
-    // use hextets to index into code string
-    e[c/3] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
-  }
-  coded = e.join('');  // join() is far faster than repeated string concatenation in IE
-  
-  // replace 'A's from padded nulls with '='s
-  coded = coded.slice(0, coded.length-pad.length) + pad;
-   
-  return coded;
-}
-
-/**
- * Decode string from Base64, as defined by RFC 4648 [http://tools.ietf.org/html/rfc4648]
- * (instance method extending String object). As per RFC 4648, newlines are not catered for.
- *
- * @param {String} str The string to be decoded from base-64
- * @param {Boolean} [utf8decode=false] Flag to indicate whether str is Unicode string to be decoded 
- *   from UTF8 after conversion from base64
- * @returns {String} decoded string
- */ 
-Base64.decode = function(str, utf8decode) {
-  utf8decode =  (typeof utf8decode == 'undefined') ? false : utf8decode;
-  var o1, o2, o3, h1, h2, h3, h4, bits, d=[], plain, coded;
-  var b64 = Base64.code;
-
-  coded = utf8decode ? str.decodeUTF8() : str;
-  
-  
-  for (var c=0; c<coded.length; c+=4) {  // unpack four hexets into three octets
-    h1 = b64.indexOf(coded.charAt(c));
-    h2 = b64.indexOf(coded.charAt(c+1));
-    h3 = b64.indexOf(coded.charAt(c+2));
-    h4 = b64.indexOf(coded.charAt(c+3));
-      
-    bits = h1<<18 | h2<<12 | h3<<6 | h4;
-      
-    o1 = bits>>>16 & 0xff;
-    o2 = bits>>>8 & 0xff;
-    o3 = bits & 0xff;
-    
-    d[c/4] = String.fromCharCode(o1, o2, o3);
-    // check for padding
-    if (h4 == 0x40) d[c/4] = String.fromCharCode(o1, o2);
-    if (h3 == 0x40) d[c/4] = String.fromCharCode(o1);
-  }
-  plain = d.join('');  // join() is far faster than repeated string concatenation in IE
-   
-  return utf8decode ? plain.decodeUTF8() : plain; 
-}
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  Utf8 class: encode / decode between multi-byte Unicode characters and UTF-8 multiple          */
-/*              single-byte character encoding (c) Chris Veness 2002-2014                         */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-var Utf8 = {};  // Utf8 namespace
-
-/**
- * Encode multi-byte Unicode string into utf-8 multiple single-byte characters 
- * (BMP / basic multilingual plane only)
- *
- * Chars in range U+0080 - U+07FF are encoded in 2 chars, U+0800 - U+FFFF in 3 chars
- *
- * @param {String} strUni Unicode string to be encoded as UTF-8
- * @returns {String} encoded string
- */
-Utf8.encode = function(strUni) {
-  // use regular expressions & String.replace callback function for better efficiency 
-  // than procedural approaches
-  var strUtf = strUni.replace(
-      /[\u0080-\u07ff]/g,  // U+0080 - U+07FF => 2 bytes 110yyyyy, 10zzzzzz
-      function(c) { 
-        var cc = c.charCodeAt(0);
-        return String.fromCharCode(0xc0 | cc>>6, 0x80 | cc&0x3f); }
-    );
-  strUtf = strUtf.replace(
-      /[\u0800-\uffff]/g,  // U+0800 - U+FFFF => 3 bytes 1110xxxx, 10yyyyyy, 10zzzzzz
-      function(c) { 
-        var cc = c.charCodeAt(0); 
-        return String.fromCharCode(0xe0 | cc>>12, 0x80 | cc>>6&0x3F, 0x80 | cc&0x3f); }
-    );
-  return strUtf;
-}
-
-/**
- * Decode utf-8 encoded string back into multi-byte Unicode characters
- *
- * @param {String} strUtf UTF-8 string to be decoded back to Unicode
- * @returns {String} decoded string
- */
-Utf8.decode = function(strUtf) {
-  // note: decode 3-byte chars first as decoded 2-byte strings could appear to be 3-byte char!
-  var strUni = strUtf.replace(
-      /[\u00e0-\u00ef][\u0080-\u00bf][\u0080-\u00bf]/g,  // 3-byte chars
-      function(c) {  // (note parentheses for precence)
-        var cc = ((c.charCodeAt(0)&0x0f)<<12) | ((c.charCodeAt(1)&0x3f)<<6) | ( c.charCodeAt(2)&0x3f); 
-        return String.fromCharCode(cc); }
-    );
-  strUni = strUni.replace(
-      /[\u00c0-\u00df][\u0080-\u00bf]/g,                 // 2-byte chars
-      function(c) {  // (note parentheses for precence)
-        var cc = (c.charCodeAt(0)&0x1f)<<6 | c.charCodeAt(1)&0x3f;
-        return String.fromCharCode(cc); }
-    );
-  return strUni;
-}
-/* FileSaver.js
- * A saveAs() FileSaver implementation.
- * 2014-05-27
- *
- * By Eli Grey, http://eligrey.com
- * License: X11/MIT
- *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
- */
-
-/*global self */
-/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
-
-/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
-
-var saveAs = saveAs
-  // IE 10+ (native saveAs)
-  || (typeof navigator !== "undefined" &&
-      navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
-  // Everyone else
-  || (function(view) {
-	"use strict";
-	// IE <10 is explicitly unsupported
-	if (typeof navigator !== "undefined" &&
-	    /MSIE [1-9]\./.test(navigator.userAgent)) {
-		return;
+			if(info.timeout <= t) {
+				callback.call(window);
+			}
+			else {
+				WWindowManager.timerFuncs.push(info);
+			}
+		}
 	}
-	var
-		  doc = view.document
-		  // only get URL when necessary in case Blob.js hasn't overridden it yet
-		, get_URL = function() {
-			return view.URL || view.webkitURL || view;
-		}
-		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
-		, can_use_save_link = !view.externalHost && "download" in save_link
-		, click = function(node) {
-			var event = doc.createEvent("MouseEvents");
-			event.initMouseEvent(
-				"click", true, false, view, 0, 0, 0, 0, 0
-				, false, false, false, false, 0, null
-			);
-			node.dispatchEvent(event);
-		}
-		, webkit_req_fs = view.webkitRequestFileSystem
-		, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
-		, throw_outside = function(ex) {
-			(view.setImmediate || view.setTimeout)(function() {
-				throw ex;
-			}, 0);
-		}
-		, force_saveable_type = "application/octet-stream"
-		, fs_min_size = 0
-		, deletion_queue = []
-		, process_deletion_queue = function() {
-			var i = deletion_queue.length;
-			while (i--) {
-				var file = deletion_queue[i];
-				if (typeof file === "string") { // file is an object URL
-					get_URL().revokeObjectURL(file);
-				} else { // file is a File
-					file.remove();
-				}
-			}
-			deletion_queue.length = 0; // clear queue
-		}
-		, dispatch = function(filesaver, event_types, event) {
-			event_types = [].concat(event_types);
-			var i = event_types.length;
-			while (i--) {
-				var listener = filesaver["on" + event_types[i]];
-				if (typeof listener === "function") {
-					try {
-						listener.call(filesaver, event || filesaver);
-					} catch (ex) {
-						throw_outside(ex);
-					}
-				}
-			}
-		}
-		, FileSaver = function(blob, name) {
-			// First try a.download, then web filesystem, then object URLs
-			var
-				  filesaver = this
-				, type = blob.type
-				, blob_changed = false
-				, object_url
-				, target_view
-				, get_object_url = function() {
-					var object_url = get_URL().createObjectURL(blob);
-					deletion_queue.push(object_url);
-					return object_url;
-				}
-				, dispatch_all = function() {
-					dispatch(filesaver, "writestart progress write writeend".split(" "));
-				}
-				// on any filesys errors revert to saving with object URLs
-				, fs_error = function() {
-					// don't create more object URLs than needed
-					if (blob_changed || !object_url) {
-						object_url = get_object_url(blob);
-					}
-					if (target_view) {
-						target_view.location.href = object_url;
-					} else {
-						window.open(object_url, "_blank");
-					}
-					filesaver.readyState = filesaver.DONE;
-					dispatch_all();
-				}
-				, abortable = function(func) {
-					return function() {
-						if (filesaver.readyState !== filesaver.DONE) {
-							return func.apply(this, arguments);
-						}
-					};
-				}
-				, create_if_not_found = {create: true, exclusive: false}
-				, slice
-			;
-			filesaver.readyState = filesaver.INIT;
-			if (!name) {
-				name = "download";
-			}
-			if (can_use_save_link) {
-				object_url = get_object_url(blob);
-				save_link.href = object_url;
-				save_link.download = name;
-				click(save_link);
-				filesaver.readyState = filesaver.DONE;
-				dispatch_all();
-				return;
-			}
-			// Object and web filesystem URLs have a problem saving in Google Chrome when
-			// viewed in a tab, so I force save with application/octet-stream
-			// http://code.google.com/p/chromium/issues/detail?id=91158
-			if (view.chrome && type && type !== force_saveable_type) {
-				slice = blob.slice || blob.webkitSlice;
-				blob = slice.call(blob, 0, blob.size, force_saveable_type);
-				blob_changed = true;
-			}
-			// Since I can't be sure that the guessed media type will trigger a download
-			// in WebKit, I append .download to the filename.
-			// https://bugs.webkit.org/show_bug.cgi?id=65440
-			if (webkit_req_fs && name !== "download") {
-				name += ".download";
-			}
-			if (type === force_saveable_type || webkit_req_fs) {
-				target_view = view;
-			}
-			if (!req_fs) {
-				fs_error();
-				return;
-			}
-			fs_min_size += blob.size;
-			req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
-				fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
-					var save = function() {
-						dir.getFile(name, create_if_not_found, abortable(function(file) {
-							file.createWriter(abortable(function(writer) {
-								writer.onwriteend = function(event) {
-									target_view.location.href = file.toURL();
-									deletion_queue.push(file);
-									filesaver.readyState = filesaver.DONE;
-									dispatch(filesaver, "writeend", event);
-								};
-								writer.onerror = function() {
-									var error = writer.error;
-									if (error.code !== error.ABORT_ERR) {
-										fs_error();
-									}
-								};
-								"writestart progress write abort".split(" ").forEach(function(event) {
-									writer["on" + event] = filesaver["on" + event];
-								});
-								writer.write(blob);
-								filesaver.abort = function() {
-									writer.abort();
-									filesaver.readyState = filesaver.DONE;
-								};
-								filesaver.readyState = filesaver.WRITING;
-							}), fs_error);
-						}), fs_error);
-					};
-					dir.getFile(name, {create: false}, abortable(function(file) {
-						// delete file if it already exists
-						file.remove();
-						save();
-					}), abortable(function(ex) {
-						if (ex.code === ex.NOT_FOUND_ERR) {
-							save();
-						} else {
-							fs_error();
-						}
-					}));
-				}), fs_error);
-			}), fs_error);
-		}
-		, FS_proto = FileSaver.prototype
-		, saveAs = function(blob, name) {
-			return new FileSaver(blob, name);
-		}
-	;
-	FS_proto.abort = function() {
-		var filesaver = this;
-		filesaver.readyState = filesaver.DONE;
-		dispatch(filesaver, "abort");
-	};
-	FS_proto.readyState = FS_proto.INIT = 0;
-	FS_proto.WRITING = 1;
-	FS_proto.DONE = 2;
 
-	FS_proto.error =
-	FS_proto.onwritestart =
-	FS_proto.onprogress =
-	FS_proto.onwrite =
-	FS_proto.onabort =
-	FS_proto.onerror =
-	FS_proto.onwriteend =
-		null;
+	arr = WWindowManager.intervalFuncs;
+	n = arr.length;
+	if(n > 0) {
+		WWindowManager.intervalFuncs = [];
+		for(var i = 0; i < n; i++) {
+			var info = arr[id];
+			if(info.removed) continue;
 
-	view.addEventListener("unload", process_deletion_queue, false);
-	saveAs.unload = function() {
-		process_deletion_queue();
-		view.removeEventListener("unload", process_deletion_queue, false);
-	};
-	return saveAs;
-}(
-	   typeof self !== "undefined" && self
-	|| typeof window !== "undefined" && window
-	|| this.content
-));
-// `self` is undefined in Firefox for Android content script context
-// while `this` is nsIContentFrameMessageManager
-// with an attribute `content` that corresponds to the window
+			if(info.timeout <= t) {
+				callback.call(window);
+				info.timeout = t + info.duration;
+			}
+			WWindowManager.timerFuncs.push(info);
+		}
+	}
 
-if (typeof module !== "undefined" && module !== null) {
-  module.exports = saveAs;
-} else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-  define([], function() {
-    return saveAs;
-  });
+	return;
 }
+
+WWindowManager.setTimeout = function(callback, duration) {
+	if(!callback) return;
+
+	var id = WWindowManager.timerID++;
+	var info = {id:id, callback:callback};
+	info.timeout = Date.now() + duration/1000;
+
+	WWindowManager.timerFuncs.push(info);
+
+	return id;
+}
+
+WWindowManager.setInterval = function(callback, duration) {
+	if(!callback) return;
+
+	var id = WWindowManager.timerID++;
+	var info = {id:id, callback:callback};
+
+	info.duration = duration/1000;
+	info.timeout = Date.now() + info.duration;
+
+	WWindowManager.intervalFuncs.push(info);
+
+	return id;
+}
+
+WWindowManager.removeTimerInArr = function(arr, id) {
+	var n = arr.length;
+	for(var i = 0; i < n; i++) {
+		var iter = arr[i];
+		if(iter.id === id) {
+			iter.removed = true;
+			break;
+		}
+	}
+
+	return;
+}
+
+WWindowManager.clearTimeout = function(id) {
+	WWindowManager.removeTimerInArr(WWindowManager.timerFuncs, id);
+}
+
+WWindowManager.clearInterval = function(id) {
+	WWindowManager.removeTimerInArr(WWindowManager.intervalFuncs, id);
+}
+
 /*
- * File: web_storage.js 
+ * File:   w_events_manager.js
  * Author: Li XianJing <xianjimli@hotmail.com>
- * Brief:  Web Storage
+ * Brief:  manage all input events
  * 
- * Copyright (c) 2014 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016 Holaverse Inc.
  * 
  */
 
-
-function WebStorage()  {
+function WEventsManager() {
+	this.point = {};
+	this.lastPoint = {};
+	this.pointerDownPoint = {};
+	this.longPressDuration = 600;
 }
 
-WebStorage.nameSpace = "";
-WebStorage.setNameSapce = function(nameSpace) {
-	WebStorage.nameSpace = nameSpace;
-
-	return;
+WEventsManager.prototype.setEventsConsumer = function(eventsConsumer, element) {
+	if(!this.eventsConsumer) {
+		this.eventsConsumer = eventsConsumer;
+		this.addEventListeners(element);
+	}
 }
 
-WebStorage.getNameSapceKey = function(key) {	
-	if(WebStorage.nameSpace) {
-		return WebStorage.nameSpace +"-"+ key;
+WEventsManager.prototype.cancelDefaultAction = function(event) {
+	var e = event || window.event;
+    
+	if (e.preventDefault) {
+		e.preventDefault();
 	}
 	else {
-		return key;
+		e.returnValue = false;
 	}
+
+	return false;
 }
 
-WebStorage.getStorage = function() {
-	if(window.localStorage) {
-		return window.localStorage;
-	}
+WEventsManager.prototype.targetIsEditor = function(e) {
+	var tag = e.srcElement ? e.srcElement : e.target; 
+	var name = tag.localName ? tag.localName : tag.tagName;
 
-	return {};
-}
-
-WebStorage.set = function(key, value, compress) {
-	var storage = WebStorage.getStorage();
-	
-	key = WebStorage.getNameSapceKey(key);
-	if(compress && !isIE()) {
-		storage[key] = strCompress(value);
-	}
-	else {
-		storage[key] = value;
-	}
-
-	return;
-}
-
-WebStorage.get = function(key, decompress) {
-	var storage = WebStorage.getStorage();
-
-	key = WebStorage.getNameSapceKey(key);
-	if(decompress && !isIE()) {
-		return strDecompress(storage[key]);
-	}
-	else {
-		return storage[key];
-	}
-}
-
-WebStorage.remove = function(key) {
-	var storage = WebStorage.getStorage();
-
-	key = WebStorage.getNameSapceKey(key);
-	delete storage[key];
-
-	return;
-}
-
-WebStorage.getInt = function(key) {
-	var n = 0;
-	var value = WebStorage.get(key);
-
-	if(value) {
-		n = parseInt(value);
+	name = name.toLowerCase();
+	if(name != "body" && name != "canvas") {
+		return true;
 	}
 	
-	return n;
+	return false;
 }
 
-//////////////////////////////////////////////////////
-
-WebStorage.getSessionStorage = function() {
-	if(window.sessionStorage) {
-		return window.sessionStorage;
-	}
-
-	return {};
-}
-
-WebStorage.setSession = function(key, value, compress) {
-	var storage = WebStorage.getSessionStorage();
+WEventsManager.prototype.shouldIgnoreKey = function(event) {
+	var e = event || window.event;
+	var code = e.keyCode;
 	
-	key = WebStorage.getNameSapceKey(key);
-	if(compress && !isIE()) {
-		storage[key] = strCompress(value);
+	if(code === KeyEvent.DOM_VK_F5 || code === KeyEvent.DOM_VK_F12 || code === KeyEvent.DOM_VK_F11) {
+		return true;
+	}
+	
+	if(this.targetIsEditor(e)) {
+		return true;
+	}
+
+	return false;
+}
+
+WEventsManager.prototype.onKeyDownGlobal = function(event) {
+	var e = event || window.event;
+	var code = e.keyCode;
+
+	if(this.shouldIgnoreKey(e)) {
+		return true;
 	}
 	else {
-		storage[key] = value;
+		this.onKeyDown(code, e);
+		return this.cancelDefaultAction(e);
 	}
+}
+
+WEventsManager.prototype.onKeyUpGlobal = function(event) {
+	var e = event || window.event;
+	var code = e.keyCode;
+	if(this.shouldIgnoreKey(e)) {
+		return true;
+	}
+	else {
+		this.onKeyUp(code, e);
+		return this.cancelDefaultAction(e);
+	}
+}
+
+WEventsManager.prototype.onWheelGlobal = function(event) {
+	var e = window.event || event ;
+	if(EditorElement.imeOpen) return true;
+
+	if(e.target && e.target.localName !== "canvas"){
+		return this.cancelDefaultAction(e);
+	}
+
+	var delta = e.wheelDelta || e.detail * -8;
+	if(delta) {
+		if(this.onWheel(delta, e)) {
+			return this.cancelDefaultAction(e);
+		}
+	}
+
+	return true;
+}
+
+WEventsManager.prototype.onTizenKeys = function(e) {
+	if (e.keyName == "back") {
+		this.onKeyDown(KeyEvent.DOM_VK_BACK_BUTTON, e);
+		this.onKeyUp(KeyEvent.DOM_VK_BACK_BUTTON, e);
+	}
+	else if (e.keyName == "menu") {
+		this.onKeyDown(KeyEvent.DOM_VK_MENU_BUTTON, e);
+		this.onKeyUp(KeyEvent.DOM_VK_MENU_BUTTON, e);
+	}
+}
+
+WEventsManager.prototype.onPhonegapBackButton = function() {
+	this.onKeyDown(KeyEvent.DOM_VK_BACK_BUTTON);
+	this.onKeyUp(KeyEvent.DOM_VK_BACK_BUTTON);
+}
+
+WEventsManager.prototype.onPhonegapMenuButton = function() {
+	this.onKeyDown(KeyEvent.DOM_VK_MENU_BUTTON);
+	this.onKeyUp(KeyEvent.DOM_VK_MENU_BUTTON);
+}
+
+WEventsManager.prototype.onPhonegapSearchButton = function() {
+	this.onKeyDown(KeyEvent.DOM_VK_SEARCH_BUTTON);
+	this.onKeyUp(KeyEvent.DOM_VK_SEARCH_BUTTON);
+}
+
+WEventsManager.prototype.addEventListeners = function(element) {
+	if(!element) {
+		element = window;
+	}
+
+	document.addEventListener('tizenhwkey', this.onTizenKeys.bind(this));
+	document.addEventListener("backbutton", this.onPhonegapBackButton.bind(this));
+	document.addEventListener("menubutton", this.onPhonegapMenuButton.bind(this));
+	document.addEventListener("searchbutton", this.onPhonegapSearchButton.bind(this));
+	if(this.isPointer()) {
+		WEventsManager.pointerDeviceType = "pointer";
+		element.addEventListener('pointerdown', this.onPointerDownGlobal.bind(this));
+		element.addEventListener('pointermove', this.onPointerMoveGlobal.bind(this));
+		element.addEventListener('pointerup', this.onPointerUpGlobal.bind(this));
+		element.addEventListener('mousewheel', this.onWheelGlobal.bind(this));
+	}
+	else if(this.isMSPointer()) {
+		WEventsManager.pointerDeviceType = "pointer";
+		element.addEventListener('MSPointerDown', this.onPointerDownGlobal.bind(this));
+		element.addEventListener('MSPointerMove', this.onPointerMoveGlobal.bind(this));
+		element.addEventListener('MSPointerUp', this.onPointerUpGlobal.bind(this));
+		element.addEventListener('mousewheel', this.onWheelGlobal.bind(this));
+	}
+	else if(isMobile()) {
+		WEventsManager.pointerDeviceType = "touch";
+		element.addEventListener('MSPointerDown', this.onPointerDownGlobal.bind(this));
+		element.addEventListener('touchstart', this.onTouchStartGlobal.bind(this));
+		element.addEventListener('touchmove', this.onTouchMoveGlobal.bind(this));
+		element.addEventListener('touchend', this.onTouchEndGlobal.bind(this));
+	}
+	else {
+		WEventsManager.pointerDeviceType = "mouse";
+		element.addEventListener('dblclick', this.onDoubleClickGlobal.bind(this));
+		element.addEventListener('mousewheel', this.onWheelGlobal.bind(this));
+		element.addEventListener('DOMMouseScroll', this.onWheelGlobal.bind(this));
+		element.addEventListener('mousedown', this.onMouseDownGlobal.bind(this));
+		element.addEventListener('mousemove', this.onMouseMoveGlobal.bind(this));
+		element.addEventListener('mouseup', this.onMouseUpGlobal.bind(this));
+	}
+	window.addEventListener('keyup', this.onKeyUpGlobal.bind(this));
+	window.addEventListener('keydown', this.onKeyDownGlobal.bind(this));
 
 	return;
 }
 
-WebStorage.getSession = function(key, decompress) {
-	var storage = WebStorage.getSessionStorage();
+WEventsManager.prototype.isMultiTouchEvent = function(e) {
+	return e.originalEvent && e.originalEvent.touches && e.originalEvent.touches.length > 1;
+}
 
-	key = WebStorage.getNameSapceKey(key);
-	if(decompress && !isIE()) {
-		return strDecompress(storage[key]);
+WEventsManager.points = [{},{},{},{},{},{},{},{}];
+WEventsManager.prototype.getAbsPoint = function(e, i) {
+	var index = i || 0;
+	var p = WEventsManager.points[index];
+
+	if(e) {
+		p.x = Math.max(e.pageX, e.x || e.clientX);
+		p.y = Math.max(e.pageY, e.y || e.clientY);
+		p.event = e;
+
+		this.lastPoint.x = p.x;
+		this.lastPoint.y = p.y;
+		this.lastPointEvent = e;
 	}
 	else {
-		return storage[key];
+		p = this.lastPoint;
+	}
+
+	return p;
+}
+  
+WEventsManager.prototype.getPointerList = function(e) {
+    var pointers = [];
+    var pointer;
+    if (this.touchList) {
+      for (var i = 0; i < this.touchList.length; i++) {
+        var touch = this.touchList[i];
+        // Add 2 to avoid clashing with the mouse identifier.
+        pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
+        pointers.push(pointer);
+      }
+    } else if (this.msPointerList) {
+      for (var identifier in this.msPointerList) {
+        if (!this.msPointerList.hasOwnProperty(identifier)) continue;
+        pointer = this.msPointerList[identifier];
+        pointer = new Pointer(identifier, pointer.textPointerType, pointer);
+        pointers.push(pointer);
+      }
+    }
+    if (this.mouseEvent) {
+      pointers.push(new Pointer(MOUSE_ID, PointerTypes.MOUSE, this.mouseEvent));
+    }
+    return pointers;
+  }
+
+WEventsManager.prototype.isPointer = function() {
+	return window.navigator.pointerEnabled;
+}
+
+WEventsManager.prototype.isMSPointer = function() {
+    return window.navigator.msPointerEnabled;
+}
+
+WEventsManager.prototype.isRightMouseEvent = function(event) {
+	var ret = false;
+    if (event.which === null) {
+       ret = (event.button > 2 && event.button !== 4);
+	}
+    else {
+       ret = (event.which > 2 && event.which !== 2);
+	}
+
+	return ret;
+}
+
+WEventsManager.prototype.onDoubleClickGlobal = function(event) {
+	var e = window.event || event ;
+	if(this.targetIsEditor(e)) {
+		return true;
+	}
+
+	if(!this.isRightMouseEvent(e)) {
+		this.onDoubleClick(this.getAbsPoint(e), e);
+	}
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onMouseDownGlobal = function(event) {
+	var e = window.event || event ;
+	if(this.targetIsEditor(e)) {
+		return true;
+	}
+
+	if(!this.isRightMouseEvent(e)) {
+		this.onPointerDown(this.getAbsPoint(e), e);
+	}
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onMouseMoveGlobal = function(event) {
+	var e = window.event || event ;
+	if(this.targetIsEditor(e) && !this.pointerDown) {
+		return true;
+	}
+
+	this.onPointerMove(this.getAbsPoint(e), e);
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onMouseUpGlobal = function(event) {
+	var e = window.event || event ;
+	if(this.targetIsEditor(e) && !this.pointerDown) {
+		return true;
+	}
+
+	if(this.isRightMouseEvent(e)) {
+		this.onContextMenu(this.getAbsPoint(e), e);
+	}
+	else {
+		this.onPointerUp(this.getAbsPoint(e), e);
+	}
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.getTouchList = function(event) {
+	return event.touches || event.changedTouches || event.touchList;
+}
+
+WEventsManager.prototype.getTouchPoints = function(e) {
+	var points = [];
+	var touchList = this.getTouchList(e);
+	var n = touchList.length;
+
+	for(var i = 0; i < n; i++) {
+		var touch = touchList[i];
+		var point = this.getAbsPoint(touch, i);
+		
+		point.event = e;
+		point.id = touch.identifier;
+		points.push(point);
+	}
+
+	return points;
+}
+
+WEventsManager.prototype.onTouchStartGlobal = function(event) {
+	var e = window.event || event ;
+	var points = this.getTouchPoints(e);
+	
+	if(points.length === 1) {
+		this.point.x = points[0].x;
+		this.point.y = points[0].y;
+
+		this.onPointerDown(this.point, e);
+	}
+	this.onMultiTouch("touchstart", points, e);
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onTouchMoveGlobal = function(event) {
+	var e = window.event || event ;
+	var points = this.getTouchPoints(e);
+	
+	if(points.length === 1) {
+		this.point.x = points[0].x;
+		this.point.y = points[0].y;
+
+		this.onPointerMove(this.point, e);
+	}
+	this.onMultiTouch("touchmove", points, e);
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onTouchEndGlobal = function(event) {
+	var e = window.event || event ;
+	var points = this.getTouchPoints(e);
+
+	if(!points.length) {
+        var last = this.lastPointerTime;
+        var cur = new Date();
+        this.lastPointerTime = cur; 
+        var dbClick = false;
+        if(last) {
+            var diff = cur - last;
+            if(diff < 200) {
+                dbClick = true;
+                this.lastPointerTime = 0;
+            }
+        }
+		if(dbClick) {
+            this.onDoubleClick(this.getAbsPoint(null), e);
+        }
+        this.onPointerUp(this.getAbsPoint(null), e);
+	}
+
+	this.onMultiTouch("touchend", points, e);
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onPointerDownGlobal = function(event) {
+	var e = window.event || event ;
+
+	this.onPointerDown(this.getAbsPoint(e), e);
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onPointerMoveGlobal = function(event) {
+	var e = window.event || event ;
+
+	this.onPointerMove(this.getAbsPoint(e), e);
+
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onPointerUpGlobal = function(event) {
+	var e = window.event || event ;
+
+	this.onPointerUp(this.getAbsPoint(e), e);
+	
+	return this.cancelDefaultAction(e);
+}
+
+WEventsManager.prototype.onKeyDown = function(code, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onKeyDown(code);
 	}
 }
 
-WebStorage.removeSession = function(key) {
-	var storage = WebStorage.getSessionStorage();
-
-	key = WebStorage.getNameSapceKey(key);
-	delete storage[key];
-
-	return;
-}
-
-WebStorage.reset = function() {
-	for(var key in localStorage) {
-		delete localStorage[key];
+WEventsManager.prototype.onKeyUp = function(code, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onKeyUp(code);
 	}
 }
 
-WebStorage.dump = function() {
-	for(var key in localStorage) {
-		console.log(key + ":" + localStorage[key]);
+WEventsManager.prototype.onWheel = function(delta, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onWheel(delta);
 	}
 }
+
+WEventsManager.prototype.onLongPress = function() {
+	this.onContextMenu(this.lastPoint, this.lastPointEvent);
+}
+
+WEventsManager.prototype.onMultiTouch = function(action, points, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onMultiTouch(action, points, event);
+	}
+}
+
+WEventsManager.prototype.onPointerDown = function(point, event) {
+	this.pointerDown = true;
+
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onPointerDown(point);
+		//console.log("onPointerDown:" + point.x + "x" + point.y);
+	}
+}
+
+WEventsManager.prototype.onPointerMove = function(point, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onPointerMove(point);
+	}
+}
+
+WEventsManager.prototype.onPointerUp = function(point, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onPointerUp(point);
+		//console.log("onPointerUp:" + point.x + "x" + point.y);
+	}
+
+	this.pointerDown = false;
+}
+
+WEventsManager.prototype.onDoubleClick = function(point, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onDoubleClick(point);
+	}
+}
+
+WEventsManager.prototype.onContextMenu = function(point, event) {
+	if(this.eventsConsumer.preprocessEvent(0, event)) {
+		this.eventsConsumer.onContextMenu(point);
+	}
+	//console.log("onContextMenu:" + point.x + "x" + point.y);
+}
+
+WEventsManager.targetIsCanvas = function(e) {
+	var tag = e.srcElement ? e.srcElement : e.target; 
+	var name = tag.localName ? tag.localName : tag.tagName;
+
+	name = name.toLowerCase();
+	if(name === "canvas") {
+		return true;
+	}
+	
+	return false;
+}
+
+WEventsManager.getInstance = function() {
+	if(!WEventsManager.instance) {
+		WEventsManager.instance = new WEventsManager();
+	}
+
+	return WEventsManager.instance;
+}
+
+WEventsManager.prototype.getPointerDeviceType = function() {
+	return WEventsManager.pointerDeviceType;
+}
+
+WEventsManager.prototype.getInputScale = function() {
+	return this.eventsConsumer.getInputScale();
+}
+
+
+WEventsManager.setEventsConsumer = function(eventsConsumer, element) {
+	WEventsManager.getInstance().setEventsConsumer(eventsConsumer, element);
+};
 
 /*
  * File: edit.js
@@ -11293,6 +9404,7 @@ WebStorage.dump = function() {
  * Brief: wrap input/textarea
  * 
  * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016	Holaverse Inc.
  * 
  */
 
@@ -11312,8 +9424,19 @@ EditorElement.prototype.setWrap = function(wrap) {
 	return;
 }
 
-EditorElement.prototype.removeBorder = function() {
-	if(!isMobile()) {
+EditorElement.prototype.setMaxLength = function(maxLength) {
+	this.element.maxLength = maxLength;
+
+	return this;
+}
+
+EditorElement.prototype.showBorder = function(show) {
+	if(show) {
+		this.element.style.background = 'white';
+		this.element.style.border ='1px solid';
+		this.element.style.outline = '1px';
+	}
+	else {
 		this.element.style.background = 'transparent';
 		this.element.style.border ='0px solid';
 		this.element.style.outline = 'none';
@@ -11332,6 +9455,14 @@ EditorElement.prototype.setOnChangedHandler = function(onChanged) {
 		}
 	}
 
+	if(isMobile()) {
+		this.element.onchange = function() {
+			if(me.onChanged) {
+				me.onChanged(this.value);
+			}
+		}
+	}
+
 	return this;
 }
 
@@ -11339,19 +9470,49 @@ EditorElement.prototype.setOnChangeHandler = function(onChange) {
 	var me = this;
 	this.onChange = onChange;
 
-	this.element.onchange = function() {
+	this.element.onkeypress = function(e) {
 		if(me.onChange) {
 			me.onChange(this.value);
 		}
 	}
 
-	this.element.onkeyup = function() {
+	if(this.isInput) {
+		this.element.onkeydown = function(e) {
+			if(e.keyCode === 13) {
+				this.blur();
+			}
+		}
+	}
+
+	this.element.oninput = function(e) {
 		if(me.onChange) {
 			me.onChange(this.value);
+		}
+	}
+	
+	if(!isMobile()) {
+		this.element.onchange = function() {
+			if(me.onChange) {
+				me.onChange(this.value);
+			}
 		}
 	}
 
 	return this;
+}
+
+EditorElement.prototype.selectText = function() {
+	if(this.element) {
+		this.element.select();
+	}
+
+	return this;
+}
+
+EditorElement.prototype.setZIndex = function(zIndex) {
+	this.element.style['z-index'] = zIndex;
+
+	return;
 }
 
 EditorElement.prototype.setFontSize = function(fontSize) {
@@ -11371,9 +9532,37 @@ EditorElement.prototype.show = function() {
 	this.isVisibile = true;
 	this.element.style.visibility = 'visible';
 	this.element.style.zIndex = 8;
+	this.element.style.opacity = 1;
+
+	if(!isMobile()) {
+		this.showBorder(false);
+	}
 
 	this.element.focus();
 	EditorElement.imeOpen = true;
+
+	return;
+}
+
+EditorElement.prototype.hide = function() {
+	this.isVisibile = false;
+	this.element.style.opacity = 0;
+	this.element.style.zIndex = 0;
+	this.element.style.visibility = 'hidden';  
+	this.element.blur();
+	this.element.onchange = null;
+	EditorElement.imeOpen = false;
+	if(isMobile()) {
+		CantkRT.moveMainCanvas(0, 0);
+	}
+
+	if(this.onHide) {
+		this.onHide();
+	}
+
+	if(this.shape) {
+		this.shape.editing = false;
+	}
 
 	return;
 }
@@ -11434,24 +9623,8 @@ function setElementPosition(element, x, y) {
 	return;
 }
 
-EditorElement.prototype.hide = function() {
-	this.isVisibile = false;
-	this.element.style.zIndex = 0;
-	this.element.style.visibility = 'hidden';  
+EditorElement.prototype.blur = function() {
 	this.element.blur();
-	this.element.onchange = null;
-	EditorElement.imeOpen = false;
-	setElementPosition(EditorElement.getMainCanvas(), 0, 0);
-
-	if(this.onHide) {
-		this.onHide();
-	}
-
-	if(this.shape) {
-		this.shape.editing = false;
-	}
-
-	return;
 }
 
 EditorElement.prototype.move = function(x, y) {
@@ -11462,6 +9635,14 @@ EditorElement.prototype.move = function(x, y) {
 	return;
 }
 
+EditorElement.prototype.setTextColor = function(color) {
+	this.element.style.color = color;
+}
+
+EditorElement.prototype.setBgColor = function(color) {
+	this.element.style.background = color;
+}
+
 EditorElement.prototype.setFontSize = function(fontSize) {
 	this.element.style.fontSize = fontSize + "px";
 
@@ -11470,7 +9651,7 @@ EditorElement.prototype.setFontSize = function(fontSize) {
 
 EditorElement.prototype.resize = function(w, h) {
 	this.element.style.width = w + "px";
-	this.element.style.height = (h-6) + "px";
+	this.element.style.height = (h-4) + "px";
 
 	return;
 }
@@ -11506,7 +9687,7 @@ EditorElement.create = function(element, id) {
 	element.id = id;
 	edit.setElement(element);
 	edit.setFontSize(14);
-	edit.removeBorder();
+	edit.isInput = element.tagName === "INPUT" || element.localName === "input";
 
 	return edit;
 }
@@ -11519,7 +9700,7 @@ function cantkShowInput(inputType, fontSize, text, x, y, w, h) {
 	h = Math.round(h);
 
 	if(!gCanTkInput) {
-		gCanTkInput = createSingleLineEdit();
+		gCanTkInput = EditorElement.createSingleLineEdit();
 	}
 
 	gCanTkInput.setInputType(inputType);
@@ -11534,15 +9715,13 @@ function cantkShowInput(inputType, fontSize, text, x, y, w, h) {
 
 var gCanTkTextArea = null;
 function cantkShowTextArea(text, fontSize, x, y, w, h) {
-	var id = "cantk_textarea";
-	
 	x = Math.round(x);
 	y = Math.round(y);
 	w = Math.round(w);
 	h = Math.round(h);
 
 	if(!gCanTkTextArea) {
-		gCanTkTextArea = createMultiLineEdit(id, x, y, w, h);
+		gCanTkTextArea = EditorElement.createMultiLineEdit();
 	}
 	
 	gCanTkTextArea.move(x, y);
@@ -11616,563 +9795,31 @@ function cantkHideAllInput() {
 	return;
 }
 
-function createSingleLineEdit() {
+EditorElement.createSingleLineEdit = function() {
 	var id = "singlelineedit";
-	if(CantkRT.isNative()) {
-		return CantkRT.createSingleLineTextEditor();
-	}
-	else {
-		var element = document.createElement("input");
-		document.body.appendChild(element);
-		return EditorElement.create(element, id);
-	}
+	var element = document.createElement("input");
+	document.body.appendChild(element);
+
+	return EditorElement.create(element, id);
 }
 
-function createMultiLineEdit(id) {
+EditorElement.createMultiLineEdit = function() {
 	var id = "multilineedit";
-	if(CantkRT.isNative()) {
-		return CantkRT.createMultiLineTextEditor();
-	}
-	else {
-		var element = document.createElement("textarea");
-		document.body.appendChild(element);
-		return EditorElement.create(element, id);
-	}
-}
+	var element = document.createElement("textarea");
+    element.style.resize = "none";
+	document.body.appendChild(element);
+
+	return EditorElement.create(element, id);
+};
 
 /*
- * File: resloader.js
+ * File:    path-animation.js
  * Author:  Li XianJing <xianjimli@hotmail.com>
- * Brief: res loader
+ * Brief:   path animation
  * 
- * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016  Holaverse Inc.
  * 
  */
-
-function ResLoader() {
-}
-
-ResLoader.total = 0;
-ResLoader.finished = 0;
-
-ResLoader.reset = function() {
-	ResLoader.total = 0;
-	ResLoader.finished = 0;
-
-	return;
-}
-
-ResLoader.toLoadInc = function() {
-	ResLoader.total++;
-
-	return;
-}
-
-ResLoader.setOnChangedListener = function(onChanged) {
-	ResLoader.onChanged = onChanged;
-}
-
-ResLoader.setOnLoadFinishListener = function(onLoadFinished) {
-	ResLoader.onLoadFinished = onLoadFinished;
-
-	return;
-}
-
-ResLoader.loadedInc = function() {
-	ResLoader.finished++;
-
-	var percent = ResLoader.getPercent();
-	if(ResLoader.onChanged) {
-		ResLoader.onChanged(percent, ResLoader.finished, ResLoader.total);
-	}
-	
-	if(percent >= 99) {
-		if(ResLoader.onLoadFinished) {
-			ResLoader.onLoadFinished();
-		}
-		console.log("All resource loaded:" + ResLoader.total);
-	}
-
-	return;
-}
-
-ResLoader.getTotal = function() {
-	return ResLoader.total;
-}
-
-ResLoader.getFinished = function() {
-	return ResLoader.finished;
-}
-
-ResLoader.getPercent = function() {
-	if(!ResLoader.total) {
-		return 100;
-	}
-
-	return (ResLoader.finished/ResLoader.total) * 100;
-}
-
-ResLoader.cache = {};
-
-ResLoader.addToCache = function(src, obj) {
-	ResLoader.cache[src] = obj;
-}
-
-ResLoader.dump = function() {
-	var i = 0;
-	for(var key in ResLoader.cache) {
-		var iter = ResLoader.cache[key];
-		var str = i + " : " + key.substr(0, 255) + " status=" + (iter.pending ? "pending" : "loaded");
-		console.log(str);
-		i++;
-	}
-}
-
-setTimeout(function() {
-	ResLoader.dump();
-}, 15000);
-
-ResLoader.getFromCache = function(src) {
-	return ResLoader.cache[src];
-}
-
-ResLoader.resRoot = null;
-ResLoader.setResRoot = function(resRoot) {
-	ResLoader.resRoot = resRoot;
-
-	return;
-}
-
-ResLoader.toAbsURL = function(url) {
-	if(!url || url.indexOf("://") > 0 || url.indexOf("data:") === 0) {
-		return url;
-	}
-
-	var absURL = url;
-	if(ResLoader.resRoot) {
-		absURL = ResLoader.resRoot + url;
-	}
-	else if(url[0] === '/') {
-		absURL = location.protocol + "//" + location.host + url;
-	}
-	else {
-		var str = location.protocol + "//" + location.host + location.pathname;
-		var path = dirname(str);
-		absURL = path + "/" + url;
-	}
-
-	return absURL;
-}
-
-function ResProxy(src, onSuccess, onFail) {
-	this.src = src;
-	this.obj = null;
-	this.pending = true;
-	this.onSuccessList = [onSuccess];
-	this.onFailList = [onFail];
-
-	if(src) {
-		ResLoader.toLoadInc();
-		ResLoader.addToCache(src, this);
-//		console.log("to load: " + src);
-	}
-	else {
-		console.log("WARNNING: load null url.");
-	}
-
-	return;
-}
-
-ResProxy.prototype.onDone = function(obj) {
-	this.obj = obj;
-	delete this.pending;
-	ResLoader.loadedInc();
-
-	if(obj) {
-		this.callOnSuccess();
-//		console.log("load " + this.src + " done.");
-	}
-	else {
-		this.callOnFail();
-		console.log("load " + this.src + " failed:");
-	}
-
-	return;
-}
-
-ResProxy.prototype.callOnSuccess = function() {
-	var obj = this.obj;
-	for(var i = 0; i < this.onSuccessList.length; i++) {
-		var iter = this.onSuccessList[i];
-		if(iter) {
-			iter(obj);
-		}
-	}
-	this.onFailList = [];
-	this.onSuccessList = [];
-
-	return;
-}
-
-ResProxy.prototype.callOnFail = function() {
-	var src = this.src;
-
-	for(var i = 0; i < this.onFailList.length; i++) {
-		var iter = this.onFailList[i];
-		if(iter) {
-			iter(src);
-		}
-	}
-	this.onFailList = [];
-	this.onSuccessList = [];
-
-	return;
-}
-
-ResProxy.prototype.onHitCache = function(onSuccess, onFail) {
-	if(this.pending) {
-		this.onSuccessList.push(onSuccess);
-		this.onFailList.push(onFail);
-	}
-	else if(this.obj) {
-		ResLoader.callFunc(onSuccess, this.obj);
-	}
-	else {
-		ResLoader.callFunc(onFail, null);
-	}
-
-	return this.obj;
-}
-
-ResLoader.callFunc = function(func, data) {
-	if(func) {
-		func(data);
-	}
-
-	return;
-}
-
-ResLoader.loadImage = function(url, onSuccess, onFail) {
-	var src = ResLoader.toAbsURL(url);
-	var proxy = ResLoader.getFromCache(src);
-	if(proxy) {
-		return proxy.onHitCache(onSuccess, onFail);
-	}
-
-	proxy = new ResProxy(src, onSuccess, onFail);
-
-
-	function onLoad(img) {
-		proxy.onDone(img);
-	}
-
-	function onError(img) {
-		proxy.onDone(null);
-	}
-
-	var image = CantkRT.createImage(src, onLoad, onError);
-
-	return image;
-}
-
-ResLoader.loadAudio = function(url, onSuccess, onFail) {
-	var src = ResLoader.toAbsURL(url);
-	var proxy = ResLoader.getFromCache(src);
-	if(proxy) {
-		return proxy.onHitCache(onSuccess, onFail);
-	}
-
-	var audio = new Audio();
-
-	proxy = new ResProxy(src, onSuccess, onFail);
-
-	audio.volume = 0.8;
-	audio.addEventListener('loadstart', function (e) {
-		console.log("load start:" + url);
-	});
-	
-	audio.addEventListener('canplay', function (e) {
-		console.log("canplay:" + url);
-	});
-
-	audio.addEventListener('canplaythrough', function (e) {
-		console.log("canplaythrough:" + url);
-		proxy.onDone(audio);
-	});
-
-	audio.addEventListener('error', function (e) {
-		console.log("error:" + url);
-		proxy.onDone(null);
-	});
-
-	audio.src = src;
-	audio.load();
-
-	return audio;
-}
-
-ResLoader.loadJson = function(url, onSuccess, onFail) {
-	var src = ResLoader.toAbsURL(url);
-	var proxy = ResLoader.getFromCache(src);
-	if(proxy) {
-		return proxy.onHitCache(onSuccess, onFail);
-	}
-
-	proxy = new ResProxy(src, onSuccess, onFail);
-	httpGetJSON(src, function(data) {
-		proxy.onDone(data);
-	});
-
-	return;
-}
-
-ResLoader.loadData = function(url, onSuccess, onFail) {
-	var src = ResLoader.toAbsURL(url);
-	var proxy = ResLoader.getFromCache(src);
-	if(proxy) {
-		return proxy.onHitCache(onSuccess, onFail);
-	}
-
-	proxy = new ResProxy(src, onSuccess, onFail);
-	httpGetURL(src, function(result, xhr, data) {
-		proxy.onDone(data);
-	});
-
-	return;
-}
-
-ResLoader.loadScript = function(src, force, onSuccess, onFail) {
-	var script = null;
-	var scripts = document.scripts;
-	var node = document.head ? document.head : document.body;
-	var timestamp = "timestamp=" + Date.now();
-	if(src.indexOf("?") < 0) {
-		timestamp = "?" + timestamp;
-	}
-	else {
-		timestamp = "&" + timestamp;
-	}
-
-	if(scripts) {
-		for(var i = 0; i < scripts.length; i++) {
-			var iter = scripts[i];
-			if(iter.src && iter.src.indexOf(src) >= 0) {
-				script = iter;
-				if(onSuccess) {
-					onSuccess();
-				}
-				if(force) {
-					ResLoader.toLoadInc();
-					var src = src + timestamp;
-					script.setAttribute("src", src);
-					setTimeout(function() {ResLoader.loadedInc()}, 1000);
-				}
-				return;
-			}
-		}
-	}
-
-	ResLoader.toLoadInc();
-	script = document.createElement("script");
-	script.onload = function() { 
-		if(onSuccess) {
-			onSuccess();
-		}
-		ResLoader.loadedInc();
-	}
-
-	script.onerror = script.onabort = script.oncancel = function(e) {
-		if(onFail) {
-			onFail();
-		}
-		ResLoader.loadedInc();
-	}
-
-	if(!force) {
-		script.src = src;
-	}
-	else {
-		script.src = src + timestamp;
-	}
-	node.appendChild(script);
-
-	return;
-}
-/**
- * adapted from https://developer.cdn.mozilla.net/media/uploads/demos/p/a/pavelpat/b37616b80cd8d250c710d4ad33c2d193/indexeddb-simple-odm_1407222480_demo_package/assets/app/js/Webapp.Storage.Driver.js
- */
-
-function WebIndexDB(iDBDatabase) {
-	this.iDBDatabase;
-}
-
-/**
- * Fetches item from collection
- *
- * @public
- *
- * @param {string} collection
- * @param {*} key
- * @param {function} successCallback
- * @param {function} errorCallback
- *
- * @throws Error
- */
-WebIndexDB.prototype.get = function (collection, key, successCallback, errorCallback) {
-	var transaction = this.iDBDatabase.transaction(collection, 'readonly');
-	var objectStore = transaction.objectStore(collection);
-	var request = objectStore.get(key);
-	request.onsuccess = function (e) {
-		successCallback(e.target.result);
-	};
-	request.onerror = function (e) {
-		errorCallback(e.target.result);
-	};
-};
-
-/**
- * Fetches all items from collection
- *
- * @public
- *
- * @param {string} collection
- * @param {function} successCallback
- * @param {function} errorCallback
- *
- * @throws Error
- */
-WebIndexDB.prototype.getAll = function (collection, successCallback, errorCallback) {
-	var transaction = this.iDBDatabase.transaction(collection, 'readonly');
-	var objectStore = transaction.objectStore(collection);
-	var cursor = objectStore.openCursor();
-
-	var result = [];
-	cursor.onsuccess = function (e) {
-		var cursor = e.target.result;
-		if (cursor) {
-			result.push(cursor.value);
-			cursor.continue();
-		}
-		else {
-			successCallback(result);
-		}
-	};
-	cursor.onerror = function (e) {
-		errorCallback(e.target.result);
-	}
-};
-
-/**
- * Puts new item to collection
- *
- * @public
- *
- * @param {string} collection
- * @param {*} object
- * @param {function} successCallback
- * @param {function} errorCallback
- *
- * @throws Error
- */
-WebIndexDB.prototype.put = function (collection, object, successCallback, errorCallback) {
-	var transaction = this.iDBDatabase.transaction(collection, 'readwrite');
-	var objectStore = transaction.objectStore(collection);
-	var request = objectStore.put(object);
-	request.onsuccess = function (e) {
-		successCallback(e.target.result);
-	};
-	request.onerror = function (e) {
-		errorCallback(e.target.result)
-	};
-};
-
-/**
- * Removes item from collection
- *
- * @public
- *
- * @param {string} collection
- * @param {*} key
- * @param {function} successCallback
- * @param {function} errorCallback
- *
- * @throws Error
- */
-WebIndexDB.prototype.delete = function (collection, key, successCallback, errorCallback) {
-	var transaction = this.iDBDatabase.transaction(collection, 'readwrite');
-	var objectStore = transaction.objectStore(collection);
-	var request = objectStore.delete(key);
-	request.onsuccess = function (e) {
-		successCallback(e.target.result);
-	};
-	request.onerror = function (e) {
-		errorCallback(e.target.result)
-	};
-};
-
-/**
- * Create WebIndexDB object with specified Database Name
- *
- * @param {string} databaseName
- * @param {{name: string, keyPath: string, autoIncrement: boolean}[]} configuration
- * @param {function} createSuccess
- * @param {function} createFailed
- */
-WebIndexDB.asyncCreate = function (databaseName, configuration, createSuccess, createFailed) {
-	try {
-		var request = WebIndexDB.getIndexedDBFactory().open(databaseName);
-	}
-	catch (e) {
-		createFailed(e);
-	}
-
-	request.onsuccess = function (e) {
-		createSuccess(new WebIndexDB(request.result));
-	};
-
-	request.onerror = function (e) {
-		createFailed(e.target);
-	};
-
-	request.onupgradeneeded = function (e) {
-		for (var i = 0; i < configuration.length; i++) {
-			request.result.createObjectStore(
-				configuration[i].nameStorage,
-				{
-					keyPath: configuration[i].keyPath,
-					autoIncrement: configuration[i].autoIncrement
-				}
-			);
-		}
-	};
-};
-
-/**
- * @returns IDBFactory
- *
- * @throws Error
- */
-WebIndexDB.getIndexedDBFactory = function () {
-	if (undefined !== window.indexedDB) {
-		return window.indexedDB;
-	}
-	else if (undefined !== window.webkitIndexedDB) {
-		return window.webkitIndexedDB;
-	}
-	else if (undefined !== window.mozIndexedDB) {
-		return window.mozIndexedDB;
-	}
-	else if (undefined !== window.msIndexedDB) {
-		return window.msIndexedDB;
-	}
-
-	throw new Error("Could not access IndexedDB Factory");
-};
-
-WebIndexDB.test = function() {
-	
-}
-
 function BasePath() {
 	return;
 }
@@ -12531,9 +10178,7 @@ Bezier2Path.create = function(duration, interpolator, x1, y1, x2, y2, x3, y3) {
 
 function PathAnimation(x, y) {
 	this.startPoint = {x:x, y:y};
-	this.endPoint = {x:x, y:y};
-	this.duration = 0;
-	this.paths = [];
+	this.reset();
 
 	return;
 }
@@ -12544,6 +10189,14 @@ PathAnimation.prototype.getStartPoint = function() {
 
 PathAnimation.prototype.getEndPoint = function() {
 	return this.endPoint;
+}
+
+PathAnimation.prototype.reset = function() {
+	this.endPoint = {x:this.startPoint.x, y:this.startPoint.y};
+	this.duration = 0;
+	this.paths = [];
+
+	return this;
 }
 
 PathAnimation.prototype.addPath = function(path) {
@@ -12634,170 +10287,301 @@ PathAnimation.prototype.forEach = function(visit) {
 	}
 
 	return this;
+};
+
+//! stable.js 0.1.5, https://github.com/Two-Screen/stable
+//! © 2014 Angry Bytes and contributors. MIT licensed.
+
+(function() {
+
+// A stable array sort, because `Array#sort()` is not guaranteed stable.
+// This is an implementation of merge sort, without recursion.
+
+var stable = function(arr, comp) {
+    return exec(arr.slice(), comp);
+};
+
+stable.inplace = function(arr, comp) {
+    var result = exec(arr, comp);
+
+    // This simply copies back if the result isn't in the original array,
+    // which happens on an odd number of passes.
+    if (result !== arr) {
+        pass(result, null, arr.length, arr);
+    }
+
+    return arr;
+};
+
+// Execute the sort using the input array and a second buffer as work space.
+// Returns one of those two, containing the final result.
+function exec(arr, comp) {
+    if (typeof(comp) !== 'function') {
+        comp = function(a, b) {
+            return String(a).localeCompare(b);
+        };
+    }
+
+    // Short-circuit when there's nothing to sort.
+    var len = arr.length;
+    if (len <= 1) {
+        return arr;
+    }
+
+    // Rather than dividing input, simply iterate chunks of 1, 2, 4, 8, etc.
+    // Chunks are the size of the left or right hand in merge sort.
+    // Stop when the left-hand covers all of the array.
+    var buffer = new Array(len);
+    for (var chk = 1; chk < len; chk *= 2) {
+        pass(arr, comp, chk, buffer);
+
+        var tmp = arr;
+        arr = buffer;
+        buffer = tmp;
+    }
+
+    return arr;
 }
 
+// Run a single pass with the given chunk size.
+var pass = function(arr, comp, chk, result) {
+    var len = arr.length;
+    var i = 0;
+    // Step size / double chunk size.
+    var dbl = chk * 2;
+    // Bounds of the left and right chunks.
+    var l, r, e;
+    // Iterators over the left and right chunk.
+    var li, ri;
+
+    // Iterate over pairs of chunks.
+    for (l = 0; l < len; l += dbl) {
+        r = l + chk;
+        e = r + chk;
+        if (r > len) r = len;
+        if (e > len) e = len;
+
+        // Iterate both chunks in parallel.
+        li = l;
+        ri = r;
+        while (true) {
+            // Compare the chunks.
+            if (li < r && ri < e) {
+                // This works for a regular `sort()` compatible comparator,
+                // but also for a simple comparator like: `a > b`
+                if (comp(arr[li], arr[ri]) <= 0) {
+                    result[i++] = arr[li++];
+                }
+                else {
+                    result[i++] = arr[ri++];
+                }
+            }
+            // Nothing to compare, just flush what's left.
+            else if (li < r) {
+                result[i++] = arr[li++];
+            }
+            else if (ri < e) {
+                result[i++] = arr[ri++];
+            }
+            // Both iterators are at the chunk ends.
+            else {
+                break;
+            }
+        }
+    }
+};
+
+Object.defineProperty(Array.prototype, 'stableSort', 
+{
+	enumerable: false,
+	value: function(comp) {
+		var newArr = stable(this, comp);
+
+		for(var i = 0; i < newArr.length; i++) {
+			this[i] = newArr[i];
+		}
+
+		return this;
+	}
+});
+
+})();
 /*
- * File: command_history.js 
+ * File: assets_downloader.js
  * Author:  Li XianJing <xianjimli@hotmail.com>
- * Brief: command history
+ * Brief: assets downloader for Runtime.
  * 
- * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016  Holaverse Inc.
  * 
  */
-
-function Command() {
-	this.count = 0;
-	
-	this.doit = function() {
-		this.count = this.count + 1;
-		console.log("command: doit " + this.count);
-		
-		return;
-	}
-	
-	this.undo = function() {
-		this.count = this.count - 1;
-		console.log("command: undo " + this.count);
-		
-		return;
-	}	
+function AssetsDownloader() {
 }
 
-function CompositeCommand() {
+AssetsDownloader.requests = {};
+AssetsDownloader.createFontsRequest = function() {
+	return AssetsDownloader.createRequest("__fonts__");
 }
 
-CompositeCommand.prototype.init = function() {
-	this.cmds = [];
-
-	return this;
+AssetsDownloader.createAudiosRequest = function() {
+	return AssetsDownloader.createRequest("__audios__");
 }
 
-CompositeCommand.prototype.addCommand = function(cmd) {
-	this.cmds.push(cmd);
+AssetsDownloader.createRequest = function(name) {
+	var req = AssetsDownloader.requests[name];
 
-	return this;
-}
-	
-CompositeCommand.prototype.destroy = function() {
-	return this.clear();
-}
-
-CompositeCommand.prototype.clear = function() {
-	this.cmds.clear();
-	
-	return this;
-}
-	
-CompositeCommand.prototype.doit = function() {
-	for(var i = 0; i < this.cmds.length; i++) {
-		var cmd = this.cmds[i];
-		cmd.doit();
-	}
-	
-	return this;
-}
-	
-CompositeCommand.prototype.undo = function() {
-	for(var i = 0; i < this.cmds.length; i++) {
-		var cmd = this.cmds[i];
-		cmd.undo();
-	}
-	
-	return this;
-}	
-
-CompositeCommand.create = function() {
-	var cmd = new CompositeCommand();
-
-	return cmd.init();
-}
-
-function CommandHistory() {
-	this.listeners = new Array();
-	this.redos = [];
-	this.undos = [];
-
-	this.maxUndos = 20;
-
-	this.setMaxUndos= function(maxUndos) {
-		this.maxUndos = maxUndos;
-
-		return;
+	if(!req) {
+		req = new AssetsDownloader.Request(name);
+		AssetsDownloader.requests[name] = req;
 	}
 
-	this.clear = function () {
-		this.redos.clear();
-		this.undos.clear();
+	return req;
+}
 
-		return;
-	}
+AssetsDownloader.isDownloaded = function(name) {
+	var req = AssetsDownloader.requests[name];
 
-	this.notify = function() {
-		for(var i = 0; i < this.listeners.length; i++) {
-			var listener = this.listeners[i];
-			listener.onChanged(this.redos.length, this.undos.length);
-		}
-		
-		return;
+	return req && req.loaded;
+}
+
+AssetsDownloader.isAvailable = function() {
+	return (!!window.downloadAssets) || AssetsDownloader.simulateDownload;
+}
+
+AssetsDownloader.simulateDownload = false;
+AssetsDownloader.download = function(req) {
+	if(window.downloadAssets && !req.loaded) {
+		window.downloadAssets(req.name, req.onEvent.bind(req));
 	}
-	
-	this.exec = function(cmd) {
-		cmd.doit();
-		
-		this.undos.push(cmd);
-		this.redos.clear();
-		this.notify();
-	
-		if(this.undos.length > this.maxUndos) {
-//			console.log("Max Undos reached: " + this.maxUndos + " remove this first one.");
-			var cmd = this.undos.shift();
-			delete cmd;
+	else if(AssetsDownloader.simulateDownload) {
+		function stepIt() {
+			req.percent += 20;
+			req.onEvent({type:"progress", value:req.percent});
+			if(req.percent < 100) {
+				setTimeout(stepIt.bind(req), 500);
+			}
 		}
 
-		return;
+		req.percent = 0;
+		setTimeout(stepIt.bind(req), 1000);
+	}else{
+		req.onEvent({type:"progress", value:100});
 	}
-	
-	this.redo = function() {
-		if(this.redos.length > 0) {
-			var cmd = this.redos.pop();
-			cmd.doit();
-			this.undos.push(cmd);
-			this.notify();
-		}
 
-		return;
+	return req;
+}
+
+AssetsDownloader.downloadMulti = function(names, onProgress, onDone) {
+	var queue = [];
+	var totalSize = 0;
+	var finishSize = 0;
+
+	function downloadNext() {
+		if(queue.length < 1) {
+			if(onDone) {
+				onDone();	
+			}
+		}else{
+			var req = queue.pop();
+			req.on("progress", onOneProgress);
+			AssetsDownloader.download(req);
+			console.log("Download : " + req.name)
+		}
 	}
-	
-	this.undo = function() {
-		if(this.undos.length > 0) {
-			var cmd = this.undos.pop();
-			cmd.undo();
-			this.redos.push(cmd);
-			this.notify();
+
+	function onOneProgress(event) {
+		var reqFinishSize = finishSize + this.size * (event.value/100);
+
+		var percent = 100 * reqFinishSize/totalSize;
+		if(onProgress) {
+			onProgress(percent, reqFinishSize, totalSize);
 		}
 		
-		return;
+		console.log("percent=" + percent);
+		if(event.value >= 100) {
+			console.log("Download done: " + this.name)
+			this.off("progress", onOneProgress);
+			finishSize += this.size;
+			downloadNext();
+		}
 	}
 	
-	this.countRedo = function() {
-		return this.redos.length;
+	for(var i = 0; i < names.length; i++) {
+		var r = AssetsDownloader.createRequest(names[i]);
+		queue.push(r);
+		totalSize += r.size;
 	}
-	
-	this.countUndo = function() {
-		return this.undos.length;
-	}
-	
-	this.addListener = function(listener) {
-		this.listeners.push(listener);
-		
-		return;
-	}
-	
-	this.removeListener = function(listener) {
-		this.listeners.remove(listener);
-		
-		return;
-	}
-	
+
+	downloadNext();
+
 	return;
 }
+
+AssetsDownloader.Request = function(name) {
+	this.name = name;
+	if(window.getAssetsSize) {
+		this.size = window.getAssetsSize(name);
+	}else{
+		this.size = 1024;
+	}
+	
+	if(window.getAssetsDownloadedSize) {
+		this.donwloadedSize = window.getAssetsDownloadedSize(name);
+	}else{
+		this.donwloadedSize = 0;
+	}
+
+	this.loaded = this.donwloadedSize >= this.size;
+
+	return this;
+}
+
+AssetsDownloader.Request.prototype.onEvent = function(event) {
+	if(event.type === "progress" && event.value >= 100) {
+		this.loaded = true;	
+	}
+
+	if(event.type === "error") {
+		this.error = event.value;
+	}
+
+	var me = this;
+	setTimeout(function() {
+		me.dispatchEvent(event);
+	}, 0);
+}
+
+TEventTarget.apply(AssetsDownloader.Request.prototype); 
+
+/**
+ * @method downloadAssets
+ *
+ * 加载指定场景的资源。
+ *
+ * @param {String} sceneName 要加载的场景的名称。
+ * @param {Function} onEvent 回调函数。原型为onEvent(event)。
+ *
+ * event的成员有：
+ *
+ * type: "progress"表示进度, "error"表示错误。
+ * value: type为"progress"时，value表示进度的百分比，取值0-100。type为"error"时，value表示具体的错误信息。
+ */
+//function downloadAssets(sceneName, onEvent) 
+
+/**
+ * @method getAssetsSize
+ *
+ * 获取指定场景的资源大小(字节)。
+ * @return {Number} 资源的大小。
+ * 
+ */
+//function getAssetsSize(sceneName)
+
+/**
+ * @method getAssetsDownloadedSize
+ *
+ * 获取指定场景的资源已经下载的大小(字节)。
+ * @return {Number} 获取指定场景的资源已经下载的大小。
+ * 
+ */
+//function getAssetsDownloadedSize(sceneName)
+

@@ -2,24 +2,42 @@
  * File: w_image.js
  * Author:  Li XianJing <xianjimli@hotmail.com>
  * Brief: image adapter
- * 
+ *
  * Copyright (c) 2011 - 2015  Li XianJing <xianjimli@hotmail.com>
- * 
+ *
  */
 
-function WImage(src) {
-	if(src) {
-		this.setImageSrc(src);
-	}
+function WImage(src, onLoad) {
+	this.src = src;
+   	this.onLoadCallback = [];
+	this.image = WImage.nullImage;
+   	this.setSizeInfo(0, 0, 0, 0, false, false, 0, 0, 0, 0);
+	this.setImageSrc(src, onLoad);
 
 	return;
 }
 
-WImage.caches = {};
-WImage.nullImage = new Image();
-WImage.onload = function() {  }
+WImage.prototype.setSizeInfo = function(x, y, w, h, rotated, trimmed, ox, oy, rw, rh) {
+	this.rect = {x:x >> 0, y:y >> 0, w:w >> 0, h:h >> 0, rotated:rotated, trimmed:trimmed, ox:ox >> 0, oy:oy >> 0, rw:rw >> 0, rh:rh >> 0};
+}
 
-WImage.prototype.initFromJson = function(src, json, onLoad) {
+WImage.prototype.appendOnLoadCallback = function(onLoad) {
+    if(onLoad){
+        this.onLoadCallback.push(onLoad);
+    }
+}
+
+WImage.prototype.notifyLoadDone = function(img) {
+	this.image = img;
+	var callbacks = this.onLoadCallback;
+
+	for(var i = 0, j = callbacks.length; i < j; i++){
+		callbacks[i](img);
+	}
+	this.onLoadCallback.length = 0;
+}
+
+WImage.prototype.initFromJson = function(src, json) {
 	var sharpOffset = src.indexOf("#");
 	var jsonURL = src.substr(0, sharpOffset);
 	var name = src.substr(sharpOffset+1);
@@ -40,138 +58,132 @@ WImage.prototype.initFromJson = function(src, json, onLoad) {
 		return;
 	}
 
-	this.rotated = info.rotated;
 	if(info.trimmed) {
-		rect.trimmed = true;
-		rect.ox = info.spriteSourceSize.x;
-		rect.oy = info.spriteSourceSize.y;
-		rect.rw = info.sourceSize.w;
-		rect.rh = info.sourceSize.h;
+		this.setSizeInfo(rect.x, rect.y, rect.w, rect.h, info.rotated,
+			true, info.spriteSourceSize.x, info.spriteSourceSize.y, info.sourceSize.w, info.sourceSize.h);;
 	}
 	else {
-		rect.trimmed = false;
-		rect.ox = 0;
-		rect.oy = 0;
-		rect.rw = 0;
-		rect.rh = 0;
+		this.setSizeInfo(rect.x, rect.y, rect.w, rect.h, info.rotated,
+			false, 0, 0, rect.w, rect.h);
 	}
 
 	var me = this;
-	this.rect = rect;
-	WImage.onload();
 	ResLoader.loadImage(imageSrc, function(img) {
-		me.image = img;
-		if(onLoad) {
-			onLoad(img);
-		}
+		me.notifyLoadDone(img);
 	});
 
 	return;
 }
 
-WImage.prototype.initFromRowColIndex = function(src, rowcolIndex, onLoad) {
+WImage.prototype.initFromRowColIndex = function(src, rowcolIndex) {
 	var me = this;
 	var rows = parseInt(rowcolIndex[1]);
 	var cols = parseInt(rowcolIndex[2]);
 	var index = parseInt(rowcolIndex[3]);
-	rowcolIndex = null;
 
-	this.image = ResLoader.loadImage(src, function(img) {
+	ResLoader.loadImage(src, function(img) {
 		var tileW = Math.round(img.width/cols);
 		var tileH = Math.round(img.height/rows);
-		var tileWmin = Math.floor(img.width/cols);
-		var tileHmin = Math.floor(img.height/rows);
+		var w = Math.floor(img.width/cols);
+		var h = Math.floor(img.height/rows);
 		var col = index%cols;
 		var row = Math.floor(index/cols);
 
-		me.rect = {};
-		me.rect.x = col * tileW;
-		me.rect.y = row * tileH;
-		me.rect.w = tileWmin;
-		me.rect.h = tileHmin;
-
-		me.image = img;
-		if(onLoad) {
-			onLoad(img);
-		}
-		WImage.onload();
+		var x = col * tileW;
+		var y = row * tileH;
+		me.setSizeInfo(x, y, w, h, false, false, 0, 0, w, h);
+		me.notifyLoadDone(img);
 	});
+
+	rowcolIndex = null;
 
 	return;
 }
 
-WImage.prototype.initFromXYWH = function(src, xywh, onLoad) {
+WImage.prototype.initFromXYWH = function(src, xywh) {
 	var me = this;
 	var x = parseInt(xywh[1]);
 	var y = parseInt(xywh[2]);
 	var w = parseInt(xywh[3]);
 	var h = parseInt(xywh[4]);
-	xywh = null;
 
 	this.image = ResLoader.loadImage(src, function(img) {
-		me.rect = {};
-		me.rect.x = x;
-		me.rect.y = y;
-		me.rect.w = w;
-		me.rect.h = h;
-
-		me.image = img;
-		if(onLoad) {
-			onLoad(img);
-		}
-		WImage.onload();
+		me.setSizeInfo(x, y, w, h, false, false, 0, 0, w, h);
+		me.notifyLoadDone(img);
 	});
+	xywh = null;
 
 	return;
 }
 
 WImage.prototype.setImage = function(image) {
 	this.image = image;
-	
+
 	return this;
 }
 
-WImage.prototype.setImageSrc = function(src, onLoad) {
-	if(!src) {
-		this.src = src;
-		this.image = WImage.nullImage;
-
-		return;
-	}
-
-	if(src.indexOf("data:") === 0) {	
-		this.src = src;
-		this.rect = null;
-		this.image = CantkRT.createImage(src, onLoad);
-
-		return;
-	}
-
-	src = ResLoader.toAbsURL(src);
+WImage.prototype.initFromDataURL = function(src, onLoad) {
+	var me = this;
 	this.src = src;
-	
-	WImage.caches[src] = this;
+	this.image = CantkRT.createImage(src, function(img) {
+		me.setSizeInfo(0, 0, img.width, img.height, false, false, 0, 0, img.width, img.height);
+		me.notifyLoadDone(img);
+	});
+}
+
+WImage.prototype.setImageSrc = function(src, onLoad) {
+	this.appendOnLoadCallback(onLoad);
+
+	if(!src) {
+		this.notifyLoadDone(WImage.nullImage);
+		return;
+	}
+
+	if(src.indexOf("data:") === 0) {
+		this.initFromDataURL(src, onLoad);
+		return;
+	}
 
 	var me = this;
-	var sharpOffset = src.indexOf("#");
+	var url = ResLoader.toAbsURL(src);
+
+	this.src = url;
+	var sharpOffset = url.indexOf("#");
 	if(sharpOffset > 0) {
-		var meta = src.substr(sharpOffset+1);
+		var meta = url.substr(sharpOffset+1);
 		var rowcolIndex = meta.match(/r([0-9]+)c([0-9]+)i([0-9]+)/i);
 		var xywh = meta.match(/x([0-9]+)y([0-9]+)w([0-9]+)h([0-9]+)/i);
 
 		if(!rowcolIndex && !xywh) {
-			var jsonURL = src.substr(0, sharpOffset);
+			var jsonURL = url.substr(0, sharpOffset);
 			ResLoader.loadJson(jsonURL, function(json) {
-				me.initFromJson(src, json, onLoad);
+                if(Array.isArray(json)) {
+                    var find = false;
+                    var target = null;
+                    for(var i = 0; i < json.length; i++) {
+                        var frames = Object.keys(json[i].frames);
+                        find = frames.some(function(imagename) {
+                            if(imagename === meta) {
+                                target = json[i];
+                                return true;
+                            }
+                        });
+                        if(find) {
+                            break;
+                        }
+                    }
+                    return me.initFromJson(url, target || json, onLoad);
+                }
+				me.initFromJson(url, json, onLoad);
 			});
 		}
 		else {
-			src = src.substr(0, sharpOffset);
+			url = url.substr(0, sharpOffset);
 			if(rowcolIndex) {
-				this.initFromRowColIndex(src, rowcolIndex, onLoad);
+				this.initFromRowColIndex(url, rowcolIndex, onLoad);
 			}
 			if(xywh){
-				this.initFromXYWH(src, xywh, onLoad);
+				this.initFromXYWH(url, xywh, onLoad);
 			}
 
 			rowcolIndex = null;
@@ -179,18 +191,11 @@ WImage.prototype.setImageSrc = function(src, onLoad) {
 		}
 	}
 	else {
-		this.image = ResLoader.loadImage(src, function(img) {
-			me.rect = {};
-			me.rect.x = 0;
-			me.rect.y = 0;
-			me.rect.w = img.width;
-			me.rect.h = img.height;
-
-			me.image = img;
-			if(onLoad) {
-				onLoad(img);
-			}
-			WImage.onload();
+		this.image = ResLoader.loadImage(url, function(img) {
+			var w = img.width;
+			var h = img.height;
+			me.setSizeInfo(0, 0, w, h, false, false, 0, 0, w, h);
+			me.notifyLoadDone(img);
 		});
 	}
 
@@ -198,15 +203,6 @@ WImage.prototype.setImageSrc = function(src, onLoad) {
 }
 
 WImage.prototype.getImageRect = function() {
-	if(!this.rect) {
-		this.rect = {x:0, y:0, w:0, h:0};
-	}
-	
-	if((!this.rect.w) && this.image) {
-		this.rect.w = this.image.width;
-		this.rect.h = this.image.height;
-	}
-
 	return this.rect;
 }
 
@@ -215,48 +211,97 @@ WImage.prototype.getImageSrc = function() {
 }
 
 WImage.prototype.getRealImageSrc = function() {
-	return this.image ? this.image.src : this.src;
+	if(this.image) {
+		return this.image.src;
+	}
+	else {
+		var src = this.src;
+		var offset = src.indexOf("#");
+
+		if(offset > 0) {
+			src = src.substr(0, offset);
+			src = src.replace(".json", ".png");
+			console.log("Warning: image is not loaded yet.");
+		}
+
+		return src;
+	}
+}
+
+WImage.prototype.isLoaded = function() {
+	return this.image && this.image.complete;
 }
 
 WImage.prototype.getImage = function() {
-	var image = this.image;
-
-	return (image && image.width > 0) ? image : null;
+	return this.image;
 }
 
 WImage.isValid = function(image) {
 	return image && image.image && image.image.width && image.image.height;
 }
 
+WImage.cache = {};
+WImage.nullImage = new Image();
+WImage.nullWImage = new WImage();
+WImage.nullWImage.image = null;
+
+WImage.clearCache = function(check) {
+	var newCache = {};
+	for(var key in WImage.cache) {
+		var asset = WImage.cache[key];
+
+		if(check && check(key)) {
+			newCache[key] =  asset;
+		}
+		else {
+			console.log("clear image:" + key);
+		}
+	}
+	WImage.cache = newCache;
+
+	return;
+}
+
 WImage.create = function(src, onLoad) {
-	var image = WImage.caches[src];
+	if(!src) {
+		return WImage.nullWImage;
+	}
+
+	var url = ResLoader.toAbsURL(src);
+	var image = WImage.cache[url];
+
 	if(image) {
 		if(onLoad) {
-			onLoad(image.getImage());
+			var img = image.image;
+			if(img.complete) {
+				onLoad(img);
+			}else{
+                image.appendOnLoadCallback(onLoad)
+            }
 		}
 	}
 	else {
-		image = new WImage();
-		image.setImageSrc(src, onLoad);
+		image = new WImage(url, onLoad);
+		WImage.cache[url] = image;
 	}
 
 	return image;
 }
 
 WImage.createWithImage = function(img) {
-	var image = new WImage();
+	var image = WImage.nullWImage;
 
-	image.setImage(img);
+	if(img) {
+		if(img.src) {
+			return WImage.create(img.src);
+		}
 
-	return image;
-}
-
-function cantkSetOnImageLoad(onImageLoad) {
-	if(onImageLoad) {
-		WImage.onload = onImageLoad;
+		image = new WImage();
+		image.setImage(img);
+		image.setSizeInfo(0, 0, img.width, img.height, false, false, 0, 0, img.width, img.height);
 	}
 
-	return;
+	return image;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -273,62 +318,43 @@ WImage.DISPLAY_TILE_H = 8;
 WImage.DISPLAY_AUTO_SIZE_DOWN = 9;
 WImage.DISPLAY_FIT_WIDTH = 10;
 WImage.DISPLAY_FIT_HEIGHT = 11;
+WImage.DISPLAY_3PATCH_V = 12;
+WImage.DISPLAY_3PATCH_H = 13;
 
 WImage.prototype.draw = function(canvas, display, x, y, dw, dh) {
 	var image = this.getImage();
 	var srcRect = this.getImageRect();
 
-	return WImage.draw(canvas, image, display, x, y, dw, dh, srcRect);	
+	return WImage.draw(canvas, image, display, x, y, dw, dh, srcRect);
+}
+
+WImage.getImageRectDefault = function(image) {
+	return {x:0, y:0, w:image.width, h:image.height, trimmed:false};
 }
 
 WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
-	if(!image) return;
-	if(!srcRect) {
-		srcRect = {};
-		srcRect.x = 0;
-		srcRect.y = 0;
-		srcRect.w = image.width;
-		srcRect.h = image.height;
-	}
-
-	if(!srcRect.ox) {
-		srcRect.ox = 0;
-	}
-	if(!srcRect.oy) {
-		srcRect.oy = 0;
-	}
-	if(!srcRect.rw) {
-		srcRect.rw = srcRect.w;
-	}
-	if(!srcRect.rh) {
-		srcRect.rh = srcRect.h;
-	}
-
-	var imageWidth  = srcRect.rw;
-	var imageHeight = srcRect.rh;
-
-	if(imageWidth <= 0 || imageHeight <= 0) {
-		return;
-	}
+	if(!image || !image.width) return;
 
 	var dx = 0;
 	var dy = 0;
-	var sw = srcRect.w;
-	var sh = srcRect.h;
-	var sx = srcRect.x;
-	var sy = srcRect.y;
-	var ox = srcRect.ox;
-	var oy = srcRect.oy;
+	var sr = srcRect || WImage.getImageRectDefault(image);
+	var sw = sr.w;
+	var sh = sr.h;
+	var sx = sr.x;
+	var sy = sr.y;
+	var ox = sr.ox || 0;
+	var oy = sr.oy || 0;
+	var imageWidth  = sr.rw || sr.w;
+	var imageHeight = sr.rh || sr.h;
 
-	if(srcRect.trimmed) {
-		ox = srcRect.ox;
-		oy = srcRect.oy;
-	}
+    if(imageHeight === 0 || imageWidth === 0) {
+        return;
+    }
 
 	switch(display) {
 		case WImage.DISPLAY_CENTER: {
-			dx = Math.floor(x + ((dw - imageWidth) >> 1)) + ox;
-			dy = Math.floor(y + ((dh - imageHeight) >> 1)) + oy;
+			dx = (x + ((dw - imageWidth) >> 1)) + ox;
+			dy = (y + ((dh - imageHeight) >> 1)) + oy;
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, sw, sh);
 			break;
@@ -338,12 +364,12 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			var iw = imageWidth*scale;
 			var ih = imageHeight*scale;
 
-			dx = (dw - iw) >> 1;
-			dy = (dh - ih) >> 1;
-			dx += Math.round(ox*scale);
-			dy += Math.round(oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+			dx = x + ((dw - iw) >> 1);
+			dy = y + ((dh - ih) >> 1);
+			dx += (ox*scale);
+			dy += (oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 			break;
@@ -352,27 +378,27 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			var xScale = dw/imageWidth;
 			var yScale = dh/imageHeight;
 
-			dx = Math.round(x + ox*xScale);
-			dy = Math.round(y + oy*yScale);
-			dw = Math.round(sw*xScale);
-			dh = Math.round(sh*yScale);
+			dx = (x + ox*xScale);
+			dy = (y + oy*yScale);
+			dw = (sw*xScale);
+			dh = (sh*yScale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 			break;
 		}
 		case WImage.DISPLAY_AUTO: {
 			var scale = Math.min(dw/imageWidth, dh/imageHeight);
-			var iw = Math.round(imageWidth*scale);
-			var ih = Math.round(imageHeight*scale);
+			var iw = (imageWidth*scale);
+			var ih = (imageHeight*scale);
 
 			dx = x + ((dw - iw) >> 1);
 			dy = y + ((dh - ih) >> 1);
-			dx += Math.round(ox*scale);
-			dy += Math.round(oy*scale);
+			dx += (ox*scale);
+			dy += (oy*scale);
 
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
-			
+			dw = (sw*scale);
+			dh = (sh*scale);
+
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 			break;
 		}
@@ -381,22 +407,49 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			dy = y + oy;
 			dw -= (imageWidth - sw);
 			dh -= (imageHeight - sh);
-			if(imageWidth >= dw && imageHeight >= dh) {
-				canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
-			}
-			else {
-				drawNinePatchEx(canvas, image, sx, sy, sw, sh, dx, dy, dw, dh);
-			}
+			drawNinePatchEx(canvas, image, sx, sy, sw, sh, dx, dy, dw, dh);
 
 			break;
 		}
+        case WImage.DISPLAY_3PATCH_V:
+            dx = x + ox;
+            dy = y + oy;
+            dw -= (imageWidth - sw);
+			dh -= (imageHeight - sh);
+
+            dw = Math.max(dw, 0);
+            dh = Math.max(dh, 0);
+            var sstep = sh / 3;
+            var dstep = dh / 3;
+            var hc = Math.min(sstep, dstep);
+            canvas.drawImage(image, sx, sy, sw, sstep, dx, dy, dw, hc);
+            canvas.drawImage(image, sx, sy + sstep, sw, sstep, dx, dy + hc, dw, Math.max(dh - 2*sstep, dstep));
+            hc = hc + Math.max(dh - 2*sstep, dstep);
+            canvas.drawImage(image, sx, sy + 2*sstep, sw, sstep, dx, dy + hc, dw, Math.min(sstep, dstep));
+            break;
+        case WImage.DISPLAY_3PATCH_H:
+            dx = x + ox;
+            dy = y + oy;
+            dw -= (imageWidth - sw);
+			dh -= (imageHeight - sh);
+
+            dw = Math.max(dw, 0);
+            dh = Math.max(dh, 0);
+            var sstep = sw / 3;
+            var dstep = dw / 3;
+            var wc = Math.min(sstep, dstep);
+            canvas.drawImage(image, sx, sy, sstep, sh, dx, dy, wc, dh);
+            canvas.drawImage(image, sx + sstep, sy, sstep, sh, dx + wc, dy, Math.max(dw - 2*sstep, dstep), dh);
+            wc = wc + Math.max(dw - 2*sstep, dw / 3);
+            canvas.drawImage(image, sx + 2*sstep, sy, sstep, sh, dx + wc, dy, Math.min(sstep, dstep), dh);
+            break;
 		case WImage.DISPLAY_SCALE_KEEP_RATIO: {
 			var scale = Math.max(dw/imageWidth, dh/imageHeight);
-			
-			dx = Math.round(x + ox*scale);
-			dy = Math.round(y + oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+
+			dx = (x + ox*scale);
+			dy = (y + oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 
@@ -430,7 +483,7 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			sh = Math.min(dh, imageHeight);
 			while(dx < maxDx) {
 				sw = Math.min(maxDx-dx, imageWidth);
-				canvas.drawImage(image, sx, sy, sw, sh, dx, y, sw, sh);
+				canvas.drawImage(image, sx, sy, sw, sh, dx, y, sw, dh);
 				dx = dx + sw;
 			}
 			break;
@@ -443,7 +496,7 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 			sw = Math.min(dw, imageWidth);
 			while(dy < maxDy) {
 				sh = Math.min(maxDy-dy, imageHeight);
-				canvas.drawImage(image, sx, sy, sw, sh, x, dy, sw, sh);
+				canvas.drawImage(image, sx, sy, sw, sh, x, dy, dw, sh);
 				dy = dy + sh;
 			}
 			break;
@@ -451,10 +504,10 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 		case WImage.DISPLAY_FIT_WIDTH: {
 			var scale = dw/imageWidth;
 
-			dx = Math.round(x + ox*scale);
-			dy = Math.round(y + oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+			dx = (x + ox*scale);
+			dy = (y + oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 
@@ -463,10 +516,10 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 		case WImage.DISPLAY_FIT_HEIGHT: {
 			var scale = dh/imageHeight;
 
-			dx = Math.round(x + ox*scale);
-			dy = Math.round(y + oy*scale);
-			dw = Math.round(sw*scale);
-			dh = Math.round(sh*scale);
+			dx = (x + ox*scale);
+			dy = (y + oy*scale);
+			dw = (sw*scale);
+			dh = (sh*scale);
 
 			canvas.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 
@@ -482,3 +535,7 @@ WImage.draw = function(canvas, image, display, x, y, dw, dh, srcRect) {
 
 	return;
 }
+
+window.WImage = WImage;
+
+

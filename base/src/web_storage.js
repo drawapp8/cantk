@@ -40,10 +40,10 @@ WebStorage.set = function(key, value, compress) {
 	
 	key = WebStorage.getNameSapceKey(key);
 	if(compress && !isIE()) {
-		storage[key] = strCompress(value);
+		storage.setItem(key, strCompress(value));
 	}
 	else {
-		storage[key] = value;
+		storage.setItem(key, value);
 	}
 
 	return;
@@ -54,10 +54,10 @@ WebStorage.get = function(key, decompress) {
 
 	key = WebStorage.getNameSapceKey(key);
 	if(decompress && !isIE()) {
-		return strDecompress(storage[key]);
+		return strDecompress(storage.getItem(key));
 	}
 	else {
-		return storage[key];
+		return storage.getItem(key);
 	}
 }
 
@@ -65,7 +65,7 @@ WebStorage.remove = function(key) {
 	var storage = WebStorage.getStorage();
 
 	key = WebStorage.getNameSapceKey(key);
-	delete storage[key];
+	storage.removeItem(key);
 
 	return;
 }
@@ -96,10 +96,10 @@ WebStorage.setSession = function(key, value, compress) {
 	
 	key = WebStorage.getNameSapceKey(key);
 	if(compress && !isIE()) {
-		storage[key] = strCompress(value);
+		storage.setItem(key, strCompress(value));
 	}
 	else {
-		storage[key] = value;
+		storage.setItem(key, value);
 	}
 
 	return;
@@ -110,10 +110,10 @@ WebStorage.getSession = function(key, decompress) {
 
 	key = WebStorage.getNameSapceKey(key);
 	if(decompress && !isIE()) {
-		return strDecompress(storage[key]);
+		return strDecompress(storage.getItem(key));
 	}
 	else {
-		return storage[key];
+		return storage.getItem(key);
 	}
 }
 
@@ -121,14 +121,14 @@ WebStorage.removeSession = function(key) {
 	var storage = WebStorage.getSessionStorage();
 
 	key = WebStorage.getNameSapceKey(key);
-	delete storage[key];
+	storage.removeItem(key);
 
 	return;
 }
 
 WebStorage.reset = function() {
 	for(var key in localStorage) {
-		delete localStorage[key];
+		localStorage.removeItem(key);
 	}
 }
 

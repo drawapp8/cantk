@@ -42,8 +42,7 @@ function AppBase(canvasID, type) {
 
 		this.canvas	 = CantkRT.getMainCanvas();
 		this.adjustCanvasSize();
-		this.manager = WWindowManager.create(this, this.canvas);
-		canvasAttachManager(this.canvas, this.manager, this);
+		this.manager = WWindowManager.create(this, this.canvas, this.canvas);
 		
 		return;
 	}
@@ -65,8 +64,9 @@ function AppBase(canvasID, type) {
 		
 		switch(this.type) {
 			case AppBase.TYPE_GENERAL: {
-				w = view.width;
+				w = view.width-20;
 				h = view.height;
+				break;
 			}
 			case AppBase.TYPE_WEBAPP: {
 				w = view.width;

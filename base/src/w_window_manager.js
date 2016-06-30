@@ -11,8 +11,9 @@ function WWindowManager() {
 	return;
 }
 
-WWindowManager.create = function(app, canvas) {
+WWindowManager.create = function(app, canvas, eventElement) {
 	WWindowManager.instance = new WWindowManager();
+	WEventsManager.setEventsConsumer(WWindowManager.instance, eventElement);
 
 	return WWindowManager.instance.init(app, canvas);
 }
@@ -49,20 +50,20 @@ WWindowManager.prototype.getApp = function() {
 	return this.app;
 }
 
+WWindowManager.onMultiTouch = function(action, points, event) {
+}
+
+WWindowManager.prototype.onMultiTouch = function(action, points, event) {
+	for(var i = 0; i < points.length; i++) {
+		this.translatePoint(points[i]);
+	}
+
+	WWindowManager.onMultiTouch(action, points, event);
+}
+
 WWindowManager.prototype.preprocessEvent = function(type, e, arg) {
 	this.currentEvent = e.originalEvent ? e.originalEvent : e;
 	return true;
-}
-
-WWindowManager.prototype.getCanvas2D = function() {
-	var ctx = this.canvas.getContext("2d");
-
-	ctx["imageSmoothingEnabled"] = true;
-	ctx["webkitImageSmoothingEnabled"] = true;
-	ctx["mozImageSmoothingEnabled"] = true;
-	ctx["msImageSmoothingEnabled"] = true;
-
-	return ctx;
 }
 
 WWindowManager.prototype.getCanvas = function() {
@@ -70,11 +71,11 @@ WWindowManager.prototype.getCanvas = function() {
 }
 
 WWindowManager.prototype.getWidth = function() {
-	return this.canvas.width;
+	return this.w;
 }
 
 WWindowManager.prototype.getHeight = function() {
-	return this.canvas.height;
+	return this.h;
 }
 
 WWindowManager.prototype.findTargetWin = function(point) {
@@ -129,6 +130,7 @@ WWindowManager.prototype.ungrab = function(win) {
 }
 
 WWindowManager.prototype.onDoubleClick = function(point) {	
+    this.translatePoint(point);
 	 this.target = this.findTargetWin(point);
 	 
 	if(this.target) {
@@ -178,7 +180,27 @@ WWindowManager.setInputScale = function(xInputScale, yInputScale) {
 	return;
 }
 
+WWindowManager.setInputOffset = function(xInputOffset, yInputOffset) {	
+	WWindowManager.xInputOffset = xInputOffset;
+	WWindowManager.yInputOffset = yInputOffset;
+
+	return;
+}
+
+
+WWindowManager.prototype.getInputScale = function() {	
+	return {x:WWindowManager.xInputScale, y:WWindowManager.yInputScale};
+}
+
 WWindowManager.prototype.translatePoint = function(point) {	
+	if(WWindowManager.xInputOffset) {
+		point.x -= WWindowManager.xInputOffset;
+	}
+	
+	if(WWindowManager.yInputOffset) {
+		point.y -= WWindowManager.yInputOffset;
+	}
+
 	if(WWindowManager.xInputScale) {
 		point.x = Math.round(point.x * WWindowManager.xInputScale);
 	}
@@ -210,6 +232,7 @@ WWindowManager.prototype.onPointerDown = function(point) {
 	this.lastPointerPoint.y = point.y;
 
 	if(this.target) {
+		point.time = Date.now();
 		 this.target.onPointerDown(point);
 	 }
 	 else {
@@ -231,7 +254,8 @@ WWindowManager.prototype.onPointerMove = function(point) {
 	}
 	this.target = target;
 	if(this.target) {
-		 this.target.onPointerMove(point);
+		point.time = Date.now();
+		this.target.onPointerMove(point);
 	}
 	
 	return;
@@ -243,7 +267,8 @@ WWindowManager.prototype.onPointerUp = function(point) {
 	this.target = this.findTargetWin(point);
 	 
 	if(this.target) {
-		 this.target.onPointerUp(point);
+		point.time = Date.now();
+		this.target.onPointerUp(point);
 	 }
 	 else {
 		  console.log("Window Manager: no target for x=" + point.x + " y=" + point.y);
@@ -311,6 +336,8 @@ WWindowManager.prototype.onKeyUp = function(code) {
 }
 
 WWindowManager.prototype.onWheel = function(delta) {
+	this.postRedraw();
+
 	if(!this.target) {
 		this.target = this.findTargetWin({x:50, y:50});
 		console.log("onWheel : findTargetWin=" + this.target);
@@ -330,8 +357,25 @@ WWindowManager.prototype.dispatchPointerMoveOut = function() {
 	return this;
 }
 
+WWindowManager.prototype.setTopWindowAsTarget = function() {
+	var windows = this.windows;
+	var n = windows.length;
+
+	this.target = null;
+	for(var i = n - 1; i >= 0; i--) {
+		var iter = windows[i];
+		if(iter.visible) {
+			this.target = iter;
+			break;
+		}
+	}
+
+	return this;
+}
+
 WWindowManager.prototype.addWindow = function(win) {
 	this.dispatchPointerMoveOut();
+	this.target = win;
 	this.windows.push(win);
 	this.postRedraw();
 
@@ -351,8 +395,14 @@ WWindowManager.prototype.removeWindow = function(win) {
 
 WWindowManager.prototype.getFrameRate = function() {
 	var duration = Date.now() - this.startTime;
+	var fps = Math.round(1000  * this.drawCount / duration);
 
-	return Math.round(1000  * this.drawCount / duration);
+	if(duration > 1000) {
+		this.drawCount = 0;
+		this.startTime = Date.now();
+	}
+
+	return fps;
 }
 
 WWindowManager.prototype.setMaxFPSMode = function(maxFpsMode) {
@@ -384,12 +434,10 @@ WWindowManager.prototype.setPaintEnable = function(enablePaint) {
 	return this;
 }
 
-WWindowManager.onDraw = function() {
-	var manager = WWindowManager.getInstance();
-
-	manager.drawCount++;
-	manager.requestCount = 0;
-	manager.draw();
+WWindowManager.prototype.onDrawFrame = function() {
+	this.drawCount++;
+	this.requestCount = 0;
+	this.draw();
 
 	return;
 }
@@ -401,7 +449,7 @@ WWindowManager.prototype.postRedraw = function(rect) {
 	
 	this.requestCount++;
 	if(this.requestCount < 2) {
-		requestAnimFrame(WWindowManager.onDraw);
+		requestAnimationFrame(this.onDrawFrame.bind(this));
 	}
 
 	return;
@@ -417,25 +465,45 @@ WWindowManager.prototype.drawTips = function(canvas) {
 	var tipsWidget = this.tipsWidget;
 	if(!tipsWidget || !tipsWidget.parent) return;
 
+	WWidget.hideTipsCanvas();
 	var p = tipsWidget.getPositionInView();
 
-	canvas.save();
-	canvas.translate(p.x, p.y);
-	tipsWidget.drawTips(canvas);
-	canvas.restore();
+	var win = tipsWidget.getWindow();
+	if(win.canvas) {
+		canvas = win.canvas.getContext("2d");
+		var p = tipsWidget.getPositionInWindow();
+		canvas.save();
+		canvas.translate(p.x, p.y);
+		canvas.beginPath();
+		tipsWidget.drawTips(canvas);
+		canvas.restore();
+	}
+	else {
+		canvas.save();
+		canvas.translate(p.x, p.y);
+		canvas.beginPath();
+		tipsWidget.drawTips(canvas);
+		canvas.restore();
+	}
 
 	return;
 }
 
-WWindowManager.prototype.drawWindows = function(canvas) {
-	var nr = this.windows.length;
-	for(var i = 0; i < nr; i++) {
-		var win = this.windows[i];
-		win.draw(canvas);
-	}
-	this.drawTips(canvas);
+WWindowManager.prototype.beforeDrawWindows = function(canvas) {}
 
-	return;
+WWindowManager.prototype.afterDrawWindows = function(canvas) {}
+
+WWindowManager.prototype.drawWindows = function(canvas) {
+    var nr = this.windows.length;
+    this.beforeDrawWindows(canvas);
+    for (var i = 0; i < nr; i++) {
+        var win = this.windows[i];
+        win.draw(canvas);
+    }
+    this.drawTips(canvas);
+    this.afterDrawWindows(canvas);
+
+    return;
 }
 
 WWindowManager.prototype.redrawRect = function(rect) {
@@ -451,83 +519,185 @@ WWindowManager.prototype.redrawRect = function(rect) {
 
 	return;
 }
- 
-WWindowManager.prototype.addBeforeDrawHandler = function(func) {
-	var handlers = this.beforeDrawHandlers;
-	for(var i = 0; i < handlers.length; i++) {
-		var iter = handlers[i];
-		if(iter === func) {
-			return this;
+
+//overwrite checkNeedRedraw to limit fps 
+WWindowManager.prototype.checkNeedRedraw = function(timeStep) {
+	return true;
+}
+
+WWindowManager.canvasContextName = "2d";
+WWindowManager.setCanvasContextName = function(name) {
+	WWindowManager.canvasContextName = name;
+}
+
+WWindowManager.prototype.getCanvas2D = function() {
+	if(!this.ctx) {
+		var ctx = this.canvas.getContext(WWindowManager.canvasContextName);
+
+		if(!ctx) {
+			ctx = this.canvas.getContext("2d");
+			ctx["imageSmoothingEnabled"] = true;
 		}
-	}
 
-	if(func) {
-		handlers.push(func);
-	}
-	console.log("WWindowManager.prototype.addBeforeDrawHandler n=" + this.beforeDrawHandlers.length);
-
-	return this;
-}
-
-WWindowManager.prototype.removeBeforeDrawHandler = function(func) {
-	var handlers = this.beforeDrawHandlers;
-	for(var i = 0; i < handlers.length; i++) {
-		var iter = handlers[i];
-		if(iter === func) {
-			handlers.splice(i, 1);
-			return this;
+		if(!ctx.beginFrame) {
+			ctx.beginFrame = function() {}
 		}
+		if(!ctx.endFrame) {
+			ctx.endFrame = function() {}
+		}
+		if(!ctx.clipRect) {
+			ctx.clipRect = function(x, y, w, h) {
+				ctx.beginPath();
+				ctx.rect(x, y, w, h);
+				ctx.clip();
+				ctx.beginPath();
+			}
+		}
+		this.ctx = ctx;
 	}
 
-	console.log("WWindowManager.prototype.addBeforeDrawHandler n=" + this.beforeDrawHandlers.length);
-
-	return this;
+	return this.ctx;
 }
 
-WWindowManager.prototype.callBeforeDrawHandlers = function(canvas) {
-	var handlers = this.beforeDrawHandlers;
-	for(var i = 0; i < handlers.length; i++) {
-		var iter = handlers[i];
-		iter(canvas);
+WWindowManager.prototype.doDraw = function(ctx) {
+	var now = Date.now();
+	var timeStep = now - (this.lastUpdateTime || 0);
+
+	if(!this.checkNeedRedraw(timeStep)) {
+		return;
 	}
 
-	return this;
-}
+	ctx.now = now;
+	ctx.animating = 0;
+	ctx.needRedraw = 0;
+	ctx.timeStep = timeStep;
+	ctx.lastUpdateTime = this.lastUpdateTime;
+	WWindowManager.dispatchTimers(ctx.now);
 
-WWindowManager.prototype.draw = function() {
-	var canvas = this.getCanvas2D();
-
-	canvas.animating = 0;
-	canvas.needRedraw = 0;
-	canvas.now = Date.now();
-	canvas.lastUpdateTime = this.lastUpdateTime;
-	canvas.timeStep = canvas.now - (canvas.lastUpdateTime || 0);
-
-	this.callBeforeDrawHandlers(canvas);
-
-	canvas.save();
-	this.drawWindows(canvas);
-	canvas.restore();
+	ctx.save();
+	this.drawWindows(ctx);
+	ctx.restore();
 
 	if(this.shouldShowFPS) {
-		var str = "fps:" + this.getFrameRate();
-		canvas.save();
-		canvas.textAlign = "left";
-		canvas.textBaseline = "top";
-		canvas.font = "20px Sans";
-		canvas.fillStyle = "Green";
-		canvas.fillText(str, 10, 10);
-		canvas.restore();
+		var str = this.getFrameRate();
+		var w = 100;
+		var h = 30;
+		ctx.beginPath();
+		ctx.rect(0, 0, w, h);
+		ctx.fillStyle = "Black";
+		ctx.fill();
+		
+		ctx.save();
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.font = "20px Sans";
+		ctx.fillStyle = "White";
+		ctx.fillText(str, w >> 1, h >> 1);
+		ctx.restore();
 	}
 
-	if(window.cantkRTV8 || this.maxFpsMode || canvas.needRedraw > 0) {
+	if(window.cantkRTV8 || this.maxFpsMode || ctx.needRedraw > 0) {
 		this.postRedraw();
 	}
 
-	this.canvas.flush();
-	this.lastUpdateTime = canvas.now;
+	this.lastUpdateTime = ctx.now;
+}
+
+WWindowManager.prototype.draw = function() {
+	var ctx = this.getCanvas2D();
+
+	ctx.beginFrame();
+	this.doDraw(ctx);
+	ctx.endFrame();
 
 	return;
 }
 
- 
+WWindowManager.timerID = 1000;
+WWindowManager.timerFuncs = [];
+WWindowManager.intervalFuncs = [];
+
+WWindowManager.dispatchTimers = function(t) {
+	var arr = WWindowManager.timerFuncs;
+	var n = arr.length;
+	if(n > 0) {
+		WWindowManager.timerFuncs = [];
+		for(var i = 0; i < n; i++) {
+			var info = arr[id];
+			if(info.removed) continue;
+
+			if(info.timeout <= t) {
+				callback.call(window);
+			}
+			else {
+				WWindowManager.timerFuncs.push(info);
+			}
+		}
+	}
+
+	arr = WWindowManager.intervalFuncs;
+	n = arr.length;
+	if(n > 0) {
+		WWindowManager.intervalFuncs = [];
+		for(var i = 0; i < n; i++) {
+			var info = arr[id];
+			if(info.removed) continue;
+
+			if(info.timeout <= t) {
+				callback.call(window);
+				info.timeout = t + info.duration;
+			}
+			WWindowManager.timerFuncs.push(info);
+		}
+	}
+
+	return;
+}
+
+WWindowManager.setTimeout = function(callback, duration) {
+	if(!callback) return;
+
+	var id = WWindowManager.timerID++;
+	var info = {id:id, callback:callback};
+	info.timeout = Date.now() + duration/1000;
+
+	WWindowManager.timerFuncs.push(info);
+
+	return id;
+}
+
+WWindowManager.setInterval = function(callback, duration) {
+	if(!callback) return;
+
+	var id = WWindowManager.timerID++;
+	var info = {id:id, callback:callback};
+
+	info.duration = duration/1000;
+	info.timeout = Date.now() + info.duration;
+
+	WWindowManager.intervalFuncs.push(info);
+
+	return id;
+}
+
+WWindowManager.removeTimerInArr = function(arr, id) {
+	var n = arr.length;
+	for(var i = 0; i < n; i++) {
+		var iter = arr[i];
+		if(iter.id === id) {
+			iter.removed = true;
+			break;
+		}
+	}
+
+	return;
+}
+
+WWindowManager.clearTimeout = function(id) {
+	WWindowManager.removeTimerInArr(WWindowManager.timerFuncs, id);
+}
+
+WWindowManager.clearInterval = function(id) {
+	WWindowManager.removeTimerInArr(WWindowManager.intervalFuncs, id);
+}
+

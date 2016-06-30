@@ -4,6 +4,7 @@
  * Brief: window
  * 
  * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016	Holaverse Inc.
  * 
  */
  
@@ -22,6 +23,12 @@ WWindow.prototype.init = function(manager, x, y, w, h) {
 	setTimeout(function() {
 		me.manager.addWindow(me);
 	}, 0);
+
+	this.onClosed = null;
+	this.closeHandler = null;
+	this.pointerDownPosition = {x:0, y:0};
+	this.pointerUpPosition = {x:0, y:0};
+	this.pointerLastPosition = {x:0, y:0};
 
 	return this;
 }
@@ -56,6 +63,10 @@ WWindow.prototype.moveToCenter = function() {
 
 WWindow.prototype.onPointerDown = function(point) {
 	this.pointerDown = true;
+	this.pointerDownPosition.x = point.x;
+	this.pointerDownPosition.y = point.y;
+	this.pointerLastPosition.x = point.x;
+	this.pointerLastPosition.y = point.y;
 
 	if(this.grabWidget) {
 		this.grabWidget.onPointerDown(point);
@@ -70,6 +81,9 @@ WWindow.prototype.onPointerDown = function(point) {
 }
 
 WWindow.prototype.onPointerMove = function(point) {
+	this.pointerLastPosition.x = point.x;
+	this.pointerLastPosition.y = point.y;
+
 	if(this.grabWidget) {
 		this.grabWidget.onPointerMove(point);
 	}
@@ -84,9 +98,11 @@ WWindow.prototype.onPointerMove = function(point) {
 
 WWindow.prototype.onPointerUp = function(point) {
 	if(!this.pointerDown) {
-		return;
+//		return;
 	}
 
+	this.pointerUpPosition.x = point.x;
+	this.pointerUpPosition.y = point.y;
 	if(this.grabWidget) {
 		this.grabWidget.onPointerUp(point);
 	}
@@ -98,6 +114,13 @@ WWindow.prototype.onPointerUp = function(point) {
 	this.postRedraw();
 
 	return;
+}
+
+WWindow.prototype.isClicked = function() {
+	var dx = this.pointerLastPosition.x - this.pointerDownPosition.x;
+	var dy = this.pointerLastPosition.y - this.pointerDownPosition.y;
+
+	return Math.abs(dx) < 5 && Math.abs(dy) < 5;
 }
 
 WWindow.prototype.onContextMenu = function(point) {
@@ -144,7 +167,8 @@ WWindow.prototype.beforePaint = function(canvas) {
 
 WWindow.prototype.show = function(visible) {
 	WWidget.prototype.show.call(this, visible);
-
+	this.manager.setTopWindowAsTarget();
+	
 	return this;
 }
 
@@ -157,9 +181,19 @@ WWindow.prototype.close = function(retInfo) {
 	return this;
 }
 
+WWindow.prototype.setCloseHandler = function(closeHandler) {
+	this.closeHandler = closeHandler;
+
+	return this;
+}
+
 WWindow.prototype.closeSync = function(retInfo) {
 	if(this.onClosed) {
 		this.onClosed(retInfo);
+	}
+
+	if(this.closeHandler) {
+		this.closeHandler();
 	}
 
 	this.manager.ungrab(this);
@@ -169,9 +203,16 @@ WWindow.prototype.closeSync = function(retInfo) {
 	return;
 }
 
+WWindow.prototype.getCanvas2D = function() {
+	return WWindowManager.getInstance().getCanvas2D();
+}
+
+WWindow.prototype.getCanvas = function() {
+	return WWindowManager.getInstance().getCanvas();
+}
+
 WWindow.create =  function(manager, x, y, w, h) {
 	var win = new WWindow();
-	this.onClosed = null;
 
 	return win.init(manager, x, y, w, h);
 }

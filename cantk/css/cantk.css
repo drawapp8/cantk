@@ -1,0 +1,25 @@
+* 
+{
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+@-ms-viewport {
+    width: device-width;
+    user-zoom: fixed;
+    max-zoom: 1;
+    min-zoom: 1;
+}
+@-moz-viewport {
+    width: device-width;
+    user-zoom: fixed;
+    max-zoom: 1;
+    min-zoom: 1;
+}
+
+@viewport {
+    width: device-width;
+    user-zoom: fixed;
+    max-zoom: 1;
+    min-zoom: 1;
+}
+body { -ms-touch-action:none; }
+

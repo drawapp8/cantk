@@ -1,3 +1,11 @@
+/*
+ * File:    path-animation.js
+ * Author:  Li XianJing <xianjimli@hotmail.com>
+ * Brief:   path animation
+ * 
+ * Copyright (c) 2015 - 2016  Holaverse Inc.
+ * 
+ */
 function BasePath() {
 	return;
 }
@@ -356,9 +364,7 @@ Bezier2Path.create = function(duration, interpolator, x1, y1, x2, y2, x3, y3) {
 
 function PathAnimation(x, y) {
 	this.startPoint = {x:x, y:y};
-	this.endPoint = {x:x, y:y};
-	this.duration = 0;
-	this.paths = [];
+	this.reset();
 
 	return;
 }
@@ -369,6 +375,14 @@ PathAnimation.prototype.getStartPoint = function() {
 
 PathAnimation.prototype.getEndPoint = function() {
 	return this.endPoint;
+}
+
+PathAnimation.prototype.reset = function() {
+	this.endPoint = {x:this.startPoint.x, y:this.startPoint.y};
+	this.duration = 0;
+	this.paths = [];
+
+	return this;
 }
 
 PathAnimation.prototype.addPath = function(path) {
@@ -459,5 +473,5 @@ PathAnimation.prototype.forEach = function(visit) {
 	}
 
 	return this;
-}
+};
 

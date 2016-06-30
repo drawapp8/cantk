@@ -51,7 +51,7 @@ WThemeManager.newTheme = function() {
 WThemeManager.themes = {};
 WThemeManager.imagesURL = null;
 WThemeManager.defaultTheme = WThemeManager.newTheme();
-WThemeManager.themeURL = "/ide/images/light/theme.json";
+WThemeManager.themeURL = "/ide/theme/default/theme.json";
 
 WThemeManager.setImagesURL = function(imagesURL) {
 	WThemeManager.imagesURL = imagesURL;
@@ -63,37 +63,40 @@ WThemeManager.getIconImageURL = function() {
 	return WThemeManager.imagesURL;
 }
 
-WThemeManager.getBgImageURL = function() {
+WThemeManager.getImageURL = function() {
 	return WThemeManager.imagesURL;
 }
 
 WThemeManager.imagesCache = {};
-WThemeManager.getImage = function(url) {
+WThemeManager.createImage = function(url) {
 	var image = WThemeManager.imagesCache[url];
 	if(!image) {
-		image = new WImage();
-		image.setImageSrc(url);
+		image = WImage.create(url);
 	}
 
 	return image;
 }
 
 WThemeManager.getIconImage = function(name) {
-	if(!WThemeManager.imagesURL) {
-		return null;
+	if(name.endWith(".png")) {
+		return WThemeManager.getImage(name);
 	}
-
-	var url = WThemeManager.imagesURL + "#" + name + ".png";
-	return this.getImage(url);
+	else {
+		return WThemeManager.getImage(name + ".png");
+	}
 }
 
 WThemeManager.getBgImage = function(name) {
+	return this.getImage(name);
+}
+
+WThemeManager.getImage = function(name) {
 	if(!WThemeManager.imagesURL) {
 		return null;
 	}
 	
 	var url = WThemeManager.imagesURL + "#" + name;
-	return this.getImage(url);
+	return this.createImage(url);
 }
 
 WThemeManager.setTheme = function(theme) {
@@ -122,32 +125,78 @@ WThemeManager.getThemeURL = function() {
 	return WThemeManager.themeURL;
 }
 
+WThemeManager.getDefaultFont = function(themeJson) {
+	var font = null;
+	var global = themeJson.global;
+	if(global && global.font) {
+		if(browser.isWindows()) {
+			font = global.font.windows;
+		}
+		else if(browser.isLinux()) {
+			font = global.font.linux;
+		}
+		else if(browser.isMacOSX()) {
+			font = global.font.macosx;
+		}
+	}
+
+	return font;
+}
+
+WThemeManager.applyDefaultFont = function(style, defaultFont) {
+	var font = style.font || {};
+	
+	if(defaultFont) {
+		if(!font.family) {
+			font.family = defaultFont.family || "sans";
+		}
+
+		if(!font.size) {
+			font.size = defaultFont.size || 10;
+		}
+
+		if(!font.weight) {
+			font.weight = "normal";
+		}
+	}
+
+	style.fontInfo = font;
+	style.fontSize = font.size;
+	style.font =font.weight + " " + font.size + "px " + font.family;
+	
+	return;
+}
+
 WThemeManager.loadTheme = function(themeURL, themeJson) {
 	var path = dirname(themeURL);
 	var imagesURL = path + "/" + (themeJson.imagesURL ? themeJson.imagesURL : "images.json");
 	WThemeManager.setImagesURL(imagesURL);
 
+	var font = WThemeManager.getDefaultFont(themeJson);
 	var widgetsTheme = themeJson.widgets;
 
 	for(var name in widgetsTheme) {
 		var widgetTheme = widgetsTheme[name];
 		for(var state in widgetTheme) {
 			var style = widgetTheme[state];
+			if(typeof style !== "object") continue;
+
 			if(style.bgImage) {
-				style.bgImage = WThemeManager.getBgImage(style.bgImage);
+				style.bgImage = WThemeManager.getImage(style.bgImage);
 			}
 			if(style.fgImage) {
-				style.fgImage = WThemeManager.getBgImage(style.fgImage);
+				style.fgImage = WThemeManager.getImage(style.fgImage);
 			}
 			if(style.bgImageTips) {
-				style.bgImageTips = WThemeManager.getBgImage(style.bgImageTips);
+				style.bgImageTips = WThemeManager.getImage(style.bgImageTips);
 			}
-			if(style.font) {
-				style.fontSize = getFontSizeInFont(style.font);
-				if(style.fontSize) {
-					style.fontSize = 12;
-				}
+			if(style.checkedImage) {
+				style.checkedImage = WThemeManager.getImage(style.checkedImage);
 			}
+			if(style.uncheckedImage) {
+				style.uncheckedImage = WThemeManager.getImage(style.uncheckedImage);
+			}
+			WThemeManager.applyDefaultFont(style, font);
 		}
 	}
 
@@ -178,14 +227,22 @@ WThemeManager.mergeTheme = function(widgetsTheme) {
 		var widgetTheme = widgetsTheme[name];
 		for(var state in widgetTheme) {
 			var style = widgetTheme[state];
+			if(typeof style !== "object") continue;
+
 			if(style.bgImage) {
-				style.bgImage = WThemeManager.getImage(style.bgImage);
+				style.bgImage = WThemeManager.createImage(style.bgImage);
 			}
 			if(style.fgImage) {
-				style.fgImage = WThemeManager.getImage(style.fgImage);
+				style.fgImage = WThemeManager.createImage(style.fgImage);
 			}
 			if(style.bgImageTips) {
-				style.bgImageTips = WThemeManager.getImage(style.bgImageTips);
+				style.bgImageTips = WThemeManager.createImage(style.bgImageTips);
+			}
+			if(style.checkedImage) {
+				style.checkedImage = WThemeManager.createImage(style.checkedImage);
+			}
+			if(style.uncheckedImage) {
+				style.uncheckedImage = WThemeManager.createImage(style.uncheckedImage);
 			}
 			if(style.font) {
 				style.fontSize = getFontSizeInFont(style.font);

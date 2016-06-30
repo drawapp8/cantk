@@ -4,6 +4,7 @@
  * Brief: wrap input/textarea
  * 
  * Copyright (c) 2011 - 2015	Li XianJing <xianjimli@hotmail.com>
+ * Copyright (c) 2015 - 2016	Holaverse Inc.
  * 
  */
 
@@ -23,8 +24,19 @@ EditorElement.prototype.setWrap = function(wrap) {
 	return;
 }
 
-EditorElement.prototype.removeBorder = function() {
-	if(!isMobile()) {
+EditorElement.prototype.setMaxLength = function(maxLength) {
+	this.element.maxLength = maxLength;
+
+	return this;
+}
+
+EditorElement.prototype.showBorder = function(show) {
+	if(show) {
+		this.element.style.background = 'white';
+		this.element.style.border ='1px solid';
+		this.element.style.outline = '1px';
+	}
+	else {
 		this.element.style.background = 'transparent';
 		this.element.style.border ='0px solid';
 		this.element.style.outline = 'none';
@@ -43,6 +55,14 @@ EditorElement.prototype.setOnChangedHandler = function(onChanged) {
 		}
 	}
 
+	if(isMobile()) {
+		this.element.onchange = function() {
+			if(me.onChanged) {
+				me.onChanged(this.value);
+			}
+		}
+	}
+
 	return this;
 }
 
@@ -50,19 +70,49 @@ EditorElement.prototype.setOnChangeHandler = function(onChange) {
 	var me = this;
 	this.onChange = onChange;
 
-	this.element.onchange = function() {
+	this.element.onkeypress = function(e) {
 		if(me.onChange) {
 			me.onChange(this.value);
 		}
 	}
 
-	this.element.onkeyup = function() {
+	if(this.isInput) {
+		this.element.onkeydown = function(e) {
+			if(e.keyCode === 13) {
+				this.blur();
+			}
+		}
+	}
+
+	this.element.oninput = function(e) {
 		if(me.onChange) {
 			me.onChange(this.value);
+		}
+	}
+	
+	if(!isMobile()) {
+		this.element.onchange = function() {
+			if(me.onChange) {
+				me.onChange(this.value);
+			}
 		}
 	}
 
 	return this;
+}
+
+EditorElement.prototype.selectText = function() {
+	if(this.element) {
+		this.element.select();
+	}
+
+	return this;
+}
+
+EditorElement.prototype.setZIndex = function(zIndex) {
+	this.element.style['z-index'] = zIndex;
+
+	return;
 }
 
 EditorElement.prototype.setFontSize = function(fontSize) {
@@ -82,9 +132,37 @@ EditorElement.prototype.show = function() {
 	this.isVisibile = true;
 	this.element.style.visibility = 'visible';
 	this.element.style.zIndex = 8;
+	this.element.style.opacity = 1;
+
+	if(!isMobile()) {
+		this.showBorder(false);
+	}
 
 	this.element.focus();
 	EditorElement.imeOpen = true;
+
+	return;
+}
+
+EditorElement.prototype.hide = function() {
+	this.isVisibile = false;
+	this.element.style.opacity = 0;
+	this.element.style.zIndex = 0;
+	this.element.style.visibility = 'hidden';  
+	this.element.blur();
+	this.element.onchange = null;
+	EditorElement.imeOpen = false;
+	if(isMobile()) {
+		CantkRT.moveMainCanvas(0, 0);
+	}
+
+	if(this.onHide) {
+		this.onHide();
+	}
+
+	if(this.shape) {
+		this.shape.editing = false;
+	}
 
 	return;
 }
@@ -145,24 +223,8 @@ function setElementPosition(element, x, y) {
 	return;
 }
 
-EditorElement.prototype.hide = function() {
-	this.isVisibile = false;
-	this.element.style.zIndex = 0;
-	this.element.style.visibility = 'hidden';  
+EditorElement.prototype.blur = function() {
 	this.element.blur();
-	this.element.onchange = null;
-	EditorElement.imeOpen = false;
-	setElementPosition(EditorElement.getMainCanvas(), 0, 0);
-
-	if(this.onHide) {
-		this.onHide();
-	}
-
-	if(this.shape) {
-		this.shape.editing = false;
-	}
-
-	return;
 }
 
 EditorElement.prototype.move = function(x, y) {
@@ -173,6 +235,14 @@ EditorElement.prototype.move = function(x, y) {
 	return;
 }
 
+EditorElement.prototype.setTextColor = function(color) {
+	this.element.style.color = color;
+}
+
+EditorElement.prototype.setBgColor = function(color) {
+	this.element.style.background = color;
+}
+
 EditorElement.prototype.setFontSize = function(fontSize) {
 	this.element.style.fontSize = fontSize + "px";
 
@@ -181,7 +251,7 @@ EditorElement.prototype.setFontSize = function(fontSize) {
 
 EditorElement.prototype.resize = function(w, h) {
 	this.element.style.width = w + "px";
-	this.element.style.height = (h-6) + "px";
+	this.element.style.height = (h-4) + "px";
 
 	return;
 }
@@ -217,7 +287,7 @@ EditorElement.create = function(element, id) {
 	element.id = id;
 	edit.setElement(element);
 	edit.setFontSize(14);
-	edit.removeBorder();
+	edit.isInput = element.tagName === "INPUT" || element.localName === "input";
 
 	return edit;
 }
@@ -230,7 +300,7 @@ function cantkShowInput(inputType, fontSize, text, x, y, w, h) {
 	h = Math.round(h);
 
 	if(!gCanTkInput) {
-		gCanTkInput = createSingleLineEdit();
+		gCanTkInput = EditorElement.createSingleLineEdit();
 	}
 
 	gCanTkInput.setInputType(inputType);
@@ -245,15 +315,13 @@ function cantkShowInput(inputType, fontSize, text, x, y, w, h) {
 
 var gCanTkTextArea = null;
 function cantkShowTextArea(text, fontSize, x, y, w, h) {
-	var id = "cantk_textarea";
-	
 	x = Math.round(x);
 	y = Math.round(y);
 	w = Math.round(w);
 	h = Math.round(h);
 
 	if(!gCanTkTextArea) {
-		gCanTkTextArea = createMultiLineEdit(id, x, y, w, h);
+		gCanTkTextArea = EditorElement.createMultiLineEdit();
 	}
 	
 	gCanTkTextArea.move(x, y);
@@ -327,27 +395,20 @@ function cantkHideAllInput() {
 	return;
 }
 
-function createSingleLineEdit() {
+EditorElement.createSingleLineEdit = function() {
 	var id = "singlelineedit";
-	if(CantkRT.isNative()) {
-		return CantkRT.createSingleLineTextEditor();
-	}
-	else {
-		var element = document.createElement("input");
-		document.body.appendChild(element);
-		return EditorElement.create(element, id);
-	}
+	var element = document.createElement("input");
+	document.body.appendChild(element);
+
+	return EditorElement.create(element, id);
 }
 
-function createMultiLineEdit(id) {
+EditorElement.createMultiLineEdit = function() {
 	var id = "multilineedit";
-	if(CantkRT.isNative()) {
-		return CantkRT.createMultiLineTextEditor();
-	}
-	else {
-		var element = document.createElement("textarea");
-		document.body.appendChild(element);
-		return EditorElement.create(element, id);
-	}
-}
+	var element = document.createElement("textarea");
+    element.style.resize = "none";
+	document.body.appendChild(element);
+
+	return EditorElement.create(element, id);
+};
 
