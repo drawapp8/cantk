@@ -42,7 +42,10 @@ Online Design Tools
 Documentation
 ==============================================
 
-#### 1.[English Docs](https://github.com/drawapp8/cantk/wiki/English-Docs)
+#### 1.[Forum](http://support.holaverse.cn/)
 
-#### 2.[中文文档](https://github.com/drawapp8/cantk/wiki/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3)
+#### 2.[API](http://developers.holaverse.com/docs)
+
+#### 3.[API](http://developers.holaverse.com/demos/posts)
+
 
